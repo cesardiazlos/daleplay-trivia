@@ -1,0 +1,10 @@
+# Entornos y secretos
+.env
+__pycache__/
+*.pyc
+.venv/
+
+# Frontend
+node_modules/
+build/
+.DS_Store
