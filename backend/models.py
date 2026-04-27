@@ -1,6 +1,6 @@
 import uuid
 import enum
-from sqlalchemy import String, Integer, Float, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Table, Column, String, Integer, Float, ForeignKey, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +15,26 @@ class GenderEnum(str, enum.Enum):
     Female = "Female"
     Mixed = "Mixed"
     NA = "N/A"
+
+# Tabla de asociación para la relación Muchos a Muchos (N:M)
+category_songs = Table(
+    "category_songs",
+    Base.metadata,
+    Column("category_id", UUID(as_uuid=True), ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True),
+    Column("song_id", UUID(as_uuid=True), ForeignKey("songs.id", ondelete="CASCADE"), primary_key=True)
+)
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    spotify_playlist_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+
+    # Relación bidireccional de muchos a muchos con canciones
+    songs: Mapped[list["Song"]] = relationship(
+        "Song", secondary=category_songs, back_populates="categories"
+    )
 
 class Artist(Base):
     __tablename__ = "artists"
@@ -43,3 +63,8 @@ class Song(Base):
 
     # Relación bidireccional con artista
     artist: Mapped["Artist"] = relationship("Artist", back_populates="songs")
+
+    # Relación bidireccional de muchos a muchos con categorías
+    categories: Mapped[list["Category"]] = relationship(
+        "Category", secondary=category_songs, back_populates="songs"
+    )
