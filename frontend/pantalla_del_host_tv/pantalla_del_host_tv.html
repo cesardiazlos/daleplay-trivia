@@ -5,6 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Dale Play - Host Screen</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
 <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -190,13 +191,6 @@
 <div id="timer-display" class="text-display-xl font-display-xl text-secondary-container drop-shadow-[0_0_10px_rgba(0,227,253,0.8)] z-10">
           15
         </div>
-        
-<!-- Song Info Reveal (Hidden initially) -->
-<div id="song-info" class="absolute z-20 flex flex-col items-center justify-center w-full h-full rounded-full bg-surface-container-highest/95 backdrop-blur-md border-4 border-primary text-center hidden" style="box-shadow: 0 0 50px rgba(255,171,243,0.6);">
-    <span class="material-symbols-outlined text-primary text-5xl mb-2">music_note</span>
-    <h2 id="song-title" class="text-[28px] leading-tight font-black text-primary drop-shadow-[0_0_10px_rgba(255,171,243,0.8)] px-4 line-clamp-3"></h2>
-    <h3 id="song-artist" class="text-[18px] font-bold text-secondary px-4 mt-2 line-clamp-2"></h3>
-</div>
 </div>
 <!-- Music Visualizer -->
 <div class="flex items-end justify-center gap-xs h-24 w-full max-w-md bg-surface-container/50 rounded-xl p-base backdrop-blur-sm border-2 border-surface-container-high shadow-[0_4px_0_0_rgba(0,0,0,0.5)]">
@@ -237,6 +231,26 @@
 <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 </div>
 </section>
+
+<!-- Panel de Revelación (Fase Kahoot) -->
+<div id="song-info" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl opacity-0 pointer-events-none transition-opacity duration-500">
+    <div id="song-info-card" class="flex flex-col items-center justify-center p-8 rounded-3xl border-4 border-primary shadow-[0_0_50px_rgba(255,171,243,0.4)] bg-surface text-center max-w-2xl w-full mx-4 transform scale-95 transition-transform duration-500">
+        <span class="material-symbols-outlined text-primary text-6xl mb-4">music_note</span>
+        <h2 id="song-title" class="text-[40px] leading-tight font-black text-primary drop-shadow-[0_0_10px_rgba(255,171,243,0.8)] px-4 line-clamp-2"></h2>
+        <h3 id="song-artist" class="text-[24px] font-bold text-secondary px-4 mt-2 mb-6"></h3>
+        
+        <!-- Contenedor del reproductor de YouTube -->
+        <div id="youtube-container" class="w-[400px] h-[225px] rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,227,253,0.5)] border-2 border-secondary-container mb-8 transition-opacity duration-500 opacity-0 pointer-events-none">
+            <div id="youtube-player"></div>
+        </div>
+
+        <button id="next-song-btn" class="py-4 px-8 bg-secondary text-on-secondary font-headline-md text-[24px] uppercase tracking-wider rounded-xl border-b-8 border-[#009fb0] shadow-[0_0_20px_rgba(189,244,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[10px] active:translate-y-2 active:border-b-2 transition-all flex justify-center items-center gap-3">
+            <span class="font-black">SIGUIENTE CANCIÓN</span>
+            <span class="material-symbols-outlined text-4xl font-black">skip_next</span>
+        </button>
+    </div>
+</div>
+
 </main>
 <!-- BottomNavBar -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-neutral-950 docked full-width bottom-0 border-t-4 border-neutral-900 border-t-4 border-black shadow-[0_-4px_0_0_rgba(0,0,0,0.6)] md:hidden">
@@ -258,8 +272,16 @@
 </div>
 </nav>
 
-<iframe id="spotify-player" src="" width="0" height="0" allow="autoplay" style="display:none;"></iframe>
 <script>
+    // YouTube API Global variables
+    let ytPlayer;
+    let isYoutubeReady = false;
+
+    // Esta función es llamada automáticamente por la API de YouTube cuando carga
+    function onYouTubeIframeAPIReady() {
+        isYoutubeReady = true;
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         const songsJSON = localStorage.getItem('daleplay_songs');
         if (!songsJSON) {
@@ -279,9 +301,11 @@
 
         const timerDisplay = document.getElementById('timer-display');
         const songInfo = document.getElementById('song-info');
+        const songInfoCard = document.getElementById('song-info-card');
         const songTitle = document.getElementById('song-title');
         const songArtist = document.getElementById('song-artist');
-        const spotifyPlayer = document.getElementById('spotify-player');
+        const nextSongBtn = document.getElementById('next-song-btn');
+        const youtubeContainer = document.getElementById('youtube-container');
         
         // Animaciones del visualizador
         const visualizerBars = document.querySelectorAll('.visualizer-bar');
@@ -313,17 +337,31 @@
             if (index >= songs.length) {
                 timerDisplay.innerText = "FIN";
                 stopVisualizer();
-                spotifyPlayer.src = "";
+                if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
                 songTitle.innerText = "¡Partida Terminada!";
                 songArtist.innerText = "Mira los puntajes en tu móvil";
-                songInfo.classList.remove('hidden');
+                youtubeContainer.style.display = 'none';
+                nextSongBtn.style.display = 'none';
+                
+                songInfo.classList.remove('opacity-0', 'pointer-events-none');
+                songInfo.classList.add('opacity-100', 'pointer-events-auto');
+                songInfoCard.classList.remove('scale-95');
+                songInfoCard.classList.add('scale-100');
                 return;
             }
 
             const currentSong = songs[index];
             const options = getRandomOptions(currentSong);
 
-            songInfo.classList.add('hidden');
+            // Ocultar el panel de revelación (Fase de Adivinanza)
+            songInfo.classList.remove('opacity-100', 'pointer-events-auto');
+            songInfo.classList.add('opacity-0', 'pointer-events-none');
+            songInfoCard.classList.remove('scale-100');
+            songInfoCard.classList.add('scale-95');
+            
+            // Ocultar visualmente el iframe de YouTube (solo suena)
+            youtubeContainer.classList.remove('opacity-100');
+            youtubeContainer.classList.add('opacity-0', 'pointer-events-none');
             
             for (let i = 0; i < 4; i++) {
                 const textEl = document.getElementById(`text-${i}`);
@@ -334,8 +372,43 @@
                 }
             }
 
-            spotifyPlayer.src = `https://open.spotify.com/embed/track/${currentSong.spotify_id}?utm_source=generator&autoplay=1`;
-            startVisualizer();
+            const startSeconds = currentSong.preview_start_time_sec || 45;
+            const videoId = currentSong.youtube_url_id;
+
+            if (!ytPlayer) {
+                ytPlayer = new YT.Player('youtube-player', {
+                    height: '225',
+                    width: '400',
+                    videoId: videoId,
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 0,
+                        'start': startSeconds,
+                        'rel': 0,
+                        'showinfo': 0,
+                        'modestbranding': 1,
+                        'disablekb': 1
+                    },
+                    events: {
+                        'onReady': (event) => {
+                            event.target.playVideo();
+                            startVisualizer();
+                        },
+                        'onStateChange': (event) => {
+                            if (event.data === YT.PlayerState.PLAYING) {
+                                startVisualizer();
+                            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                                stopVisualizer();
+                            }
+                        }
+                    }
+                });
+            } else {
+                ytPlayer.loadVideoById({
+                    videoId: videoId,
+                    startSeconds: startSeconds
+                });
+            }
 
             gameState.timer = 15;
             timerDisplay.innerText = gameState.timer;
@@ -354,22 +427,35 @@
 
         function revealAnswer(currentSong) {
             stopVisualizer();
-            spotifyPlayer.src = ""; // Detener música
+            // No detenemos el video, se queda reproduciendo para que lo vean
 
             songTitle.innerText = currentSong.title;
             songArtist.innerText = currentSong.artist.name;
-            songInfo.classList.remove('hidden');
             timerDisplay.innerText = "0";
 
-            // Esperar 3 segundos y pasar a la siguiente
-            setTimeout(() => {
-                gameState.currentSongIndex++;
-                loadSong(gameState.currentSongIndex);
-            }, 3000);
+            // Mostrar el panel gigante y el video
+            songInfo.classList.remove('opacity-0', 'pointer-events-none');
+            songInfo.classList.add('opacity-100', 'pointer-events-auto');
+            songInfoCard.classList.remove('scale-95');
+            songInfoCard.classList.add('scale-100');
+            
+            youtubeContainer.classList.remove('opacity-0', 'pointer-events-none');
+            youtubeContainer.classList.add('opacity-100');
         }
 
-        // Envolver el inicio en una función ligada al botón
+        // Flujo Kahoot: Siguiente Canción solo se activa manualmente
+        nextSongBtn.addEventListener('click', () => {
+            gameState.currentSongIndex++;
+            loadSong(gameState.currentSongIndex);
+        });
+
+        // Envolver el inicio en una función ligada al botón Iniciar Partida
         function startGame() {
+            if (!isYoutubeReady) {
+                console.warn("YouTube API no está lista, reintentando...");
+                setTimeout(startGame, 500);
+                return;
+            }
             document.getElementById('start-button-container').style.display = 'none';
             loadSong(gameState.currentSongIndex);
         }
