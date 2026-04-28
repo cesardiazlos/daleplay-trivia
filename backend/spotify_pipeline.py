@@ -2,7 +2,7 @@ import os
 import uuid
 from dotenv import load_dotenv
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from database import SessionLocal
 from models import Artist, Song, Category, EntityTypeEnum, GenderEnum
 
@@ -16,14 +16,19 @@ def load_playlist_to_db(playlist_id: str, category_name: str):
     y búsqueda de género real de los artistas.
     """
     # Autenticación con Spotify usando credenciales del .env
-    sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials())
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+    client_id=os.getenv("SPOTIPY_CLIENT_ID"),
+    client_secret=os.getenv("SPOTIPY_CLIENT_SECRET"),
+    redirect_uri="http://127.0.0.1:8000/callback",
+    scope="playlist-read-private playlist-read-collaborative"
+    ))
     
     # Abrir sesión de base de datos
     db = SessionLocal()
     
     try:
-        # 1. UPSERT de Categoría
-        category = db.query(Category).filter(Category.spotify_playlist_id == playlist_id).first()
+        # 1. BUSCAR O CREAR CATEGORÍA (Por Nombre en lugar de ID)
+        category = db.query(Category).filter(Category.name == category_name).first()
         if not category:
             category = Category(
                 name=category_name,
@@ -34,17 +39,24 @@ def load_playlist_to_db(playlist_id: str, category_name: str):
             db.refresh(category)
             
         # Extraer los tracks de la playlist de forma paginada y segura
-        results = sp.playlist_tracks(playlist_id, market='CL')
+        results = sp.playlist_tracks(playlist_id)
         tracks = results.get('items', [])
         
         while results['next']:
             results = sp.next(results)
             tracks.extend(results.get('items', []))
             
-        for item in tracks:
+        # --- NUEVO: Mostrar total de canciones ---
+        total_tracks = len(tracks)
+        print(f"🎶 ¡Spotify respondió! Se encontraron {total_tracks} canciones. Iniciando extracción de datos...")
+            
+        # Usamos enumerate(tracks, start=1) para tener el número de la canción actual
+        for index, item in enumerate(tracks, start=1):
+            
             # Lógica segura de extracción (Cubre tracks y videos/items locales)
             track = item.get('track') or item.get('item')
             if not track:
+                print(f"[{index}/{total_tracks}] ⚠️ Elemento vacío saltado.")
                 continue
                 
             # Generar ID seguro por si es nulo
@@ -55,6 +67,10 @@ def load_playlist_to_db(playlist_id: str, category_name: str):
             title = track.get('name')
             if not title:
                 continue
+                
+            # --- NUEVO: Imprimir el progreso ---
+            print(f"[{index}/{total_tracks}] Procesando: {title}...")
+
             
             # Procesar el año de lanzamiento
             album = track.get('album', {})
@@ -119,9 +135,9 @@ def load_playlist_to_db(playlist_id: str, category_name: str):
         db.close()
 
 if __name__ == "__main__":
-    # Prueba de ejecución con una Playlist ID real y su nombre lógico
-    test_id = os.getenv("SPOTIFY_PLAYLIST_ID", "37i9dQZF1DXcBWIGoYBM5M")
-    test_name = os.getenv("SPOTIFY_CATEGORY_NAME", "Top Hits Global")
+    # Pon aquí el ID de tu primera playlist y el nombre que quieres que tenga en el juego
+    test_id = "2iWWpyPG0uWmLt1uYLAVx4" 
+    test_name = "Rock Latino" # (O el nombre que le quieras dar)
     
     print(f"Iniciando pipeline para la categoría: {test_name}")
     load_playlist_to_db(test_id, test_name)
