@@ -21,5 +21,7 @@ class SongResponse(BaseModel):
     release_year: int
     spotify_id: str
     artist: ArtistResponse
+    youtube_url_id: Optional[str] = None
+    preview_start_time_sec: Optional[int] = 45
 
     model_config = ConfigDict(from_attributes=True)
