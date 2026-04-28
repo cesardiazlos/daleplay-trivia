@@ -172,6 +172,15 @@
 </header>
 <!-- Main Canvas -->
 <main class="flex-grow flex flex-col items-center justify-center pt-24 pb-32 px-md gap-lg w-full max-w-7xl mx-auto">
+
+<!-- Botón de Inicio de Partida (Evita bloqueo de autoplay) -->
+<div id="start-button-container" class="flex justify-center items-center w-full z-30 mb-4">
+    <button id="start-game-btn" class="py-5 px-10 bg-primary text-on-primary font-headline-md text-headline-md uppercase tracking-wider rounded-xl border-b-8 border-inverse-primary shadow-[0_0_20px_rgba(255,171,243,0.4)] hover:bg-primary-fixed hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(255,171,243,0.6)] hover:border-b-[10px] active:translate-y-2 active:border-b-2 active:shadow-none transition-all flex justify-center items-center gap-3 relative overflow-hidden group">
+        <span class="relative z-10 font-black">INICIAR PARTIDA</span>
+        <span class="material-symbols-outlined relative z-10 text-3xl font-black">play_arrow</span>
+    </button>
+</div>
+
 <!-- Timer & Visualizer Section -->
 <section class="flex flex-col items-center gap-margin relative w-full">
 <!-- Circular Countdown Timer -->
@@ -359,8 +368,13 @@
             }, 3000);
         }
 
-        // Iniciar la primera canción
-        loadSong(gameState.currentSongIndex);
+        // Envolver el inicio en una función ligada al botón
+        function startGame() {
+            document.getElementById('start-button-container').style.display = 'none';
+            loadSong(gameState.currentSongIndex);
+        }
+
+        document.getElementById('start-game-btn').addEventListener('click', startGame);
     });
 </script>
 <style>
