@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Configuración de Partida - Dale Play</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#a4899d",
+                        "surface-container-high": "#342244",
+                        "on-secondary-fixed-variant": "#004f58",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#f1daff",
+                        "error": "#ffb4ab",
+                        "surface-container-low": "#251335",
+                        "on-tertiary": "#3c0090",
+                        "surface-tint": "#ffabf3",
+                        "surface-container": "#291739",
+                        "tertiary": "#d1bcff",
+                        "outline-variant": "#564052",
+                        "on-surface-variant": "#dcbed4",
+                        "on-error": "#690005",
+                        "surface-dim": "#1c0a2c",
+                        "on-primary-fixed-variant": "#810081",
+                        "surface-bright": "#443155",
+                        "secondary-fixed": "#9cf0ff",
+                        "surface-container-lowest": "#170527",
+                        "background": "#1c0a2c",
+                        "secondary-fixed-dim": "#00daf3",
+                        "inverse-primary": "#a900a9",
+                        "surface": "#1c0a2c",
+                        "primary-container": "#ff00ff",
+                        "on-tertiary-fixed": "#23005b",
+                        "on-secondary-container": "#00616d",
+                        "inverse-surface": "#f1daff",
+                        "secondary": "#bdf4ff",
+                        "primary": "#ffabf3",
+                        "secondary-container": "#00e3fd",
+                        "on-primary": "#5b005b",
+                        "on-surface": "#f1daff",
+                        "tertiary-fixed": "#e9ddff",
+                        "tertiary-fixed-dim": "#d1bcff",
+                        "tertiary-container": "#a179ff",
+                        "primary-fixed": "#ffd7f5",
+                        "on-tertiary-fixed-variant": "#5700c9",
+                        "on-secondary": "#00363d",
+                        "surface-variant": "#402d50",
+                        "error-container": "#93000a",
+                        "surface-container-highest": "#402d50",
+                        "on-tertiary-container": "#350081",
+                        "on-secondary-fixed": "#001f24",
+                        "inverse-on-surface": "#3b284b",
+                        "on-primary-fixed": "#380038",
+                        "on-primary-container": "#510051",
+                        "primary-fixed-dim": "#ffabf3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "base": "8px",
+                        "lg": "40px",
+                        "margin": "24px",
+                        "gutter": "20px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "display-xl": ["Spline Sans"],
+                        "body-lg": ["Spline Sans"],
+                        "label-bold": ["Spline Sans"],
+                        "headline-md": ["Spline Sans"],
+                        "headline-lg": ["Spline Sans"],
+                        "body-md": ["Spline Sans"]
+                    },
+                    "fontSize": {
+                        "display-xl": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "1.5", "fontWeight": "500" }],
+                        "label-bold": ["14px", { "lineHeight": "1.0", "fontWeight": "700" }],
+                        "headline-md": ["28px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "headline-lg": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-safe">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-slate-950/80 backdrop-blur-xl border-b-4 border-slate-900 shadow-[0_4px_0_0_rgba(0,0,0,0.5)]">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.6)] font-['Spline_Sans'] uppercase tracking-widest">Dale Play</span>
+</div>
+<div class="flex items-center gap-4 text-slate-400">
+<button class="hover:text-fuchsia-400 hover:scale-105 transition-all active:translate-y-1 duration-75">
+<span class="material-symbols-outlined text-3xl">settings</span>
+</button>
+<button class="hover:text-fuchsia-400 hover:scale-105 transition-all active:translate-y-1 duration-75">
+<span class="material-symbols-outlined text-3xl">leaderboard</span>
+</button>
+<button class="text-fuchsia-500 scale-110 drop-shadow-[0_0_12px_rgba(255,0,255,0.8)] active:translate-y-1 duration-75">
+<span class="material-symbols-outlined text-4xl">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-32 pb-32 px-6 md:px-12 max-w-7xl mx-auto space-y-12">
+<!-- Header Section -->
+<section class="text-center md:text-left space-y-4">
+<h1 class="font-headline-lg text-headline-lg text-primary drop-shadow-[0_0_15px_rgba(255,171,243,0.5)]">CONFIGURACIÓN DE PARTIDA</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Selecciona las categorías y ajusta las reglas para la próxima ronda.</p>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Category Grid (Main Canvas) -->
+<div class="lg:col-span-2 space-y-6">
+<h2 class="font-headline-md text-headline-md text-secondary">Categorías (Elige al menos 1)</h2>
+<div id="categories-container" class="grid grid-cols-2 md:grid-cols-3 gap-6">
+<!-- Selected Card: Rock -->
+<button class="relative aspect-square rounded-xl bg-surface-container-high border-4 border-primary shadow-[0_8px_0_0_#ff00ff] transform -translate-y-2 overflow-hidden group">
+<div class="absolute inset-0 bg-primary/20 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4">
+<span class="material-symbols-outlined text-primary text-5xl mb-2 drop-shadow-[0_0_10px_rgba(255,171,243,0.8)]" data-weight="fill">electric_bolt</span>
+<span class="font-label-bold text-label-bold text-on-background uppercase tracking-wider">Rock</span>
+</div>
+<img alt="Rock music genre" class="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-overlay" data-alt="electric guitar abstract close up in neon lighting dark moody concert vibe" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3xSYsnyBz0jkF5JczMDqpTCvT_3k8-ISQ2kr1mgIwxVx91XBsT_ftPb82bGwS8YHdlEPKAgkmYPyY9KSbAFNKk-gEtrnyx-SCKPI_ae_I1p7W5srZuGxj_Xc641bbPOlFa1gqIbY8dpWLnsv-UNECcxN_rxyJbnUaoYPkLzXycPTPJmRaTfE1VOVPUHmE1nH0spgjYJJqhG8FYyxvU1EP1DdtVmVckmjVx8fNdYaCn9RrBOZ8siPXN7WGPAGzZjlqk_Qsp_17NQg"/>
+<div class="absolute top-2 right-2 z-20">
+<span class="material-symbols-outlined text-primary drop-shadow-[0_0_5px_rgba(255,171,243,1)]" data-weight="fill">check_circle</span>
+</div>
+</button>
+<!-- Inactive Card: Pop -->
+<button class="relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group">
+<div class="absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">mic</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background">Pop</span>
+</div>
+<img alt="Pop music genre" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="pop music concert audience with pink and blue stage lights shining" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbcI1fvNd9RVw9XhsLp3GBJ1Klc6V0SMbwJWJ0bvom76gBuYshqOCAumcvOTpoNtzJtMUarCklVdwAfcfB9gWUzN0PrOausSA4k00rvH_0GaGicvlbOlE9FCPcGaC7R3llzEi4bDowbrmZPEz7P-NzgWq9qKPMevrNpLByP3J-XT34XnZ20SB43Fqywj9GNMAgAgmlDlTCFb1mfXbbPzDbr3ZsZpm0q0CwYbzDI9i0IBlWnLUyvRu6X_MU4qXIn8gzYWOMsu9DTqU"/>
+</button>
+<!-- Inactive Card: Reggaetón -->
+<button class="relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group">
+<div class="absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">graphic_eq</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background">Reggaetón</span>
+</div>
+<img alt="Reggaeton music genre" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="dj mixing desk glowing in the dark club environment neon accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOYcLl8NByB-hQW7aNjWTkMXd-0vBJwTCy81G4niq2DRxqRCg9xIQabeMNdOs0LDHzE8TsqNDhFZKUfuC1wSUEKBjLnbaTASuEnmww04XB016AdTmvcxD4Sa4wOteDj7mcAoPyNKnIDCFh1WdZD0lpkj9cWjF0838BUOiy1PN-JiH7hkdQNtm0jbjgmjIstazghkA_ua9A2QNG8fgnMxjLJgwl5p4NCm1ivH0Imz0XhBuQupyM-2e9A3KVUxlKk3dkVVq-5aqQCkQ"/>
+</button>
+<!-- Selected Card: 80s -->
+<button class="relative aspect-square rounded-xl bg-surface-container-high border-4 border-secondary-container shadow-[0_8px_0_0_#00daf3] transform -translate-y-2 overflow-hidden group">
+<div class="absolute inset-0 bg-secondary-container/20 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4">
+<span class="material-symbols-outlined text-secondary-container text-5xl mb-2 drop-shadow-[0_0_10px_rgba(0,227,253,0.8)]" data-weight="fill">album</span>
+<span class="font-label-bold text-label-bold text-on-background uppercase tracking-wider">80s Hits</span>
+</div>
+<img alt="80s music genre" class="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-overlay" data-alt="retro cassette tape glowing with synthwave neon pink and cyan lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAuAOvi8oBIqNsuv7LPQxvfnp0smlyqccA_ZpbVRzKDVJVH8tanoy-_bqiQdz7WlzC8vA2xY30pOsFbHtIPctPKTHkzOsGgO5aFQf4qk5diFAt6oi51IsIbJVbMnwucHOEO-ZguV_y7HPADpv1OAWmrHXrb5HSlS5rroVT9GzVOB2bOMIRISF9BmyRByPug5P4lETHUb81sAnM-JSo402kNWDaVGPxTOzzdlZjSHXeV2V6J4HP0KOkaSZh2JyvhljpVlY7MAsCY78"/>
+<div class="absolute top-2 right-2 z-20">
+<span class="material-symbols-outlined text-secondary-container drop-shadow-[0_0_5px_rgba(0,227,253,1)]" data-weight="fill">check_circle</span>
+</div>
+</button>
+<!-- Inactive Card: Indie -->
+<button class="relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group">
+<div class="absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">piano</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background">Indie</span>
+</div>
+<img alt="Indie music genre" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="acoustic guitar leaning against wall in dimly lit indie music studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIUgNJxJVwd_wVI2STCWnjj24GFMEr4YtBuZdaeh5oSXNfvH5mp2QqAszlydLjtkcDv7brxOCyABFuWL7VgQweCi26nJNtmi54bnMnZ4bG1aSeIxkrwjj6EfI5r_5UW3tVSjWDTR3C9pHJEaVaCfwQpiGgj_TGiAWnqjBlGf0_9828jcOmu9sMPbZz8C19oPYmLClzGjvW7Krk3gMo-0A-I8Nk_1sPKxQ3f9frVlnDJoxhwQ97u1OioJMZUqGhTx-Ie0MpCFgGViU"/>
+</button>
+<!-- Inactive Card: Global Hits -->
+<button class="relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group">
+<div class="absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">public</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background">Hits Globales</span>
+</div>
+<img alt="Global hits genre" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="massive crowd at outdoor stadium music festival with bright stage lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMM3rFliMCR7TmBIo6CQBw4E2KgRHbYeYot-P-AbZxC1ej-hFSXusYiOoLy8EMVxBvszCjam9AMl2qRvsy448k1oApqMMHuv85wYAzwX2SjPfAKQrv7kTUg2vMCKgM1lOGd0-ok9abjziRNkdRnGWHZ5WA1AoTVxEA-pDE_zjqSC7ZGSRXEq_tD3hfQJAjamSt0gPBkmMW5MdWjYysz_tm6y8Hit753jO_UPGlq_jptnW8VFs57S1JlRGpHDlEV6nxZCUUAyHtbts"/>
+</button>
+</div>
+</div>
+<!-- Game Filters Sidebar -->
+<aside class="space-y-8 bg-surface-container-low p-6 rounded-2xl border-2 border-surface-variant shadow-[0_8px_0_0_#170527]">
+<!-- Game Mode -->
+<div class="space-y-4">
+<h3 class="font-headline-md text-headline-md text-secondary">Modo de Juego</h3>
+<div class="grid grid-cols-2 gap-4">
+<button class="bg-surface-container border-2 border-surface-variant p-4 rounded-xl flex flex-col items-center gap-2 hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant">person</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">Individual</span>
+</button>
+<button class="bg-primary/10 border-2 border-primary p-4 rounded-xl flex flex-col items-center gap-2 shadow-[0_4px_0_0_#a900a9] transform -translate-y-1">
+<span class="material-symbols-outlined text-3xl text-primary drop-shadow-[0_0_5px_rgba(255,171,243,0.8)]">group</span>
+<span class="font-label-bold text-label-bold text-on-background">Equipos</span>
+</button>
+</div>
+</div>
+<!-- Sliders Section -->
+<div class="space-y-6">
+<!-- Preguntas -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-label-bold text-label-bold text-on-surface">Número de Preguntas</label>
+<span class="font-body-md text-body-md text-secondary">15</span>
+</div>
+<input class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="30" min="10" step="5" type="range" value="15"/>
+<div class="flex justify-between text-xs text-on-surface-variant font-label-bold">
+<span>10</span>
+<span>20</span>
+<span>30</span>
+</div>
+</div>
+<!-- Tiempo -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-label-bold text-label-bold text-on-surface">Tiempo por Pregunta</label>
+<span class="font-body-md text-body-md text-secondary">30s</span>
+</div>
+<input class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="45" min="15" step="15" type="range" value="30"/>
+<div class="flex justify-between text-xs text-on-surface-variant font-label-bold">
+<span>15s</span>
+<span>30s</span>
+<span>45s</span>
+</div>
+</div>
+</div>
+<!-- Difficulty -->
+<div class="space-y-4">
+<h3 class="font-headline-md text-headline-md text-secondary text-lg">Dificultad</h3>
+<div class="flex flex-col gap-3">
+<label class="flex items-center gap-3 p-3 bg-surface-container rounded-lg border-2 border-surface-variant cursor-pointer hover:bg-surface-bright transition-colors">
+<input class="text-secondary-container focus:ring-secondary-container bg-surface border-outline" name="difficulty" type="radio"/>
+<span class="font-body-md text-body-md text-on-surface flex-1">Fácil (Éxitos conocidos)</span>
+</label>
+<label class="flex items-center gap-3 p-3 bg-secondary/10 rounded-lg border-2 border-secondary cursor-pointer shadow-[0_2px_0_0_#00daf3]">
+<input checked="" class="text-secondary focus:ring-secondary bg-surface border-secondary" name="difficulty" type="radio"/>
+<span class="font-body-md text-body-md text-on-background flex-1 font-bold">Pro (Mezcla de épocas)</span>
+</label>
+<label class="flex items-center gap-3 p-3 bg-surface-container rounded-lg border-2 border-surface-variant cursor-pointer hover:bg-surface-bright transition-colors">
+<input class="text-error focus:ring-error bg-surface border-outline" name="difficulty" type="radio"/>
+<span class="font-body-md text-body-md text-on-surface flex-1">Leyenda (Lados B y rarezas)</span>
+</label>
+</div>
+</div>
+<!-- CTA -->
+<div class="pt-6 border-t border-surface-variant">
+<button id="start-btn" class="w-full py-5 bg-primary text-on-primary font-headline-md text-headline-md uppercase tracking-wider rounded-xl border-b-8 border-inverse-primary shadow-[0_0_20px_rgba(255,171,243,0.4)] hover:bg-primary-fixed hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(255,171,243,0.6)] hover:border-b-[10px] active:translate-y-2 active:border-b-2 active:shadow-none transition-all flex justify-center items-center gap-3 relative overflow-hidden group">
+<span class="relative z-10 font-black">EMPEZAR JUEGO</span>
+<span class="material-symbols-outlined relative z-10 text-3xl font-black">play_arrow</span>
+<!-- Pulsing background effect -->
+<div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+</button>
+</div>
+</aside>
+</div>
+</main>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const categoriesContainer = document.getElementById('categories-container');
+        const startBtn = document.getElementById('start-btn');
+        let selectedCategoryId = null;
+
+        // Fetch de categorías
+        fetch('http://127.0.0.1:8000/api/categories')
+            .then(res => res.json())
+            .then(categories => {
+                categoriesContainer.innerHTML = ''; // Limpiar tarjetas hardcodeadas
+                categories.forEach(category => {
+                    const btn = document.createElement('button');
+                    btn.className = "category-btn relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group";
+                    btn.dataset.id = category.id;
+                    
+                    btn.innerHTML = `
+                        <div class="overlay-layer absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
+                            <span class="icon-layer material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">queue_music</span>
+                            <span class="text-layer font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background text-center">${category.name}</span>
+                        </div>
+                        <div class="check-icon absolute top-2 right-2 z-20 hidden">
+                            <span class="material-symbols-outlined text-primary drop-shadow-[0_0_5px_rgba(255,171,243,1)]" data-weight="fill">check_circle</span>
+                        </div>
+                    `;
+
+                    btn.addEventListener('click', () => {
+                        // Resetear todas las tarjetas a su estado inactivo
+                        document.querySelectorAll('.category-btn').forEach(b => {
+                            b.className = "category-btn relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group";
+                            b.querySelector('.check-icon').classList.add('hidden');
+                            
+                            b.querySelector('.overlay-layer').className = "overlay-layer absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors";
+                            b.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors";
+                            b.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background text-center";
+                        });
+                        
+                        // Aplicar estilos activos a la tarjeta clickeada
+                        selectedCategoryId = category.id;
+                        btn.className = "category-btn relative aspect-square rounded-xl bg-surface-container-high border-4 border-primary shadow-[0_8px_0_0_#ff00ff] transform -translate-y-2 overflow-hidden group";
+                        btn.querySelector('.check-icon').classList.remove('hidden');
+                        
+                        btn.querySelector('.overlay-layer').className = "overlay-layer absolute inset-0 bg-primary/20 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4";
+                        btn.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-primary text-5xl mb-2 drop-shadow-[0_0_10px_rgba(255,171,243,0.8)]";
+                        btn.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-on-background uppercase tracking-wider text-center";
+                    });
+
+                    categoriesContainer.appendChild(btn);
+                });
+            })
+            .catch(err => console.error("Error cargando categorías:", err));
+
+        // Click en Empezar Juego
+        startBtn.addEventListener('click', () => {
+            if (!selectedCategoryId) {
+                alert("Por favor selecciona una categoría primero.");
+                return;
+            }
+
+            const originalContent = startBtn.innerHTML;
+            startBtn.innerHTML = '<span class="relative z-10 font-black">CARGANDO...</span>';
+
+            fetch(`http://127.0.0.1:8000/api/categories/${selectedCategoryId}/play`)
+                .then(res => {
+                    if(!res.ok) throw new Error("No se pudieron cargar las canciones");
+                    return res.json();
+                })
+                .then(data => {
+                    localStorage.setItem('daleplay_songs', JSON.stringify(data));
+                    window.location.href = '../pantalla_del_host_tv/pantalla_del_host_tv.html';
+                })
+                .catch(err => {
+                    console.error("Error al iniciar juego:", err);
+                    alert("Hubo un error cargando las canciones de la categoría.");
+                    startBtn.innerHTML = originalContent;
+                });
+        });
+    });
+</script>
+</body></html>

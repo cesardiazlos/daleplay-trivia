@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dale Play - Rankings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#380038",
+                        "primary-fixed": "#ffd7f5",
+                        "surface-dim": "#1c0a2c",
+                        "surface-container-highest": "#402d50",
+                        "tertiary-fixed-dim": "#d1bcff",
+                        "primary-container": "#ff00ff",
+                        "on-tertiary": "#3c0090",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#a179ff",
+                        "surface-container-lowest": "#170527",
+                        "outline": "#a4899d",
+                        "on-secondary-fixed-variant": "#004f58",
+                        "on-secondary": "#00363d",
+                        "secondary-container": "#00e3fd",
+                        "on-primary": "#5b005b",
+                        "on-primary-container": "#510051",
+                        "secondary": "#bdf4ff",
+                        "secondary-fixed": "#9cf0ff",
+                        "surface-container-high": "#342244",
+                        "primary-fixed-dim": "#ffabf3",
+                        "on-secondary-fixed": "#001f24",
+                        "on-tertiary-fixed-variant": "#5700c9",
+                        "inverse-surface": "#f1daff",
+                        "surface-tint": "#ffabf3",
+                        "error-container": "#93000a",
+                        "surface-bright": "#443155",
+                        "primary": "#ffabf3",
+                        "on-error": "#690005",
+                        "surface": "#1c0a2c",
+                        "secondary-fixed-dim": "#00daf3",
+                        "on-surface": "#f1daff",
+                        "outline-variant": "#564052",
+                        "inverse-on-surface": "#3b284b",
+                        "on-surface-variant": "#dcbed4",
+                        "error": "#ffb4ab",
+                        "surface-variant": "#402d50",
+                        "on-background": "#f1daff",
+                        "on-secondary-container": "#00616d",
+                        "tertiary": "#d1bcff",
+                        "surface-container-low": "#251335",
+                        "on-tertiary-fixed": "#23005b",
+                        "surface-container": "#291739",
+                        "on-primary-fixed-variant": "#810081",
+                        "inverse-primary": "#a900a9",
+                        "tertiary-fixed": "#e9ddff",
+                        "on-tertiary-container": "#350081",
+                        "background": "#1c0a2c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin": "24px",
+                        "gutter": "20px",
+                        "xl": "64px",
+                        "base": "8px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "xs": "4px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "display-xl": ["Spline Sans"],
+                        "body-md": ["Spline Sans"],
+                        "headline-md": ["Spline Sans"],
+                        "label-bold": ["Spline Sans"],
+                        "headline-lg": ["Spline Sans"],
+                        "body-lg": ["Spline Sans"]
+                    },
+                    "fontSize": {
+                        "display-xl": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["28px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "label-bold": ["14px", { "lineHeight": "1.0", "fontWeight": "700" }],
+                        "headline-lg": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.5", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glow-gold { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), inset 0 0 10px rgba(255, 215, 0, 0.4); border-color: rgba(255, 215, 0, 0.8); }
+        .glow-silver { box-shadow: 0 0 15px rgba(192, 192, 192, 0.5), inset 0 0 8px rgba(192, 192, 192, 0.3); border-color: rgba(192, 192, 192, 0.7); }
+        .glow-bronze { box-shadow: 0 0 15px rgba(205, 127, 50, 0.5), inset 0 0 8px rgba(205, 127, 50, 0.3); border-color: rgba(205, 127, 50, 0.7); }
+        
+        .bg-music-waves {
+            background-image: radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.05) 0%, transparent 50%),
+                              radial-gradient(circle at 20% 80%, rgba(0, 227, 253, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at 80% 20%, rgba(161, 121, 255, 0.05) 0%, transparent 40%);
+            background-size: cover;
+            background-color: #1c0a2c; /* surface-dim */
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md min-h-screen flex flex-col bg-music-waves overflow-x-hidden pt-24 pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-slate-950 docked full-width border-b-2 border-slate-800 shadow-[0_4px_0_0_rgba(0,0,0,1)]">
+<div class="font-['Spline_Sans'] font-bold tracking-tight uppercase text-fuchsia-500 text-2xl font-black italic drop-shadow-[0_0_8px_rgba(255,0,255,0.7)]">
+            Dale Play
+        </div>
+<div class="flex items-center gap-4 hidden md:flex">
+<!-- Top Nav Links for Web -->
+<a class="text-slate-500 hover:text-fuchsia-300 transition-colors font-label-bold text-label-bold uppercase" href="#">Home</a>
+<a class="text-slate-500 hover:text-fuchsia-300 transition-colors font-label-bold text-label-bold uppercase" href="#">Battle</a>
+<a class="text-fuchsia-400 drop-shadow-[0_0_5px_rgba(255,0,255,0.5)] font-label-bold text-label-bold uppercase flex flex-col after:content-[''] after:w-full after:h-1 after:bg-fuchsia-500 after:mt-1 after:rounded-full" href="#">Rankings</a>
+<a class="text-slate-500 hover:text-fuchsia-300 transition-colors font-label-bold text-label-bold uppercase" href="#">Profile</a>
+</div>
+<div class="flex items-center gap-sm">
+<div class="bg-surface-container-high px-3 py-1 rounded-full border border-outline-variant flex items-center gap-2 mr-4">
+<span class="text-secondary-fixed text-xs font-bold uppercase tracking-widest">PIN</span>
+<span class="font-headline-md text-headline-md text-on-surface">8492</span>
+</div>
+<button class="text-slate-500 hover:text-fuchsia-300 transition-colors active:translate-y-0.5 duration-75">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+</button>
+<button class="text-slate-500 hover:text-fuchsia-300 transition-colors active:translate-y-0.5 duration-75">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center px-4 md:px-margin max-w-4xl mx-auto w-full z-10">
+<!-- Hall of Fame Title -->
+<div class="text-center mb-10 w-full relative">
+<h1 class="font-display-xl text-display-xl text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary drop-shadow-[0_0_15px_rgba(255,0,255,0.5)] uppercase italic">Hall of Fame</h1>
+<p class="font-body-lg text-body-lg text-tertiary mt-2">Final Results</p>
+</div>
+<!-- Leaderboard Container -->
+<div class="w-full flex flex-col gap-sm">
+<!-- 1st Place -->
+<div class="bg-surface-container/80 backdrop-blur-md rounded-xl p-4 flex items-center justify-between border-2 glow-gold transform -translate-y-2 relative z-30">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 flex items-center justify-center bg-yellow-500/20 rounded-full border-2 border-yellow-400">
+<span class="material-symbols-outlined text-yellow-400 text-3xl" style="font-variation-settings: 'FILL' 1;">trophy</span>
+</div>
+<div class="relative">
+<img alt="Avatar" class="w-16 h-16 rounded-full border-2 border-yellow-400 object-cover" data-alt="Close-up portrait of a young woman with neon pink and blue lighting reflecting on her face against a dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1A6E2qHScOrn3-NTwvKQACOBed6nFt_hlI2yVYktpo7IevKdm7hNIUi3-XuoaaG0DX_hg9puXJXe23zMaP4_P_t8Eh3AaClLZaLendaIpz7iZDgXdoMgaNEvzwNrvZ3QL5l_YbgCzhv3O9xFScqh8ziulEyMkZ5cLzI1bAry4l_oAksQP2Dasi9QA_5uS9vPxHxT_pdfvq1PfSQekXWLCL9SWENYeHdcSxKVyB24Zi1vbY_Ah_SxBebWimHHkY0og6iEtLo79fdE"/>
+<div class="absolute -bottom-2 -right-2 bg-yellow-500 text-black font-label-bold text-label-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-surface-container">1</div>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-yellow-400">Alex_Beats</h2>
+<p class="font-body-md text-body-md text-outline">Streak: 12🔥</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline-lg text-headline-lg text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">14,250</div>
+<div class="font-label-bold text-label-bold text-yellow-500 uppercase tracking-wider">Points</div>
+</div>
+</div>
+<!-- 2nd Place -->
+<div class="bg-surface-container/60 backdrop-blur-md rounded-xl p-4 flex items-center justify-between border-2 glow-silver transform -translate-y-1 relative z-20 w-[95%] mx-auto mt-2">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 flex items-center justify-center bg-gray-400/20 rounded-full border-2 border-gray-300">
+<span class="font-headline-md text-headline-md text-gray-300">2</span>
+</div>
+<img alt="Avatar" class="w-12 h-12 rounded-full border-2 border-gray-300 object-cover" data-alt="Portrait of a young man with short dark hair in a moody, low-key lighting setup with a subtle cyan rim light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqQGg0HkOZeQtnkD0J-C434WYEQa_u0ZFg05ghRdbjOBtEzPrNAwPSLfVlSNGReQ-r4iQ9bNs7MKYpp6x6AT0Hlknc23MuMHiLVWWX92FqyVzona9Rbr5ehxbqEVW2A4EAdCQlGZigIhO8Wba9fny1NxVJHwhCdzhZ5_N9m6q7sI2pXKfV02HAoesrVLlVsfii1RnF3MfXrjrMiRPI6SJyHtMdBXpilO5W3swz7k0EAsc5jCheUjGTqab8ySDDJ7wakRlhNUUsgJM"/>
+<div>
+<h3 class="font-body-lg text-body-lg text-gray-200 font-bold">DJ_Nova</h3>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md text-white">12,800</div>
+<div class="font-label-bold text-label-bold text-gray-400 uppercase text-[10px]">Points</div>
+</div>
+</div>
+<!-- 3rd Place -->
+<div class="bg-surface-container/60 backdrop-blur-md rounded-xl p-4 flex items-center justify-between border-2 glow-bronze relative z-10 w-[90%] mx-auto mt-2">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 flex items-center justify-center bg-orange-700/20 rounded-full border-2 border-orange-500">
+<span class="font-headline-md text-headline-md text-orange-400">3</span>
+</div>
+<img alt="Avatar" class="w-12 h-12 rounded-full border-2 border-orange-500 object-cover" data-alt="Portrait of a smiling woman with long brown hair, bathed in warm, soft magenta light against a dark backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARkJH6lm86nF02Uz7CTEhXL2LiLry1OtgmDp4YhfFJnEroLwxkRWerN_l_Pp3L9IIiofekPJhfrY273x5IpwSMr7qi9i2NwSrY-WBncqGuaJSDdIdhnnxSoDijQY2mKu4s4D3g4Z4t1T9panT8KUGdseI-3tJMrbiiLUW0fKXB2taQ1W7NG8lcVu6Q_tx4nyyrG5SzFDNogWIoKfVLHQPC02Aexq2ceOBTnNHGnbHGsSsLhSJ9TImzcYM5-lnTA_B1j3hC7BKwH2g"/>
+<div>
+<h3 class="font-body-lg text-body-lg text-orange-200 font-bold">RhythmQueen</h3>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md text-white">11,450</div>
+<div class="font-label-bold text-label-bold text-orange-400 uppercase text-[10px]">Points</div>
+</div>
+</div>
+<!-- Other Players (4th - 6th) -->
+<div class="w-[85%] mx-auto mt-4 flex flex-col gap-2">
+<div class="bg-surface-container-low/50 backdrop-blur-sm rounded-lg p-3 flex items-center justify-between border border-outline-variant hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-body-lg text-body-lg text-outline w-6 text-center">4</span>
+<div class="w-8 h-8 rounded-full bg-surface-bright flex items-center justify-center text-on-surface font-label-bold text-label-bold">S</div>
+<span class="font-body-md text-body-md text-on-surface-variant">SonicBoom</span>
+</div>
+<span class="font-body-md text-body-md text-secondary-fixed">9,200</span>
+</div>
+<div class="bg-surface-container-low/50 backdrop-blur-sm rounded-lg p-3 flex items-center justify-between border border-outline-variant hover:bg-surface-container transition-colors border-l-4 border-l-primary">
+<div class="flex items-center gap-4">
+<span class="font-body-lg text-body-lg text-outline w-6 text-center">5</span>
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-label-bold text-label-bold">Y</div>
+<span class="font-body-md text-body-md text-primary font-bold">You</span>
+</div>
+<span class="font-body-md text-body-md text-primary-fixed">8,750</span>
+</div>
+<div class="bg-surface-container-low/50 backdrop-blur-sm rounded-lg p-3 flex items-center justify-between border border-outline-variant hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-body-lg text-body-lg text-outline w-6 text-center">6</span>
+<div class="w-8 h-8 rounded-full bg-surface-bright flex items-center justify-center text-on-surface font-label-bold text-label-bold">T</div>
+<span class="font-body-md text-body-md text-on-surface-variant">TrackMaster</span>
+</div>
+<span class="font-body-md text-body-md text-secondary-fixed">7,100</span>
+</div>
+</div>
+</div>
+<!-- Call to Action Buttons -->
+<div class="mt-12 flex flex-col sm:flex-row gap-6 w-full max-w-md mx-auto">
+<button class="flex-1 bg-surface-container-high border-2 border-outline-variant text-on-surface font-headline-md text-headline-md py-4 px-6 rounded-xl shadow-[0_4px_0_0_#564052] active:translate-y-1 active:shadow-none transition-all uppercase tracking-wide">
+                Home
+            </button>
+<button class="flex-1 bg-primary border-2 border-primary-container text-on-primary font-headline-md text-headline-md py-4 px-6 rounded-xl shadow-[0_6px_0_0_#510051] active:translate-y-1.5 active:shadow-none transition-all uppercase tracking-wide flex items-center justify-center gap-2">
+                Next Round <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-slate-900/90 backdrop-blur-md docked full-width rounded-t-2xl border-t-2 border-fuchsia-500/20 shadow-[0_-8px_20px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-2 hover:text-fuchsia-400 transition-all active:translate-y-0 active:shadow-none duration-100" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-['Spline_Sans'] text-[10px] font-black uppercase tracking-widest">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-2 hover:text-fuchsia-400 transition-all active:translate-y-0 active:shadow-none duration-100" href="#">
+<span class="material-symbols-outlined mb-1">bolt</span>
+<span class="font-['Spline_Sans'] text-[10px] font-black uppercase tracking-widest">Battle</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-fuchsia-600 text-white rounded-xl px-4 py-2 shadow-[0_4px_0_0_#4a044e] -translate-y-2 hover:text-fuchsia-400 transition-all active:translate-y-0 active:shadow-none duration-100" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="font-['Spline_Sans'] text-[10px] font-black uppercase tracking-widest text-white hover:text-white">Rankings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-2 hover:text-fuchsia-400 transition-all active:translate-y-0 active:shadow-none duration-100" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-['Spline_Sans'] text-[10px] font-black uppercase tracking-widest">Profile</span>
+</a>
+</nav>
+</body></html>
