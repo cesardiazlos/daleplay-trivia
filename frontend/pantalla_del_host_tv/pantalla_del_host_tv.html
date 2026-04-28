@@ -273,195 +273,217 @@
 </nav>
 
 <script>
-    // YouTube API Global variables
-    let ytPlayer;
-    let isYoutubeReady = false;
+    // Variables globales
+    let ytPlayer = null;
+    let songs = [];
+    let gameState = {
+        currentSongIndex: 0,
+        score: 0,
+        timer: 15,
+        intervalId: null
+    };
 
-    // Esta función es llamada automáticamente por la API de YouTube cuando carga
-    function onYouTubeIframeAPIReady() {
-        isYoutubeReady = true;
+    // Referencias al DOM
+    let timerDisplay, songInfo, songInfoCard, songTitle, songArtist, nextSongBtn, youtubeContainer, startGameBtn, startButtonContainer, visualizerBars;
+
+    // 1. API de YouTube Lista (Evento Global)
+    window.onYouTubeIframeAPIReady = function() {
+        const songsJSON = localStorage.getItem('daleplay_songs');
+        if (songsJSON) {
+            songs = JSON.parse(songsJSON);
+        }
+        
+        if (songs.length > 0) {
+            instantiatePlayer();
+        } else {
+            // Si la API cargó antes de DOMContentLoaded, esperamos el custom event
+            document.addEventListener('songsLoaded', instantiatePlayer);
+        }
+    };
+
+    function instantiatePlayer() {
+        if (ytPlayer) return;
+        const firstVideoId = songs[0].youtube_url_id;
+        
+        // Instanciamos el reproductor con la primera canción
+        ytPlayer = new YT.Player('youtube-player', {
+            height: '225',
+            width: '400',
+            videoId: firstVideoId,
+            playerVars: {
+                'autoplay': 0, // Fundamental para evitar fallos antes del clic
+                'controls': 0,
+                'rel': 0,
+                'showinfo': 0,
+                'modestbranding': 1,
+                'disablekb': 1
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const songsJSON = localStorage.getItem('daleplay_songs');
-        if (!songsJSON) {
-            console.warn("No hay canciones en localStorage.");
-            return;
+    // 2. Evento onReady del Player
+    function onPlayerReady(event) {
+        // Ahora es seguro habilitar el botón "INICIAR PARTIDA"
+        if (startGameBtn) {
+            startGameBtn.style.opacity = '1';
+            startGameBtn.style.pointerEvents = 'auto';
+            startGameBtn.innerHTML = '<span class="relative z-10 font-black">INICIAR PARTIDA</span><span class="material-symbols-outlined relative z-10 text-3xl font-black">play_arrow</span>';
         }
+    }
 
-        const songs = JSON.parse(songsJSON);
-        if (songs.length === 0) return;
-
-        const gameState = {
-            currentSongIndex: 0,
-            score: 0,
-            timer: 15,
-            intervalId: null
-        };
-
-        const timerDisplay = document.getElementById('timer-display');
-        const songInfo = document.getElementById('song-info');
-        const songInfoCard = document.getElementById('song-info-card');
-        const songTitle = document.getElementById('song-title');
-        const songArtist = document.getElementById('song-artist');
-        const nextSongBtn = document.getElementById('next-song-btn');
-        const youtubeContainer = document.getElementById('youtube-container');
-        
-        // Animaciones del visualizador
-        const visualizerBars = document.querySelectorAll('.visualizer-bar');
-
-        function startVisualizer() {
-            visualizerBars.forEach(bar => {
-                bar.style.animation = `pulseBar ${0.3 + Math.random() * 0.5}s infinite alternate`;
-            });
-        }
-
-        function stopVisualizer() {
-            visualizerBars.forEach(bar => {
-                bar.style.animation = 'none';
-                bar.style.transform = 'scaleY(0.1)';
-            });
-        }
-
-        // Generar 4 opciones
-        function getRandomOptions(correctSong) {
-            const options = [correctSong];
-            const others = songs.filter(s => s.id !== correctSong.id);
-            others.sort(() => 0.5 - Math.random());
-            options.push(...others.slice(0, 3));
-            options.sort(() => 0.5 - Math.random());
-            return options;
-        }
-
-        function loadSong(index) {
-            if (index >= songs.length) {
-                timerDisplay.innerText = "FIN";
-                stopVisualizer();
-                if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
-                songTitle.innerText = "¡Partida Terminada!";
-                songArtist.innerText = "Mira los puntajes en tu móvil";
-                youtubeContainer.style.display = 'none';
-                nextSongBtn.style.display = 'none';
-                
-                songInfo.classList.remove('opacity-0', 'pointer-events-none');
-                songInfo.classList.add('opacity-100', 'pointer-events-auto');
-                songInfoCard.classList.remove('scale-95');
-                songInfoCard.classList.add('scale-100');
-                return;
-            }
-
-            const currentSong = songs[index];
-            const options = getRandomOptions(currentSong);
-
-            // Ocultar el panel de revelación (Fase de Adivinanza)
-            songInfo.classList.remove('opacity-100', 'pointer-events-auto');
-            songInfo.classList.add('opacity-0', 'pointer-events-none');
-            songInfoCard.classList.remove('scale-100');
-            songInfoCard.classList.add('scale-95');
-            
-            // Ocultar visualmente el iframe de YouTube (solo suena)
-            youtubeContainer.classList.remove('opacity-100');
-            youtubeContainer.classList.add('opacity-0', 'pointer-events-none');
-            
-            for (let i = 0; i < 4; i++) {
-                const textEl = document.getElementById(`text-${i}`);
-                if (options[i]) {
-                    textEl.innerText = `${options[i].title} - ${options[i].artist.name}`;
-                } else {
-                    textEl.innerText = "Opción de relleno"; 
-                }
-            }
-
-            const startSeconds = currentSong.preview_start_time_sec || 45;
-            const videoId = currentSong.youtube_url_id;
-
-            if (!ytPlayer) {
-                ytPlayer = new YT.Player('youtube-player', {
-                    height: '225',
-                    width: '400',
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 1,
-                        'controls': 0,
-                        'start': startSeconds,
-                        'rel': 0,
-                        'showinfo': 0,
-                        'modestbranding': 1,
-                        'disablekb': 1
-                    },
-                    events: {
-                        'onReady': (event) => {
-                            event.target.playVideo();
-                            startVisualizer();
-                        },
-                        'onStateChange': (event) => {
-                            if (event.data === YT.PlayerState.PLAYING) {
-                                startVisualizer();
-                            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-                                stopVisualizer();
-                            }
-                        }
-                    }
-                });
-            } else {
-                ytPlayer.loadVideoById({
-                    videoId: videoId,
-                    startSeconds: startSeconds
-                });
-            }
-
-            gameState.timer = 15;
-            timerDisplay.innerText = gameState.timer;
-            
-            clearInterval(gameState.intervalId);
-            gameState.intervalId = setInterval(() => {
-                gameState.timer--;
-                timerDisplay.innerText = gameState.timer;
-
-                if (gameState.timer <= 0) {
-                    clearInterval(gameState.intervalId);
-                    revealAnswer(currentSong);
-                }
-            }, 1000);
-        }
-
-        function revealAnswer(currentSong) {
+    // Manejo del Visualizador
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.PLAYING) {
+            startVisualizer();
+        } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
             stopVisualizer();
-            // No detenemos el video, se queda reproduciendo para que lo vean
+        }
+    }
 
-            songTitle.innerText = currentSong.title;
-            songArtist.innerText = currentSong.artist.name;
-            timerDisplay.innerText = "0";
+    function startVisualizer() {
+        visualizerBars.forEach(bar => {
+            bar.style.animation = `pulseBar ${0.3 + Math.random() * 0.5}s infinite alternate`;
+        });
+    }
 
-            // Mostrar el panel gigante y el video
+    function stopVisualizer() {
+        visualizerBars.forEach(bar => {
+            bar.style.animation = 'none';
+            bar.style.transform = 'scaleY(0.1)';
+        });
+    }
+
+    // 3. Inicialización del DOM
+    document.addEventListener("DOMContentLoaded", () => {
+        timerDisplay = document.getElementById('timer-display');
+        songInfo = document.getElementById('song-info');
+        songInfoCard = document.getElementById('song-info-card');
+        songTitle = document.getElementById('song-title');
+        songArtist = document.getElementById('song-artist');
+        nextSongBtn = document.getElementById('next-song-btn');
+        youtubeContainer = document.getElementById('youtube-container');
+        startGameBtn = document.getElementById('start-game-btn');
+        startButtonContainer = document.getElementById('start-button-container');
+        visualizerBars = document.querySelectorAll('.visualizer-bar');
+
+        // Deshabilitar botón visualmente hasta que YT esté listo
+        startGameBtn.style.opacity = '0.5';
+        startGameBtn.style.pointerEvents = 'none';
+        startGameBtn.innerText = "CARGANDO YOUTUBE...";
+
+        const songsJSON = localStorage.getItem('daleplay_songs');
+        if (songsJSON) {
+            songs = JSON.parse(songsJSON);
+            document.dispatchEvent(new Event('songsLoaded'));
+        }
+
+        startGameBtn.addEventListener('click', () => {
+            startButtonContainer.style.display = 'none';
+            playRound(gameState.currentSongIndex);
+        });
+
+        nextSongBtn.addEventListener('click', () => {
+            gameState.currentSongIndex++;
+            playRound(gameState.currentSongIndex);
+        });
+    });
+
+    function getRandomOptions(correctSong) {
+        const options = [correctSong];
+        const others = songs.filter(s => s.id !== correctSong.id);
+        others.sort(() => 0.5 - Math.random());
+        options.push(...others.slice(0, 3));
+        options.sort(() => 0.5 - Math.random());
+        return options;
+    }
+
+    // 4. Lógica de la Ronda
+    function playRound(index) {
+        if (index >= songs.length) {
+            timerDisplay.innerText = "FIN";
+            stopVisualizer();
+            if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+            songTitle.innerText = "¡Partida Terminada!";
+            songArtist.innerText = "Mira los puntajes en tu móvil";
+            youtubeContainer.style.display = 'none';
+            nextSongBtn.style.display = 'none';
+            
             songInfo.classList.remove('opacity-0', 'pointer-events-none');
             songInfo.classList.add('opacity-100', 'pointer-events-auto');
             songInfoCard.classList.remove('scale-95');
             songInfoCard.classList.add('scale-100');
-            
-            youtubeContainer.classList.remove('opacity-0', 'pointer-events-none');
-            youtubeContainer.classList.add('opacity-100');
+            return;
         }
 
-        // Flujo Kahoot: Siguiente Canción solo se activa manualmente
-        nextSongBtn.addEventListener('click', () => {
-            gameState.currentSongIndex++;
-            loadSong(gameState.currentSongIndex);
+        const currentSong = songs[index];
+        const options = getRandomOptions(currentSong);
+
+        // Ocultar el panel de revelación (Fase de Adivinanza)
+        songInfo.classList.remove('opacity-100', 'pointer-events-auto');
+        songInfo.classList.add('opacity-0', 'pointer-events-none');
+        songInfoCard.classList.remove('scale-100');
+        songInfoCard.classList.add('scale-95');
+        
+        // Ocultar visualmente el iframe de YouTube (solo suena)
+        youtubeContainer.classList.remove('opacity-100');
+        youtubeContainer.classList.add('opacity-0', 'pointer-events-none');
+        
+        // Poner las opciones de texto en los botones geométricos
+        for (let i = 0; i < 4; i++) {
+            const textEl = document.getElementById(`text-${i}`);
+            if (options[i]) {
+                textEl.innerText = `${options[i].title} - ${options[i].artist.name}`;
+            } else {
+                textEl.innerText = "Opción de relleno"; 
+            }
+        }
+
+        // Cargar video asíncronamente (API Oficial)
+        const startSeconds = currentSong.preview_start_time_sec || 45;
+        const videoId = currentSong.youtube_url_id;
+
+        ytPlayer.loadVideoById({
+            videoId: videoId,
+            startSeconds: startSeconds
         });
 
-        // Envolver el inicio en una función ligada al botón Iniciar Partida
-        function startGame() {
-            if (!isYoutubeReady) {
-                console.warn("YouTube API no está lista, reintentando...");
-                setTimeout(startGame, 500);
-                return;
-            }
-            document.getElementById('start-button-container').style.display = 'none';
-            loadSong(gameState.currentSongIndex);
-        }
+        // Arranque Seguro del Reloj Inmediatamente
+        gameState.timer = 15;
+        timerDisplay.innerText = gameState.timer;
+        
+        clearInterval(gameState.intervalId);
+        gameState.intervalId = setInterval(() => {
+            gameState.timer--;
+            timerDisplay.innerText = gameState.timer;
 
-        document.getElementById('start-game-btn').addEventListener('click', startGame);
-    });
+            if (gameState.timer <= 0) {
+                clearInterval(gameState.intervalId);
+                revealAnswer(currentSong);
+            }
+        }, 1000);
+    }
+
+    function revealAnswer(currentSong) {
+        stopVisualizer();
+        // El video de YouTube NO se detiene, se sigue viendo/escuchando
+        
+        songTitle.innerText = currentSong.title;
+        songArtist.innerText = currentSong.artist.name;
+        timerDisplay.innerText = "0";
+
+        // Mostrar panel y video
+        songInfo.classList.remove('opacity-0', 'pointer-events-none');
+        songInfo.classList.add('opacity-100', 'pointer-events-auto');
+        songInfoCard.classList.remove('scale-95');
+        songInfoCard.classList.add('scale-100');
+        
+        youtubeContainer.classList.remove('opacity-0', 'pointer-events-none');
+        youtubeContainer.classList.add('opacity-100');
+    }
 </script>
 <style>
     @keyframes pulseBar {
