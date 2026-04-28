@@ -240,7 +240,7 @@
         <h3 id="song-artist" class="text-[24px] font-bold text-secondary px-4 mt-2 mb-6"></h3>
         
         <!-- Contenedor del reproductor de YouTube -->
-        <div id="youtube-container" class="w-[400px] h-[225px] rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,227,253,0.5)] border-2 border-secondary-container mb-8 transition-opacity duration-500 opacity-0 pointer-events-none">
+        <div id="youtube-container" class="w-[400px] h-[225px] rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,227,253,0.5)] border-2 border-secondary-container mb-8 transition-opacity duration-500 absolute left-[-9999px] top-[-9999px]">
             <div id="youtube-player"></div>
         </div>
 
@@ -428,9 +428,8 @@
         songInfoCard.classList.remove('scale-100');
         songInfoCard.classList.add('scale-95');
         
-        // Ocultar visualmente el iframe de YouTube (solo suena)
-        youtubeContainer.classList.remove('opacity-100');
-        youtubeContainer.classList.add('opacity-0', 'pointer-events-none');
+        // Ocultar visualmente el iframe de YouTube (posicionado fuera de pantalla)
+        youtubeContainer.classList.add('absolute', 'left-[-9999px]', 'top-[-9999px]');
         
         // Poner las opciones de texto en los botones geométricos
         for (let i = 0; i < 4; i++) {
@@ -450,8 +449,11 @@
             videoId: videoId,
             startSeconds: startSeconds
         });
+        // Forzamos play para más seguridad
+        ytPlayer.playVideo();
 
-        // Arranque Seguro del Reloj Inmediatamente
+        // Arranque Seguro del Visualizador y el Reloj Inmediatamente
+        startVisualizer();
         gameState.timer = 15;
         timerDisplay.innerText = gameState.timer;
         
@@ -481,8 +483,7 @@
         songInfoCard.classList.remove('scale-95');
         songInfoCard.classList.add('scale-100');
         
-        youtubeContainer.classList.remove('opacity-0', 'pointer-events-none');
-        youtubeContainer.classList.add('opacity-100');
+        youtubeContainer.classList.remove('absolute', 'left-[-9999px]', 'top-[-9999px]');
     }
 </script>
 <style>
