@@ -239,9 +239,12 @@
         <h2 id="song-title" class="text-[40px] leading-tight font-black text-primary drop-shadow-[0_0_10px_rgba(255,171,243,0.8)] px-4 line-clamp-2"></h2>
         <h3 id="song-artist" class="text-[24px] font-bold text-secondary px-4 mt-2 mb-6"></h3>
         
-        <!-- Contenedor del reproductor de YouTube -->
+        <!-- Contenedor del reproductor de YouTube (Doble Buffering) -->
         <div id="youtube-container" class="w-[400px] h-[225px] rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,227,253,0.5)] border-2 border-secondary-container mb-8 transition-opacity duration-500 absolute left-[-9999px] top-[-9999px]">
-            <div id="youtube-player"></div>
+            <div class="relative w-full h-full">
+                <div id="player-A" class="absolute inset-0 z-10 opacity-100"></div>
+                <div id="player-B" class="absolute inset-0 z-0 opacity-0 pointer-events-none"></div>
+            </div>
         </div>
 
         <button id="next-song-btn" class="py-4 px-8 bg-secondary text-on-secondary font-headline-md text-[24px] uppercase tracking-wider rounded-xl border-b-8 border-[#009fb0] shadow-[0_0_20px_rgba(189,244,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[10px] active:translate-y-2 active:border-b-2 transition-all flex justify-center items-center gap-3">
@@ -274,7 +277,8 @@
 
 <script>
     // Variables globales
-    let ytPlayer = null;
+    let activePlayer = 'A';
+    const players = { A: null, B: null };
     let songs = [];
     let gameState = {
         currentSongIndex: 0,
@@ -296,22 +300,21 @@
         }
         
         if (songs.length > 0) {
-            instantiatePlayer();
+            instantiatePlayers();
         } else {
             // Si la API cargó antes de DOMContentLoaded, esperamos el custom event
-            document.addEventListener('songsLoaded', instantiatePlayer);
+            document.addEventListener('songsLoaded', instantiatePlayers);
         }
     };
 
-    function instantiatePlayer() {
-        if (ytPlayer) return;
-        const firstVideoId = songs[0].youtube_url_id;
+    let playersReadyCount = 0;
+
+    function instantiatePlayers() {
+        if (players.A && players.B) return;
         
-        // Instanciamos el reproductor con la primera canción
-        ytPlayer = new YT.Player('youtube-player', {
+        const config = {
             height: '225',
             width: '400',
-            videoId: firstVideoId,
             playerVars: {
                 'autoplay': 0, // Fundamental para evitar fallos antes del clic
                 'controls': 0,
@@ -325,13 +328,17 @@
                 'onStateChange': onPlayerStateChange,
                 'onError': onPlayerError
             }
-        });
+        };
+
+        players.A = new YT.Player('player-A', config);
+        players.B = new YT.Player('player-B', config);
     }
 
     // 2. Evento onReady del Player
     function onPlayerReady(event) {
-        // Ahora es seguro habilitar el botón "INICIAR PARTIDA"
-        if (startGameBtn) {
+        playersReadyCount++;
+        // Solo habilitamos el botón cuando ambos reproductores están listos
+        if (playersReadyCount === 2 && startGameBtn) {
             startGameBtn.style.opacity = '1';
             startGameBtn.style.pointerEvents = 'auto';
             startGameBtn.innerHTML = '<span class="relative z-10 font-black">INICIAR PARTIDA</span><span class="material-symbols-outlined relative z-10 text-3xl font-black">play_arrow</span>';
@@ -340,36 +347,48 @@
 
     // Manejo del Visualizador y Reloj
     function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.PLAYING) {
-            // El gatillo exacto: recién cuando arranca a sonar, soltamos el reloj
-            if (!gameState.hasTimerStarted) {
-                gameState.hasTimerStarted = true;
-                startVisualizer();
-                fadeInVolume(100, 2000);
-                
-                gameState.timer = 15;
-                timerDisplay.innerText = gameState.timer;
-                
-                clearInterval(gameState.intervalId);
-                gameState.intervalId = setInterval(() => {
-                    gameState.timer--;
-                    timerDisplay.innerText = gameState.timer;
+        const isActivePlayer = (event.target === players[activePlayer]);
 
-                    if (gameState.timer <= 0) {
-                        clearInterval(gameState.intervalId);
-                        revealAnswer(songs[gameState.currentSongIndex]);
-                    }
-                }, 1000);
+        if (event.data === YT.PlayerState.PLAYING) {
+            if (isActivePlayer) {
+                // El gatillo exacto: recién cuando arranca a sonar, soltamos el reloj
+                if (!gameState.hasTimerStarted) {
+                    gameState.hasTimerStarted = true;
+                    startVisualizer();
+                    fadeInVolume(100, 2000);
+                    
+                    gameState.timer = 15;
+                    timerDisplay.innerText = gameState.timer;
+                    
+                    clearInterval(gameState.intervalId);
+                    gameState.intervalId = setInterval(() => {
+                        gameState.timer--;
+                        timerDisplay.innerText = gameState.timer;
+
+                        if (gameState.timer <= 0) {
+                            clearInterval(gameState.intervalId);
+                            revealAnswer(songs[gameState.currentSongIndex]);
+                        }
+                    }, 1000);
+                }
+            } else {
+                // El inactivo ha empezado a reproducir (precarga finalizada)
+                // Lo pausamos inmediatamente
+                event.target.pauseVideo();
             }
         } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-            stopVisualizer();
+            if (isActivePlayer) {
+                stopVisualizer();
+            }
         }
     }
 
     // Efecto Fade-In para entrada de audio
     function fadeInVolume(targetVolume, durationMs) {
         clearInterval(gameState.fadeInterval);
-        ytPlayer.setVolume(0);
+        const currentPlayer = players[activePlayer];
+        if (!currentPlayer) return;
+        currentPlayer.setVolume(0);
         let currentVol = 0;
         const steps = durationMs / 100;
         const volStep = targetVolume / steps;
@@ -380,12 +399,15 @@
                 currentVol = targetVolume;
                 clearInterval(gameState.fadeInterval);
             }
-            ytPlayer.setVolume(currentVol);
+            if (currentPlayer && currentPlayer.setVolume) currentPlayer.setVolume(currentVol);
         }, 100);
     }
 
     // 2.5 Evento de Error Auto-Sanable
     function onPlayerError(event) {
+        const isActivePlayer = (event.target === players[activePlayer]);
+        if (!isActivePlayer) return; // Si falla la precarga, lo ignoramos por ahora
+
         console.warn("YouTube Player Error (Auto-Sanable):", event.data);
         const currentSong = songs[gameState.currentSongIndex];
         
@@ -461,7 +483,8 @@
         if (index >= songs.length) {
             timerDisplay.innerText = "FIN";
             stopVisualizer();
-            if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+            if (players.A && players.A.stopVideo) players.A.stopVideo();
+            if (players.B && players.B.stopVideo) players.B.stopVideo();
             songTitle.innerText = "¡Partida Terminada!";
             songArtist.innerText = "Mira los puntajes en tu móvil";
             youtubeContainer.style.display = 'none';
@@ -496,9 +519,22 @@
             }
         }
 
-        // Cargar video asíncronamente (API Oficial)
-        const startSeconds = currentSong.preview_start_time_sec || 45;
-        const videoId = currentSong.youtube_url_id;
+        // Alternar reproductores (Ping-Pong / Double Buffering)
+        const inactivePlayerKey = (activePlayer === 'A') ? 'B' : 'A';
+        
+        // Detener el que estaba sonando en la ronda anterior
+        if (players[activePlayer] && players[activePlayer].pauseVideo) {
+            players[activePlayer].pauseVideo();
+        }
+
+        activePlayer = inactivePlayerKey;
+        const newActive = players[activePlayer];
+        const newInactive = players[(activePlayer === 'A') ? 'B' : 'A'];
+
+        const divActive = document.getElementById(`player-${activePlayer}`);
+        const divInactive = document.getElementById(`player-${(activePlayer === 'A') ? 'B' : 'A'}`);
+        divActive.className = "absolute inset-0 z-10 opacity-100";
+        divInactive.className = "absolute inset-0 z-0 opacity-0 pointer-events-none";
 
         // Resetear bandera de reloj y visuales mientras YouTube hace buffering
         gameState.hasTimerStarted = false;
@@ -506,22 +542,44 @@
         timerDisplay.innerText = "15"; 
         stopVisualizer();
 
-        ytPlayer.loadVideoById({
-            videoId: videoId,
-            startSeconds: startSeconds
-        });
+        const startSeconds = currentSong.preview_start_time_sec || 45;
+        const videoId = currentSong.youtube_url_id;
+
+        if (index === 0) {
+            // Si es la primera ronda, hay que forzar la carga en el activo
+            newActive.loadVideoById({
+                videoId: videoId,
+                startSeconds: startSeconds
+            });
+        } else {
+            // Ya estaba precargado y pausado, aseguramos inicio exacto
+            newActive.seekTo(startSeconds, true);
+        }
         
         // Volumen 0 inicial preventivo
-        ytPlayer.setVolume(0);
-        
-        // Forzamos play para más seguridad
-        ytPlayer.playVideo();
+        newActive.setVolume(0);
+        newActive.playVideo();
+
+        // Mandar a precargar la SIGUIENTE canción en el inactivo
+        const nextIndex = index + 1;
+        if (nextIndex < songs.length) {
+            const nextSong = songs[nextIndex];
+            newInactive.loadVideoById({
+                videoId: nextSong.youtube_url_id,
+                startSeconds: nextSong.preview_start_time_sec || 45
+            });
+            newInactive.setVolume(0);
+            // newInactive hará buffering y cuando entre a PLAYING, onPlayerStateChange lo pausará
+        }
     }
 
     function revealAnswer(currentSong) {
         stopVisualizer();
         clearInterval(gameState.fadeInterval); // Limpieza preventiva
-        ytPlayer.setVolume(100); // Asegurar volumen máximo al revelar
+        const currentPlayer = players[activePlayer];
+        if (currentPlayer && currentPlayer.setVolume) {
+            currentPlayer.setVolume(100); // Asegurar volumen máximo al revelar
+        }
         // El video de YouTube NO se detiene, se sigue viendo/escuchando
         
         songTitle.innerText = currentSong.title;
