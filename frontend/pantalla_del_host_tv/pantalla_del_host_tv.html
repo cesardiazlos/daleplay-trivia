@@ -280,7 +280,8 @@
         currentSongIndex: 0,
         score: 0,
         timer: 15,
-        intervalId: null
+        intervalId: null,
+        hasTimerStarted: false
     };
 
     // Referencias al DOM
@@ -336,10 +337,28 @@
         }
     }
 
-    // Manejo del Visualizador
+    // Manejo del Visualizador y Reloj
     function onPlayerStateChange(event) {
         if (event.data === YT.PlayerState.PLAYING) {
-            startVisualizer();
+            // El gatillo exacto: recién cuando arranca a sonar, soltamos el reloj
+            if (!gameState.hasTimerStarted) {
+                gameState.hasTimerStarted = true;
+                startVisualizer();
+                
+                gameState.timer = 15;
+                timerDisplay.innerText = gameState.timer;
+                
+                clearInterval(gameState.intervalId);
+                gameState.intervalId = setInterval(() => {
+                    gameState.timer--;
+                    timerDisplay.innerText = gameState.timer;
+
+                    if (gameState.timer <= 0) {
+                        clearInterval(gameState.intervalId);
+                        revealAnswer(songs[gameState.currentSongIndex]);
+                    }
+                }, 1000);
+            }
         } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
             stopVisualizer();
         }
@@ -461,28 +480,17 @@
         const startSeconds = currentSong.preview_start_time_sec || 45;
         const videoId = currentSong.youtube_url_id;
 
+        // Resetear bandera de reloj y visuales mientras YouTube hace buffering
+        gameState.hasTimerStarted = false;
+        timerDisplay.innerText = "15"; 
+        stopVisualizer();
+
         ytPlayer.loadVideoById({
             videoId: videoId,
             startSeconds: startSeconds
         });
         // Forzamos play para más seguridad
         ytPlayer.playVideo();
-
-        // Arranque Seguro del Visualizador y el Reloj Inmediatamente
-        startVisualizer();
-        gameState.timer = 15;
-        timerDisplay.innerText = gameState.timer;
-        
-        clearInterval(gameState.intervalId);
-        gameState.intervalId = setInterval(() => {
-            gameState.timer--;
-            timerDisplay.innerText = gameState.timer;
-
-            if (gameState.timer <= 0) {
-                clearInterval(gameState.intervalId);
-                revealAnswer(currentSong);
-            }
-        }, 1000);
     }
 
     function revealAnswer(currentSong) {
