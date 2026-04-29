@@ -320,7 +320,8 @@
             },
             events: {
                 'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
+                'onStateChange': onPlayerStateChange,
+                'onError': onPlayerError
             }
         });
     }
@@ -342,6 +343,21 @@
         } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
             stopVisualizer();
         }
+    }
+
+    // 2.5 Evento de Error Auto-Sanable
+    function onPlayerError(event) {
+        console.warn("YouTube Player Error (Auto-Sanable):", event.data);
+        const currentSong = songs[gameState.currentSongIndex];
+        
+        // Reportar invalidación al backend silenciosamente
+        fetch(`http://127.0.0.1:8000/api/songs/${currentSong.id}/invalidate`, {
+            method: 'PATCH'
+        }).catch(err => console.error("Error invalidando canción:", err));
+        
+        // Saltar inmediatamente a la siguiente canción sin alertar a los jugadores
+        gameState.currentSongIndex++;
+        playRound(gameState.currentSongIndex);
     }
 
     function startVisualizer() {

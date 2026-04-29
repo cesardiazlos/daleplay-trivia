@@ -59,3 +59,16 @@ def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No se encontraron canciones para esta categoría.")
         
     return songs
+
+@app.patch("/api/songs/{song_id}/invalidate")
+def invalidate_song(song_id: uuid.UUID, db: Session = Depends(get_db)):
+    """
+    Anula el youtube_url_id de una canción si el reproductor reporta un error de incrustación.
+    """
+    song = db.query(Song).filter(Song.id == song_id).first()
+    if not song:
+        raise HTTPException(status_code=404, detail="Canción no encontrada.")
+    
+    song.youtube_url_id = None
+    db.commit()
+    return {"status": "success", "message": "Video invalidado para futura corrección."}

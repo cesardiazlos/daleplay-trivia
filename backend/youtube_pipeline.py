@@ -5,16 +5,23 @@ from database import SessionLocal
 from models import Song, Artist
 
 def search_youtube_id(query: str) -> str:
+    # Usar extract_flat=False y ignoreerrors=True para que yt-dlp 
+    # intente extraer los detalles y descarte los videos bloqueados
     ydl_opts = {
         'quiet': True,
-        'extract_flat': True,
+        'extract_flat': False,
+        'ignoreerrors': True,
+        'no_warnings': True  # <-- Agrega esta línea
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
-            # ytsearch1: busca el primer resultado en YouTube
-            info = ydl.extract_info(f"ytsearch1:{query}", download=False)
-            if 'entries' in info and len(info['entries']) > 0:
-                return info['entries'][0]['id']
+            # ytsearch5: busca los primeros 5 resultados en YouTube
+            info = ydl.extract_info(f"ytsearch5:{query}", download=False)
+            if 'entries' in info and info['entries']:
+                for entry in info['entries']:
+                    if entry and entry.get('id'):
+                        # El primer video que no haya lanzado error durante la extracción de metadatos
+                        return entry['id']
         except Exception as e:
             print(f"[-] Error interno de búsqueda para '{query}': {e}")
             pass
@@ -38,8 +45,8 @@ def run_pipeline():
             artist_name = song.artist.name if song.artist else "Desconocido"
             
             # Cadena exacta de búsqueda solicitada
-            query = f"{song.title} {artist_name} official audio"
-            print(f"[?] Buscando: \"{song.title} - {artist_name}\"")
+            query = f"{song.title} {artist_name} oficial OR lyric video"
+            print(f"[?] Buscando: \"{query}\"")
             
             youtube_id = search_youtube_id(query)
             
