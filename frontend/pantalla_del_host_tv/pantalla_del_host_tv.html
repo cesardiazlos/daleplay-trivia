@@ -281,7 +281,8 @@
         score: 0,
         timer: 15,
         intervalId: null,
-        hasTimerStarted: false
+        hasTimerStarted: false,
+        fadeInterval: null
     };
 
     // Referencias al DOM
@@ -344,6 +345,7 @@
             if (!gameState.hasTimerStarted) {
                 gameState.hasTimerStarted = true;
                 startVisualizer();
+                fadeInVolume(100, 2000);
                 
                 gameState.timer = 15;
                 timerDisplay.innerText = gameState.timer;
@@ -362,6 +364,24 @@
         } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
             stopVisualizer();
         }
+    }
+
+    // Efecto Fade-In para entrada de audio
+    function fadeInVolume(targetVolume, durationMs) {
+        clearInterval(gameState.fadeInterval);
+        ytPlayer.setVolume(0);
+        let currentVol = 0;
+        const steps = durationMs / 100;
+        const volStep = targetVolume / steps;
+        
+        gameState.fadeInterval = setInterval(() => {
+            currentVol += volStep;
+            if (currentVol >= targetVolume) {
+                currentVol = targetVolume;
+                clearInterval(gameState.fadeInterval);
+            }
+            ytPlayer.setVolume(currentVol);
+        }, 100);
     }
 
     // 2.5 Evento de Error Auto-Sanable
@@ -482,6 +502,7 @@
 
         // Resetear bandera de reloj y visuales mientras YouTube hace buffering
         gameState.hasTimerStarted = false;
+        clearInterval(gameState.fadeInterval);
         timerDisplay.innerText = "15"; 
         stopVisualizer();
 
@@ -489,12 +510,18 @@
             videoId: videoId,
             startSeconds: startSeconds
         });
+        
+        // Volumen 0 inicial preventivo
+        ytPlayer.setVolume(0);
+        
         // Forzamos play para más seguridad
         ytPlayer.playVideo();
     }
 
     function revealAnswer(currentSong) {
         stopVisualizer();
+        clearInterval(gameState.fadeInterval); // Limpieza preventiva
+        ytPlayer.setVolume(100); // Asegurar volumen máximo al revelar
         // El video de YouTube NO se detiene, se sigue viendo/escuchando
         
         songTitle.innerText = currentSong.title;
