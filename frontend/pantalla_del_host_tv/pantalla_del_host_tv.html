@@ -163,7 +163,7 @@
 <span class="material-symbols-outlined text-fuchsia-500 hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none transition-all duration-75 text-3xl" data-icon="equalizer">equalizer</span>
 <span class="font-spline-sans text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.8)]">Dale Play</span>
 </div>
-<div class="font-spline-sans font-black uppercase tracking-tighter text-fuchsia-500 text-headline-md">
+<div id="room-pin-display" class="font-spline-sans font-black uppercase tracking-tighter text-fuchsia-500 text-headline-md">
       PIN: 882 192
     </div>
 <div class="flex items-center gap-sm">
@@ -288,6 +288,11 @@
         hasTimerStarted: false,
         fadeInterval: null
     };
+
+    // Variables de Red (WebSocket)
+    let roomPIN = Math.floor(100000 + Math.random() * 900000).toString();
+    let ws = null;
+    let connectedPlayers = [];
 
     // Referencias al DOM
     let timerDisplay, songInfo, songInfoCard, songTitle, songArtist, nextSongBtn, youtubeContainer, startGameBtn, startButtonContainer, visualizerBars;
@@ -434,7 +439,7 @@
         });
     }
 
-    // 3. Inicialización del DOM
+    // 3. Inicialización del DOM y Red
     document.addEventListener("DOMContentLoaded", () => {
         timerDisplay = document.getElementById('timer-display');
         songInfo = document.getElementById('song-info');
@@ -446,6 +451,37 @@
         startGameBtn = document.getElementById('start-game-btn');
         startButtonContainer = document.getElementById('start-button-container');
         visualizerBars = document.querySelectorAll('.visualizer-bar');
+
+        // Actualizar UI con el PIN generado
+        document.getElementById('room-pin-display').innerText = `PIN: ${roomPIN.substring(0,3)} ${roomPIN.substring(3)}`;
+
+        // Conexión WebSocket
+        ws = new WebSocket(`ws://127.0.0.1:8000/ws/host/${roomPIN}`);
+        ws.onopen = () => {
+            console.log(`[WebSocket] Conectado como Host a la sala ${roomPIN}`);
+        };
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            switch (data.type) {
+                case 'player_joined':
+                    console.log(`[WebSocket] Jugador se ha unido: ${data.player_name}`);
+                    connectedPlayers = data.players_list;
+                    // Aquí podríamos actualizar un contador en la UI
+                    break;
+                case 'player_left':
+                    console.log(`[WebSocket] Jugador se ha desconectado: ${data.player_name}`);
+                    connectedPlayers = data.players_list;
+                    break;
+                case 'player_answered':
+                    console.log(`[WebSocket] El jugador ${data.player_name} respondió:`, data);
+                    // Aquí se manejará la puntuación en el futuro
+                    break;
+                default:
+                    console.log("[WebSocket] Mensaje recibido:", data);
+            }
+        };
+        ws.onclose = () => console.warn("[WebSocket] Desconectado del servidor.");
+        ws.onerror = (err) => console.error("[WebSocket] Error de conexión:", err);
 
         // Deshabilitar botón visualmente hasta que YT esté listo
         startGameBtn.style.opacity = '0.5';
@@ -494,11 +530,26 @@
             songInfo.classList.add('opacity-100', 'pointer-events-auto');
             songInfoCard.classList.remove('scale-95');
             songInfoCard.classList.add('scale-100');
+
+            // Sincronización WebSocket (Fin de Partida)
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'state_change', status: 'finished' }));
+            }
             return;
         }
 
         const currentSong = songs[index];
         const options = getRandomOptions(currentSong);
+
+        // Sincronización WebSocket (Inicio de Ronda - Adivinanza)
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ 
+                type: 'state_change', 
+                status: 'guessing', 
+                songIndex: index,
+                options: options.map(opt => ({ id: opt.id, title: opt.title, artist: opt.artist.name }))
+            }));
+        }
 
         // Ocultar el panel de revelación (Fase de Adivinanza)
         songInfo.classList.remove('opacity-100', 'pointer-events-auto');
@@ -585,6 +636,11 @@
         songTitle.innerText = currentSong.title;
         songArtist.innerText = currentSong.artist.name;
         timerDisplay.innerText = "0";
+
+        // Sincronización WebSocket (Fase de Revelación)
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'state_change', status: 'revealing', correctSongId: currentSong.id }));
+        }
 
         // Mostrar panel y video
         songInfo.classList.remove('opacity-0', 'pointer-events-none');
