@@ -11,7 +11,7 @@ def search_youtube_id(query: str) -> str:
         'quiet': True,
         'extract_flat': False,
         'ignoreerrors': True,
-        'no_warnings': True
+        'no_warnings': True  # <-- Agrega esta línea
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
@@ -38,20 +38,15 @@ def run_pipeline():
             print("[*] No hay canciones con youtube_url_id nulo. ¡Todo está actualizado!")
             return
 
-        # Guardamos el total en una variable para usarla en los logs
-        total_songs = len(songs)
-        print(f"[*] Iniciando ETL Paso 2 (YouTube). Canciones a procesar: {total_songs}")
+        print(f"[*] Iniciando ETL Paso 2 (YouTube). Canciones a procesar: {len(songs)}")
 
-        # Usamos enumerate para obtener un índice (index) que empiece en 1
-        for index, song in enumerate(songs, start=1):
+        for song in songs:
             # Buscar el artista asociado (debido a lazy loading o si no está en join)
             artist_name = song.artist.name if song.artist else "Desconocido"
             
             # Cadena exacta de búsqueda solicitada
             query = f"{song.title} {artist_name} oficial OR lyric video"
-            
-            # Log actualizado con el progreso (ej. [1/50], [2/50])
-            print(f"[{index}/{total_songs}] [?] Buscando: \"{query}\"")
+            print(f"[?] Buscando: \"{query}\"")
             
             youtube_id = search_youtube_id(query)
             
@@ -62,9 +57,9 @@ def run_pipeline():
                 
                 # Commit individual para guardar el progreso incluso si el script falla más adelante
                 db.commit()
-                print(f"[{index}/{total_songs}] [+] Encontrado ID: {youtube_id} -> Guardado con start_time: 45s.\n")
+                print(f"[+] Encontrado ID: {youtube_id} -> Guardado con start_time: 45s.\n")
             else:
-                print(f"[{index}/{total_songs}] [-] Error: No encontrado para '{song.title} - {artist_name}'\n")
+                print(f"[-] Error: No encontrado para '{song.title} - {artist_name}'\n")
                 
     except Exception as e:
         print(f"[-] Error fatal en el pipeline: {e}")
@@ -74,4 +69,3 @@ def run_pipeline():
 
 if __name__ == "__main__":
     run_pipeline()
-    

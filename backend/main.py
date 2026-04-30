@@ -1,7 +1,7 @@
 import uuid
 from typing import List
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
@@ -72,3 +72,88 @@ def invalidate_song(song_id: uuid.UUID, db: Session = Depends(get_db)):
     song.youtube_url_id = None
     db.commit()
     return {"status": "success", "message": "Video invalidado para futura corrección."}
+
+# ==========================================
+# GESTOR DE CONEXIONES WEBSOCKET
+# ==========================================
+class ConnectionManager:
+    def __init__(self):
+        # Estructura: { "pin": { "host": WebSocket, "players": {"player_name": WebSocket}, "state": {} } }
+        self.rooms: dict = {}
+
+    async def connect_host(self, websocket: WebSocket, pin: str):
+        await websocket.accept()
+        if pin not in self.rooms:
+            self.rooms[pin] = {"host": None, "players": {}, "state": {"current_song_index": 0}}
+        self.rooms[pin]["host"] = websocket
+
+    def disconnect_host(self, pin: str):
+        if pin in self.rooms:
+            # Si el host se desconecta, destruimos la sala
+            del self.rooms[pin]
+
+    async def connect_player(self, websocket: WebSocket, pin: str, player_name: str):
+        await websocket.accept()
+        if pin not in self.rooms:
+            # Si no existe la sala, cerramos la conexión
+            await websocket.close(code=1008, reason="Room does not exist")
+            return False
+        
+        self.rooms[pin]["players"][player_name] = websocket
+        # Notificamos al host que un jugador se unió
+        await self.send_to_host(pin, {
+            "type": "player_joined",
+            "player_name": player_name,
+            "players_list": list(self.rooms[pin]["players"].keys())
+        })
+        return True
+
+    async def disconnect_player(self, pin: str, player_name: str):
+        if pin in self.rooms and player_name in self.rooms[pin]["players"]:
+            del self.rooms[pin]["players"][player_name]
+            # Notificamos al host que el jugador se desconectó
+            await self.send_to_host(pin, {
+                "type": "player_left",
+                "player_name": player_name,
+                "players_list": list(self.rooms[pin]["players"].keys())
+            })
+
+    async def send_to_host(self, pin: str, message: dict):
+        if pin in self.rooms and self.rooms[pin]["host"]:
+            await self.rooms[pin]["host"].send_json(message)
+
+    async def send_to_players(self, pin: str, message: dict):
+        if pin in self.rooms:
+            for player_ws in list(self.rooms[pin]["players"].values()):
+                try:
+                    await player_ws.send_json(message)
+                except Exception:
+                    pass
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/host/{pin}")
+async def websocket_host(websocket: WebSocket, pin: str):
+    await manager.connect_host(websocket, pin)
+    try:
+        while True:
+            data = await websocket.receive_json()
+            # El Host reenvía el estado o comandos a los jugadores
+            await manager.send_to_players(pin, data)
+    except WebSocketDisconnect:
+        manager.disconnect_host(pin)
+
+@app.websocket("/ws/player/{pin}/{player_name}")
+async def websocket_player(websocket: WebSocket, pin: str, player_name: str):
+    connected = await manager.connect_player(websocket, pin, player_name)
+    if not connected:
+        return
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            # Inyectamos el nombre del jugador para que el Host sepa de quién es la respuesta
+            data["player_name"] = player_name
+            await manager.send_to_host(pin, data)
+    except WebSocketDisconnect:
+        await manager.disconnect_player(pin, player_name)
