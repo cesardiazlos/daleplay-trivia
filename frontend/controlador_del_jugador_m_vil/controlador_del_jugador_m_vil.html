@@ -123,8 +123,8 @@
 </button>
 <span class="text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.8)]">Dale Play</span>
 </div>
-<div class="text-fuchsia-400 font-bold font-headline-md tracking-widest text-center absolute left-1/2 -translate-x-1/2">
-            PIN: 882 192
+<div id="top-pin-display" class="text-fuchsia-400 font-bold font-headline-md tracking-widest text-center absolute left-1/2 -translate-x-1/2">
+            PIN: --- ---
         </div>
 <div class="flex items-center gap-sm">
 <button class="text-neutral-500 hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none flex items-center justify-center p-2 rounded-full">
@@ -136,32 +136,155 @@
 </div>
 </header>
 <!-- Main Canvas: Player Controller Grid -->
-<main class="flex-1 w-full max-w-5xl mx-auto mt-[80px] p-md pt-lg flex flex-col items-center justify-center h-[calc(100vh-80px)]">
-<!-- Status / Identity Badge -->
-<div class="w-full flex justify-center mb-md">
-<div class="bg-surface-container-highest border-2 border-primary-container px-lg py-sm rounded-full shadow-[0_4px_0_0_rgba(255,0,255,0.4)] flex items-center gap-sm">
-<div class="w-4 h-4 bg-secondary-container rounded-full animate-pulse shadow-[0_0_10px_rgba(0,227,253,0.8)]"></div>
-<span class="font-label-bold text-on-surface uppercase tracking-widest">Jugando...</span>
-</div>
-</div>
-<!-- 2x2 Controller Grid -->
-<div class="grid grid-cols-2 grid-rows-2 gap-md w-full h-full pb-xl">
-<!-- Button 1: Triangle (Error/Red) -->
-<button class="w-full h-full bg-error rounded-2xl border-4 border-error-container shadow-[0_12px_0_0_#93000a,0_0_20px_rgba(255,180,171,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#93000a] transition-all duration-75 flex items-center justify-center focus:outline-none">
-<span class="material-symbols-outlined text-on-error" data-icon="change_history" style="font-size: 8rem;">change_history</span>
-</button>
-<!-- Button 2: Diamond (Secondary/Blue) -->
-<button class="w-full h-full bg-secondary rounded-2xl border-4 border-secondary-fixed-dim shadow-[0_12px_0_0_#00daf3,0_0_20px_rgba(189,244,255,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#00daf3] transition-all duration-75 flex items-center justify-center focus:outline-none">
-<span class="material-symbols-outlined text-on-secondary" data-icon="diamond" style="font-size: 8rem;">diamond</span>
-</button>
-<!-- Button 3: Circle (Primary/Fuchsia acting as Bright Contrast) -->
-<button class="w-full h-full bg-primary rounded-2xl border-4 border-primary-container shadow-[0_12px_0_0_#ff00ff,0_0_20px_rgba(255,171,243,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#ff00ff] transition-all duration-75 flex items-center justify-center focus:outline-none">
-<span class="material-symbols-outlined text-on-primary" data-icon="circle" style="font-size: 8rem;">circle</span>
-</button>
-<!-- Button 4: Square (Tertiary/Purple acting as Bright Contrast) -->
-<button class="w-full h-full bg-tertiary-container rounded-2xl border-4 border-on-tertiary-fixed-variant shadow-[0_12px_0_0_#5700c9,0_0_20px_rgba(161,121,255,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#5700c9] transition-all duration-75 flex items-center justify-center focus:outline-none">
-<span class="material-symbols-outlined text-on-tertiary-container" data-icon="square" style="font-size: 8rem;">square</span>
-</button>
-</div>
+<main class="flex-1 w-full max-w-5xl mx-auto mt-[80px] p-md pt-lg flex flex-col items-center justify-center h-[calc(100vh-80px)] relative">
+    
+    <!-- JOIN SCREEN -->
+    <div id="join-screen" class="w-full max-w-sm flex flex-col gap-md">
+        <div class="bg-surface-container border-2 border-outline px-6 py-8 rounded-2xl shadow-[0_0_20px_rgba(255,171,243,0.2)] flex flex-col gap-6">
+            <h2 class="font-headline-md text-primary text-center">¡Únete a Dale Play!</h2>
+            <input type="text" id="pin-input" placeholder="PIN de la Sala" class="bg-surface-container-highest text-on-surface text-center font-headline-md py-4 rounded-xl border-2 border-outline focus:border-primary focus:ring-0 outline-none uppercase tracking-widest" autocomplete="off">
+            <input type="text" id="nick-input" placeholder="Tu Apodo" class="bg-surface-container-highest text-on-surface text-center font-headline-md py-4 rounded-xl border-2 border-outline focus:border-primary focus:ring-0 outline-none uppercase" autocomplete="off" maxlength="15">
+            <button id="join-btn" class="w-full py-4 bg-primary text-on-primary font-black uppercase text-xl rounded-xl border-b-8 border-[#ff00ff] active:translate-y-2 active:border-b-0 hover:brightness-110 transition-all focus:outline-none">
+                Ingresar
+            </button>
+        </div>
+    </div>
+
+    <!-- WAITING SCREEN -->
+    <div id="waiting-screen" class="hidden w-full flex-col items-center gap-md">
+        <div class="w-16 h-16 border-8 border-t-primary border-r-secondary border-b-error border-l-tertiary-container rounded-full animate-spin shadow-[0_0_20px_rgba(255,171,243,0.5)]"></div>
+        <h2 id="waiting-text" class="font-headline-md text-on-surface text-center animate-pulse mt-4">Conectando...</h2>
+    </div>
+
+    <!-- CONTROLLER SCREEN -->
+    <div id="controller-screen" class="hidden flex-col items-center w-full h-full">
+        <!-- Status / Identity Badge -->
+        <div class="w-full flex justify-center mb-md">
+            <div class="bg-surface-container-highest border-2 border-primary-container px-lg py-sm rounded-full shadow-[0_4px_0_0_rgba(255,0,255,0.4)] flex items-center gap-sm">
+                <div class="w-4 h-4 bg-secondary-container rounded-full animate-pulse shadow-[0_0_10px_rgba(0,227,253,0.8)]"></div>
+                <span id="player-status-badge" class="font-label-bold text-on-surface uppercase tracking-widest">¡Adivina!</span>
+            </div>
+        </div>
+
+        <!-- 2x2 Controller Grid -->
+        <div class="grid grid-cols-2 grid-rows-2 gap-md w-full h-full pb-xl">
+            <!-- Button 0: Triangle (Error/Red) -->
+            <button onclick="sendAnswer(0)" class="w-full h-full bg-error rounded-2xl border-4 border-error-container shadow-[0_12px_0_0_#93000a,0_0_20px_rgba(255,180,171,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#93000a] transition-all duration-75 flex items-center justify-center focus:outline-none">
+                <span class="material-symbols-outlined text-on-error" data-icon="change_history" style="font-size: 8rem;">change_history</span>
+            </button>
+            <!-- Button 1: Diamond (Secondary/Blue) -->
+            <button onclick="sendAnswer(1)" class="w-full h-full bg-secondary rounded-2xl border-4 border-secondary-fixed-dim shadow-[0_12px_0_0_#00daf3,0_0_20px_rgba(189,244,255,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#00daf3] transition-all duration-75 flex items-center justify-center focus:outline-none">
+                <span class="material-symbols-outlined text-on-secondary" data-icon="diamond" style="font-size: 8rem;">diamond</span>
+            </button>
+            <!-- Button 2: Circle (Primary/Fuchsia) -->
+            <button onclick="sendAnswer(2)" class="w-full h-full bg-primary rounded-2xl border-4 border-primary-container shadow-[0_12px_0_0_#ff00ff,0_0_20px_rgba(255,171,243,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#ff00ff] transition-all duration-75 flex items-center justify-center focus:outline-none">
+                <span class="material-symbols-outlined text-on-primary" data-icon="circle" style="font-size: 8rem;">circle</span>
+            </button>
+            <!-- Button 3: Square (Tertiary/Purple) -->
+            <button onclick="sendAnswer(3)" class="w-full h-full bg-tertiary-container rounded-2xl border-4 border-on-tertiary-fixed-variant shadow-[0_12px_0_0_#5700c9,0_0_20px_rgba(161,121,255,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#5700c9] transition-all duration-75 flex items-center justify-center focus:outline-none">
+                <span class="material-symbols-outlined text-on-tertiary-container" data-icon="square" style="font-size: 8rem;">square</span>
+            </button>
+        </div>
+    </div>
 </main>
+
+<script>
+    let ws = null;
+    let currentOptions = [];
+    let hasAnswered = false;
+
+    const joinScreen = document.getElementById('join-screen');
+    const waitingScreen = document.getElementById('waiting-screen');
+    const controllerScreen = document.getElementById('controller-screen');
+    const waitingText = document.getElementById('waiting-text');
+    const statusBadge = document.getElementById('player-status-badge');
+    const pinDisplay = document.getElementById('top-pin-display');
+
+    document.getElementById('join-btn').addEventListener('click', () => {
+        const pin = document.getElementById('pin-input').value.replace(/\s+/g, '').trim();
+        const nick = document.getElementById('nick-input').value.trim();
+
+        if (!pin || !nick) {
+            alert('Por favor ingresa un PIN y un Apodo');
+            return;
+        }
+
+        // Transición visual
+        joinScreen.classList.add('hidden');
+        waitingScreen.classList.remove('hidden');
+        waitingScreen.classList.add('flex');
+        waitingText.innerText = "Conectando al Host...";
+        
+        if (pinDisplay) {
+            pinDisplay.innerText = `PIN: ${pin.substring(0,3)} ${pin.substring(3)}`;
+        }
+
+        // Conectar WebSocket
+        ws = new WebSocket(`ws://127.0.0.1:8000/ws/player/${pin}/${nick}`);
+
+        ws.onopen = () => {
+            waitingText.innerText = "¡Estás dentro! Mirá la pantalla del TV...";
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'state_change') {
+                if (data.status === 'guessing') {
+                    // El Host arrancó la ronda
+                    hasAnswered = false;
+                    currentOptions = data.options || [];
+                    
+                    waitingScreen.classList.remove('flex');
+                    waitingScreen.classList.add('hidden');
+                    controllerScreen.classList.remove('hidden');
+                    controllerScreen.classList.add('flex');
+                    statusBadge.innerText = "¡Adivina rápido!";
+                } 
+                else if (data.status === 'revealing' || data.status === 'finished') {
+                    // El Host terminó la ronda o la partida
+                    controllerScreen.classList.remove('flex');
+                    controllerScreen.classList.add('hidden');
+                    waitingScreen.classList.remove('hidden');
+                    waitingScreen.classList.add('flex');
+                    waitingText.innerText = data.status === 'finished' ? "¡Partida Terminada!" : "¡Tiempo! Mira la pantalla...";
+                }
+            }
+        };
+
+        ws.onclose = (e) => {
+            console.warn("Desconectado", e);
+            controllerScreen.classList.remove('flex');
+            controllerScreen.classList.add('hidden');
+            waitingScreen.classList.remove('hidden');
+            waitingScreen.classList.add('flex');
+            waitingText.innerText = "Desconectado. Intenta recargar la página.";
+        };
+
+        ws.onerror = (err) => {
+            console.error("Error WS", err);
+            waitingText.innerText = "Error de red. Revisa tu conexión.";
+        };
+    });
+
+    // Enviar respuesta al hacer clic en un botón de figura
+    function sendAnswer(optionIndex) {
+        if (hasAnswered || !ws || ws.readyState !== WebSocket.OPEN) return;
+        
+        // Bloquear temporalmente nuevos clics
+        hasAnswered = true;
+        
+        const optionId = currentOptions[optionIndex] ? currentOptions[optionIndex].id : null;
+        
+        // Feedback visual inmediato en el celular
+        statusBadge.innerText = "¡Respuesta enviada!";
+
+        // El backend inyectará el 'player_name' automáticamente
+        ws.send(JSON.stringify({
+            type: 'player_answered',
+            answer_id: optionId,
+            option_index: optionIndex
+        }));
+    }
+</script>
 </body></html>
