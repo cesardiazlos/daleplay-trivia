@@ -168,21 +168,21 @@
 
         <!-- 2x2 Controller Grid -->
         <div class="grid grid-cols-2 grid-rows-2 gap-md w-full h-full pb-xl">
-            <!-- Button 0: Triangle (Error/Red) -->
-            <button onclick="sendAnswer(0)" class="w-full h-full bg-error rounded-2xl border-4 border-error-container shadow-[0_12px_0_0_#93000a,0_0_20px_rgba(255,180,171,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#93000a] transition-all duration-75 flex items-center justify-center focus:outline-none">
-                <span class="material-symbols-outlined text-on-error" data-icon="change_history" style="font-size: 8rem;">change_history</span>
+            <!-- Button 0: Triangle (Red) -->
+            <button onclick="sendAnswer(0)" class="w-full h-full bg-red-600 rounded-2xl shadow-[0_12px_0_0_#991b1b] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex items-center justify-center focus:outline-none">
+                <span class="material-symbols-outlined text-white" data-icon="change_history" style="font-variation-settings: 'FILL' 1; font-size: 8rem;">change_history</span>
             </button>
-            <!-- Button 1: Diamond (Secondary/Blue) -->
-            <button onclick="sendAnswer(1)" class="w-full h-full bg-secondary rounded-2xl border-4 border-secondary-fixed-dim shadow-[0_12px_0_0_#00daf3,0_0_20px_rgba(189,244,255,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#00daf3] transition-all duration-75 flex items-center justify-center focus:outline-none">
-                <span class="material-symbols-outlined text-on-secondary" data-icon="diamond" style="font-size: 8rem;">diamond</span>
+            <!-- Button 1: Diamond (Blue) -->
+            <button onclick="sendAnswer(1)" class="w-full h-full bg-blue-600 rounded-2xl shadow-[0_12px_0_0_#1e40af] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex items-center justify-center focus:outline-none">
+                <span class="material-symbols-outlined text-white" data-icon="diamond" style="font-variation-settings: 'FILL' 1; font-size: 8rem;">diamond</span>
             </button>
-            <!-- Button 2: Circle (Primary/Fuchsia) -->
-            <button onclick="sendAnswer(2)" class="w-full h-full bg-primary rounded-2xl border-4 border-primary-container shadow-[0_12px_0_0_#ff00ff,0_0_20px_rgba(255,171,243,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#ff00ff] transition-all duration-75 flex items-center justify-center focus:outline-none">
-                <span class="material-symbols-outlined text-on-primary" data-icon="circle" style="font-size: 8rem;">circle</span>
+            <!-- Button 2: Circle (Yellow) -->
+            <button onclick="sendAnswer(2)" class="w-full h-full bg-yellow-500 rounded-2xl shadow-[0_12px_0_0_#b45309] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex items-center justify-center focus:outline-none">
+                <span class="material-symbols-outlined text-white" data-icon="circle" style="font-variation-settings: 'FILL' 1; font-size: 8rem;">circle</span>
             </button>
-            <!-- Button 3: Square (Tertiary/Purple) -->
-            <button onclick="sendAnswer(3)" class="w-full h-full bg-tertiary-container rounded-2xl border-4 border-on-tertiary-fixed-variant shadow-[0_12px_0_0_#5700c9,0_0_20px_rgba(161,121,255,0.4)] active:translate-y-[12px] active:shadow-[0_0px_0_0_#5700c9] transition-all duration-75 flex items-center justify-center focus:outline-none">
-                <span class="material-symbols-outlined text-on-tertiary-container" data-icon="square" style="font-size: 8rem;">square</span>
+            <!-- Button 3: Square (Green) -->
+            <button onclick="sendAnswer(3)" class="w-full h-full bg-green-600 rounded-2xl shadow-[0_12px_0_0_#166534] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex items-center justify-center focus:outline-none">
+                <span class="material-symbols-outlined text-white" data-icon="square" style="font-variation-settings: 'FILL' 1; font-size: 8rem;">square</span>
             </button>
         </div>
     </div>
@@ -219,8 +219,9 @@
             pinDisplay.innerText = `PIN: ${pin.substring(0,3)} ${pin.substring(3)}`;
         }
 
-        // Conectar WebSocket
-        ws = new WebSocket(`ws://127.0.0.1:8000/ws/player/${pin}/${nick}`);
+        // Conectar WebSocket Dinámicamente
+        const wsUrl = 'ws://' + window.location.hostname + ':8000/ws/player/' + pin + '/' + nick;
+        ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
             waitingText.innerText = "¡Estás dentro! Mirá la pantalla del TV...";
