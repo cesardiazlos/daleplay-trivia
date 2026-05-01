@@ -186,12 +186,28 @@
     </div>
 
     <!-- FEEDBACK SCREEN -->
-    <div id="feedback-screen" class="hidden w-full flex-col items-center justify-center gap-4 h-full px-4 text-center pb-xl">
-        <h2 id="feedback-title" class="font-headline-md text-5xl text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">¡Correcto!</h2>
-        <div id="feedback-points" class="font-black text-4xl text-white mt-4">+850 pts</div>
-        <div class="mt-8 bg-black/50 rounded-2xl p-6 border-2 border-white/20 w-full max-w-sm">
-            <div class="text-gray-300 text-xl mb-2 uppercase tracking-widest font-bold">Puntaje Total</div>
-            <div id="feedback-total" class="font-black text-6xl text-fuchsia-400 drop-shadow-[0_0_15px_rgba(255,0,255,0.5)]">1500</div>
+    <div id="feedback-screen" class="hidden absolute inset-0 flex-col items-center justify-center bg-transparent z-40 p-6 text-center w-full">
+        <h2 id="feedback-title" class="font-black italic text-[64px] text-white drop-shadow-[0_0_20px_rgba(0,0,0,0.8)] leading-none mb-4 uppercase tracking-tighter w-full px-2 break-words">¡Correcto!</h2>
+        <div id="feedback-points" class="font-black text-4xl text-white drop-shadow-md bg-black/40 px-6 py-2 rounded-full mb-8">+1350 pts</div>
+        
+        <div class="flex flex-col items-center gap-2 mt-auto mb-12">
+            <span class="text-white/80 font-bold text-xl uppercase tracking-widest">Puntaje Total</span>
+            <span id="feedback-total" class="font-black text-6xl text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">4500</span>
+        </div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="game-over-screen" class="hidden absolute inset-0 flex-col items-center justify-center bg-gray-900 z-50 p-6 text-center w-full">
+        <h2 class="font-black italic text-[48px] text-fuchsia-500 drop-shadow-[0_0_20px_rgba(255,0,255,0.8)] leading-tight mb-8 uppercase tracking-tighter">¡Partida Terminada!</h2>
+        <div class="bg-gray-800 border-2 border-gray-700 rounded-3xl p-8 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center w-full max-w-sm">
+            <span class="text-gray-400 font-bold text-xl uppercase tracking-widest mb-2">Obtuviste el</span>
+            <div class="flex items-center justify-center mb-2">
+                <span id="game-over-position" class="text-7xl font-black text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]">1º</span>
+                <span class="text-3xl font-bold text-gray-300 ml-2 mt-4">lugar</span>
+            </div>
+            <div class="w-full h-px bg-gray-700 my-6"></div>
+            <span class="text-gray-400 font-bold text-sm uppercase tracking-widest mb-1">Puntaje Final</span>
+            <span id="game-over-score" class="text-5xl font-black text-fuchsia-400">0</span>
         </div>
     </div>
 </main>
@@ -205,6 +221,7 @@
     const waitingScreen = document.getElementById('waiting-screen');
     const controllerScreen = document.getElementById('controller-screen');
     const feedbackScreen = document.getElementById('feedback-screen');
+    const gameOverScreen = document.getElementById('game-over-screen');
     
     const waitingText = document.getElementById('waiting-text');
     const statusBadge = document.getElementById('player-status-badge');
@@ -213,6 +230,9 @@
     const feedbackTitle = document.getElementById('feedback-title');
     const feedbackPoints = document.getElementById('feedback-points');
     const feedbackTotal = document.getElementById('feedback-total');
+    
+    const gameOverPosition = document.getElementById('game-over-position');
+    const gameOverScore = document.getElementById('game-over-score');
 
     document.getElementById('join-btn').addEventListener('click', () => {
         const pin = document.getElementById('pin-input').value.replace(/\s+/g, '').trim();
@@ -294,6 +314,37 @@
                         feedbackPoints.innerText = "+0 pts";
                     }
                 }
+            }
+            } else if (data.type === 'game_over') {
+                const nick = document.getElementById('nick-input').value.trim();
+                const leaderboard = data.leaderboard || [];
+                
+                // Buscar la posición del jugador
+                let positionIndex = leaderboard.findIndex(p => p.name === nick);
+                
+                document.body.classList.remove('bg-green-500', 'bg-red-500'); // Limpiar fondo verde/rojo
+                
+                // Ocultar todo
+                waitingScreen.classList.remove('flex');
+                waitingScreen.classList.add('hidden');
+                controllerScreen.classList.remove('flex');
+                controllerScreen.classList.add('hidden');
+                feedbackScreen.classList.remove('flex');
+                feedbackScreen.classList.add('hidden');
+                joinScreen.classList.add('hidden');
+
+                if (positionIndex !== -1) {
+                    const playerData = leaderboard[positionIndex];
+                    gameOverPosition.innerText = `${positionIndex + 1}º`;
+                    gameOverScore.innerText = playerData.score;
+                } else {
+                    gameOverPosition.innerText = "-";
+                    gameOverScore.innerText = "0";
+                }
+
+                // Mostrar pantalla de Game Over
+                gameOverScreen.classList.remove('hidden');
+                gameOverScreen.classList.add('flex');
             }
         };
 

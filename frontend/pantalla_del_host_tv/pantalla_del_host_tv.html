@@ -246,21 +246,34 @@
 
 <!-- Panel de Revelación (Fase Kahoot) -->
 <div id="song-info" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl opacity-0 pointer-events-none transition-opacity duration-500">
-    <div id="song-info-card" class="flex flex-col items-center justify-center p-8 rounded-3xl border-4 border-primary shadow-[0_0_50px_rgba(255,171,243,0.4)] bg-surface text-center max-w-2xl w-full mx-4 transform scale-95 transition-transform duration-500">
-        <span class="material-symbols-outlined text-primary text-6xl mb-4">music_note</span>
-        <h2 id="song-title" class="text-[40px] leading-tight font-black text-primary drop-shadow-[0_0_10px_rgba(255,171,243,0.8)] px-4 line-clamp-2"></h2>
-        <h3 id="song-artist" class="text-[24px] font-bold text-secondary px-4 mt-2 mb-6"></h3>
+    <div id="song-info-card" class="grid grid-cols-2 gap-8 items-stretch p-8 rounded-3xl border-4 border-primary shadow-[0_0_50px_rgba(255,171,243,0.4)] bg-surface max-w-6xl w-full mx-4 transform scale-95 transition-transform duration-500">
         
-        <!-- Contenedor del reproductor de YouTube (Doble Buffering) -->
-        <div id="youtube-container" class="relative w-full aspect-video rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,227,253,0.5)] border-2 border-secondary-container mb-8 transition-opacity duration-500 absolute left-[-9999px] top-[-9999px]">
-            <div id="player-A" class="absolute inset-0 z-10 opacity-100"></div>
-            <div id="player-B" class="absolute inset-0 z-0 opacity-0 pointer-events-none"></div>
+        <!-- Columna Izquierda: Video -->
+        <div class="flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-primary text-6xl mb-2">music_note</span>
+            <h2 id="song-title" class="text-[32px] leading-tight font-black text-primary drop-shadow-[0_0_10px_rgba(255,171,243,0.8)] px-4 line-clamp-2"></h2>
+            <h3 id="song-artist" class="text-[20px] font-bold text-secondary px-4 mt-1 mb-4"></h3>
+            
+            <!-- Contenedor del reproductor de YouTube (Doble Buffering) -->
+            <div id="youtube-container" class="relative w-full aspect-video rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,227,253,0.5)] border-2 border-secondary-container mb-6 transition-opacity duration-500 absolute left-[-9999px] top-[-9999px]">
+                <div id="player-A" class="absolute inset-0 z-10 opacity-100"></div>
+                <div id="player-B" class="absolute inset-0 z-0 opacity-0 pointer-events-none"></div>
+            </div>
+
+            <button id="next-song-btn" class="w-full py-4 bg-secondary text-on-secondary font-headline-md text-[20px] uppercase tracking-wider rounded-xl border-b-8 border-[#009fb0] shadow-[0_0_20px_rgba(189,244,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[10px] active:translate-y-2 active:border-b-2 transition-all flex justify-center items-center gap-3">
+                <span class="font-black">SIGUIENTE CANCIÓN</span>
+                <span class="material-symbols-outlined text-3xl font-black">skip_next</span>
+            </button>
         </div>
 
-        <button id="next-song-btn" class="py-4 px-8 bg-secondary text-on-secondary font-headline-md text-[24px] uppercase tracking-wider rounded-xl border-b-8 border-[#009fb0] shadow-[0_0_20px_rgba(189,244,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[10px] active:translate-y-2 active:border-b-2 transition-all flex justify-center items-center gap-3">
-            <span class="font-black">SIGUIENTE CANCIÓN</span>
-            <span class="material-symbols-outlined text-4xl font-black">skip_next</span>
-        </button>
+        <!-- Columna Derecha: Ranking en Vivo -->
+        <div class="flex flex-col bg-gray-900 rounded-2xl border-2 border-gray-700 p-6 overflow-hidden max-h-[500px]">
+            <h3 class="text-3xl font-black italic text-fuchsia-400 mb-6 text-center uppercase tracking-widest border-b-2 border-gray-700 pb-4">Ranking en Vivo</h3>
+            <div id="live-ranking-list" class="flex flex-col gap-3 overflow-y-auto flex-grow h-full pr-2">
+                <!-- JS inyectará el ranking parcial aquí -->
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -656,7 +669,7 @@
             
             podiumList.innerHTML = '';
             
-            // Ordenar puntajes
+            // Ordenar puntajes finales
             const sortedPlayers = Object.keys(playerScores).map(name => {
                 return { name: name, score: playerScores[name].score };
             }).sort((a, b) => b.score - a.score);
@@ -666,10 +679,10 @@
             } else {
                 sortedPlayers.forEach((p, idx) => {
                     const row = document.createElement('div');
-                    row.className = `flex justify-between items-center bg-gray-800 border-2 ${idx === 0 ? 'border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.6)] scale-105 my-4' : 'border-gray-700'} rounded-2xl p-6`;
+                    row.className = `flex justify-between items-center bg-gray-800 border ${idx === 0 ? 'border-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.5)] scale-105 my-4' : 'border-gray-700'} rounded-2xl p-6`;
                     row.innerHTML = `
                         <div class="flex items-center gap-6">
-                            <span class="text-5xl font-black ${idx === 0 ? 'text-yellow-400' : (idx === 1 ? 'text-gray-300' : (idx === 2 ? 'text-amber-600' : 'text-gray-500'))}">#${idx + 1}</span>
+                            <span class="text-5xl font-black ${idx === 0 ? 'text-fuchsia-500' : (idx === 1 ? 'text-gray-300' : (idx === 2 ? 'text-amber-600' : 'text-gray-500'))}">#${idx + 1}</span>
                             <span class="text-4xl font-bold text-white uppercase tracking-widest">${p.name}</span>
                         </div>
                         <span class="text-5xl font-black text-fuchsia-400 drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]">${p.score} <span class="text-2xl text-fuchsia-300">pts</span></span>
@@ -678,9 +691,10 @@
                 });
             }
 
-            // Sincronización WebSocket (Fin de Partida)
+            // Sincronización WebSocket (Fin de Partida -> game_over con leaderboard)
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'state_change', status: 'finished' }));
+                ws.send(JSON.stringify({ type: 'game_over', leaderboard: sortedPlayers }));
             }
             return;
         }
@@ -700,6 +714,14 @@
         }
 
         // Ocultar el panel de revelación (Fase de Adivinanza)
+        // Asegurarse que la grilla de botones esté visible y el panel de revelación oculto
+        const optionsGrid = document.getElementById('options-grid');
+        const timerSection = document.getElementById('timer-section');
+        if (optionsGrid) optionsGrid.classList.remove('hidden');
+        if (optionsGrid) optionsGrid.classList.add('grid');
+        if (timerSection) timerSection.classList.remove('hidden');
+        if (timerSection) timerSection.classList.add('flex');
+
         songInfo.classList.remove('opacity-100', 'pointer-events-auto');
         songInfo.classList.add('opacity-0', 'pointer-events-none');
         songInfoCard.classList.remove('scale-100');
@@ -790,15 +812,7 @@
             ws.send(JSON.stringify({ type: 'state_change', status: 'revealing', correctSongId: currentSong.id }));
         }
 
-        // Mostrar panel y video
-        songInfo.classList.remove('opacity-0', 'pointer-events-none');
-        songInfo.classList.add('opacity-100', 'pointer-events-auto');
-        songInfoCard.classList.remove('scale-95');
-        songInfoCard.classList.add('scale-100');
-        
-        youtubeContainer.classList.remove('absolute', 'left-[-9999px]', 'top-[-9999px]');
-
-        // Scoring Engine
+        // Scoring Engine (Mantenido igual)
         let voteCounts = {};
         for (let i = 0; i < 4; i++) {
             if (gameState.currentOptions[i]) {
@@ -827,7 +841,32 @@
         }
         console.log("[Scoring] Puntajes actualizados:", playerScores);
 
-        // Actualizar visual de los 4 botones
+        // Enviar score_update a celulares (Mantenido igual)
+        for (const playerName of connectedPlayers) {
+            const answer = currentRoundAnswers[playerName];
+            let isCorrect = false;
+            let pointsEarned = 0;
+
+            if (answer) {
+                const ansId = answer.answerId;
+                if (ansId === currentSong.id) {
+                    isCorrect = true;
+                    pointsEarned = 1000 + Math.floor(answer.timeRemaining * 50);
+                }
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ 
+                    type: 'score_update', 
+                    target: playerName, 
+                    isCorrect: isCorrect, 
+                    pointsEarned: pointsEarned, 
+                    totalScore: playerScores[playerName] ? playerScores[playerName].score : 0 
+                }));
+            }
+        }
+
+        // Actualizar visual de los 4 botones (Mostrar badges)
         for (let i = 0; i < 4; i++) {
             const cardEl = document.getElementById(`card-${i}`);
             if (!cardEl || !gameState.currentOptions[i]) continue;
@@ -848,6 +887,52 @@
                 cardEl.classList.add('opacity-40', 'grayscale');
             }
         }
+
+        // TIMEOUT DE 3 SEGUNDOS ANTES DEL SPLIT SCREEN
+        setTimeout(() => {
+            // Ocultar botones y reloj
+            const optionsGrid = document.getElementById('options-grid');
+            const timerSection = document.getElementById('timer-section');
+            if (optionsGrid) {
+                optionsGrid.classList.remove('grid');
+                optionsGrid.classList.add('hidden');
+            }
+            if (timerSection) {
+                timerSection.classList.remove('flex');
+                timerSection.classList.add('hidden');
+            }
+
+            // Mostrar el panel de información final (Split Screen)
+            songInfo.classList.remove('opacity-0', 'pointer-events-none');
+            songInfo.classList.add('opacity-100', 'pointer-events-auto');
+            songInfoCard.classList.remove('scale-95');
+            songInfoCard.classList.add('scale-100');
+            youtubeContainer.classList.remove('absolute', 'left-[-9999px]', 'top-[-9999px]');
+
+            // Renderizar Ranking en Vivo
+            const liveRankingList = document.getElementById('live-ranking-list');
+            if (liveRankingList) {
+                liveRankingList.innerHTML = '';
+                const sortedLivePlayers = Object.keys(playerScores).map(name => {
+                    return { name: name, score: playerScores[name].score };
+                }).sort((a, b) => b.score - a.score);
+
+                sortedLivePlayers.forEach((p, idx) => {
+                    const row = document.createElement('div');
+                    row.className = `flex justify-between items-center bg-gray-800 p-3 rounded-xl border border-gray-700 ${idx === 0 ? 'border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.4)]' : ''}`;
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl font-black ${idx === 0 ? 'text-yellow-400' : 'text-gray-400'}">#${idx + 1}</span>
+                            <span class="text-lg font-bold text-white uppercase">${p.name}</span>
+                        </div>
+                        <span class="text-2xl font-black text-fuchsia-400">${p.score} <span class="text-sm text-fuchsia-300">pts</span></span>
+                    `;
+                    liveRankingList.appendChild(row);
+                });
+            }
+
+        }, 3000);
+
     }
 </script>
 <style>
