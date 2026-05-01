@@ -112,24 +112,26 @@
   </head>
 <body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden antialiased selection:bg-primary-container selection:text-on-primary-container">
 <!-- TopAppBar -->
-<header class="bg-neutral-950/90 backdrop-blur-xl docked full-width top-0 border-b-4 border-black shadow-[0_4px_0_0_rgba(0,0,0,0.6)] fixed left-0 w-full z-50 flex justify-between items-center px-6 py-4 font-spline-sans font-black uppercase tracking-tighter text-fuchsia-500 h-[80px]">
-<div class="flex items-center gap-sm">
-<button class="hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none flex items-center justify-center p-2 rounded-full">
-<span class="material-symbols-outlined text-3xl" data-icon="equalizer" data-weight="fill">equalizer</span>
-</button>
-<span class="text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.8)]">Dale Play</span>
-</div>
-<div id="top-pin-display" class="text-fuchsia-400 font-bold font-headline-md tracking-widest text-center absolute left-1/2 -translate-x-1/2">
-            PIN: --- ---
-        </div>
-<div class="flex items-center gap-sm">
-<button class="text-neutral-500 hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none flex items-center justify-center p-2 rounded-full">
-<span class="material-symbols-outlined text-3xl" data-icon="settings" data-weight="fill">settings</span>
-</button>
-<button class="text-neutral-500 hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none flex items-center justify-center p-2 rounded-full">
-<span class="material-symbols-outlined text-3xl" data-icon="volume_up" data-weight="fill">volume_up</span>
-</button>
-</div>
+<header class="bg-neutral-950/90 backdrop-blur-xl docked full-width top-0 border-b-4 border-black shadow-[0_4px_0_0_rgba(0,0,0,0.6)] fixed left-0 w-full z-50 flex justify-between items-center px-3 sm:px-6 py-4 font-spline-sans font-black uppercase tracking-tighter text-fuchsia-500 min-h-[80px]">
+    <div class="flex items-center gap-1 sm:gap-sm shrink-0">
+        <button class="hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none flex items-center justify-center p-2 rounded-full">
+            <span class="material-symbols-outlined text-2xl sm:text-3xl" data-icon="equalizer" data-weight="fill">equalizer</span>
+        </button>
+        <span class="text-lg sm:text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.8)] hidden min-[360px]:block">Dale Play</span>
+    </div>
+    
+    <div id="top-pin-display" class="text-fuchsia-400 font-bold font-headline-md tracking-widest text-center text-sm sm:text-base whitespace-nowrap px-2 flex-1 flex justify-center">
+        PIN: --- ---
+    </div>
+
+    <div class="flex items-center gap-1 sm:gap-sm shrink-0">
+        <button class="text-neutral-500 hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none hidden sm:flex items-center justify-center p-2 rounded-full">
+            <span class="material-symbols-outlined text-2xl sm:text-3xl" data-icon="settings" data-weight="fill">settings</span>
+        </button>
+        <button class="text-neutral-500 hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none flex items-center justify-center p-2 rounded-full">
+            <span class="material-symbols-outlined text-2xl sm:text-3xl" data-icon="volume_up" data-weight="fill">volume_up</span>
+        </button>
+    </div>
 </header>
 <!-- Main Canvas: Player Controller Grid -->
 <main class="flex-1 w-full max-w-5xl mx-auto mt-[80px] flex flex-col items-center justify-center min-h-[calc(100dvh-80px)] relative">
