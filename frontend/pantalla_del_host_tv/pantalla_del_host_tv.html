@@ -265,6 +265,15 @@
 </div>
 
 </main>
+
+<!-- Podium Screen -->
+<div id="podium-screen" class="hidden flex-col items-center pt-12 pb-4 w-full max-w-4xl mx-auto h-[calc(100vh-80px)] mt-[80px] px-8 overflow-y-auto">
+    <h1 class="text-7xl font-black italic text-fuchsia-500 drop-shadow-[0_0_40px_rgba(255,0,255,0.8)] mb-12 uppercase tracking-tight text-center">Ranking Final</h1>
+    <div id="podium-list" class="w-full flex flex-col gap-4">
+        <!-- Rellenado por JS -->
+    </div>
+</div>
+
 <!-- BottomNavBar -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-3 bg-neutral-950 docked full-width bottom-0 border-t-4 border-neutral-900 border-t-4 border-black shadow-[0_-4px_0_0_rgba(0,0,0,0.6)] md:hidden">
 <div class="flex flex-col items-center justify-center bg-fuchsia-600 text-white rounded-lg px-6 py-2 shadow-[0_4px_0_0_rgba(162,28,175,1)] translate-y-[-4px]">
@@ -598,9 +607,31 @@
 
     function getRandomOptions(correctSong) {
         const options = [correctSong];
-        const others = songs.filter(s => s.id !== correctSong.id);
+        // Filtrar por ID y por ARTISTA único respecto a las ya seleccionadas
+        const others = songs.filter(s => s.id !== correctSong.id && s.artist.name !== correctSong.artist.name);
         others.sort(() => 0.5 - Math.random());
-        options.push(...others.slice(0, 3));
+        
+        // Coger hasta 3 canciones que no repitan artista entre ellas
+        let selectedOthers = [];
+        let seenArtists = new Set([correctSong.artist.name]);
+        
+        for (let s of others) {
+            if (!seenArtists.has(s.artist.name)) {
+                selectedOthers.push(s);
+                seenArtists.add(s.artist.name);
+            }
+            if (selectedOthers.length >= 3) break;
+        }
+
+        options.push(...selectedOthers);
+        
+        // Si no logramos llenar 4 opciones, metemos randoms de relleno (fallback)
+        if (options.length < 4) {
+            const fallback = songs.filter(s => !options.find(opt => opt.id === s.id));
+            fallback.sort(() => 0.5 - Math.random());
+            options.push(...fallback.slice(0, 4 - options.length));
+        }
+
         options.sort(() => 0.5 - Math.random());
         return options;
     }
@@ -612,15 +643,40 @@
             stopVisualizer();
             if (players.A && players.A.stopVideo) players.A.stopVideo();
             if (players.B && players.B.stopVideo) players.B.stopVideo();
-            songTitle.innerText = "¡Partida Terminada!";
-            songArtist.innerText = "Mira los puntajes en tu móvil";
-            youtubeContainer.style.display = 'none';
-            nextSongBtn.style.display = 'none';
             
-            songInfo.classList.remove('opacity-0', 'pointer-events-none');
-            songInfo.classList.add('opacity-100', 'pointer-events-auto');
-            songInfoCard.classList.remove('scale-95');
-            songInfoCard.classList.add('scale-100');
+            // Ocultar pantalla de juego
+            gameScreen.classList.add('hidden');
+            gameScreen.classList.remove('flex');
+            
+            // Mostrar podio
+            const podiumScreen = document.getElementById('podium-screen');
+            const podiumList = document.getElementById('podium-list');
+            podiumScreen.classList.remove('hidden');
+            podiumScreen.classList.add('flex');
+            
+            podiumList.innerHTML = '';
+            
+            // Ordenar puntajes
+            const sortedPlayers = Object.keys(playerScores).map(name => {
+                return { name: name, score: playerScores[name].score };
+            }).sort((a, b) => b.score - a.score);
+
+            if (sortedPlayers.length === 0) {
+                podiumList.innerHTML = '<div class="text-center text-4xl text-gray-400 font-bold mt-12">Nadie jugó esta partida.</div>';
+            } else {
+                sortedPlayers.forEach((p, idx) => {
+                    const row = document.createElement('div');
+                    row.className = `flex justify-between items-center bg-gray-800 border-2 ${idx === 0 ? 'border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.6)] scale-105 my-4' : 'border-gray-700'} rounded-2xl p-6`;
+                    row.innerHTML = `
+                        <div class="flex items-center gap-6">
+                            <span class="text-5xl font-black ${idx === 0 ? 'text-yellow-400' : (idx === 1 ? 'text-gray-300' : (idx === 2 ? 'text-amber-600' : 'text-gray-500'))}">#${idx + 1}</span>
+                            <span class="text-4xl font-bold text-white uppercase tracking-widest">${p.name}</span>
+                        </div>
+                        <span class="text-5xl font-black text-fuchsia-400 drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]">${p.score} <span class="text-2xl text-fuchsia-300">pts</span></span>
+                    `;
+                    podiumList.appendChild(row);
+                });
+            }
 
             // Sincronización WebSocket (Fin de Partida)
             if (ws && ws.readyState === WebSocket.OPEN) {

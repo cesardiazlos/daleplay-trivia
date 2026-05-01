@@ -184,6 +184,16 @@
             </button>
         </div>
     </div>
+
+    <!-- FEEDBACK SCREEN -->
+    <div id="feedback-screen" class="hidden w-full flex-col items-center justify-center gap-4 h-full px-4 text-center pb-xl">
+        <h2 id="feedback-title" class="font-headline-md text-5xl text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">¡Correcto!</h2>
+        <div id="feedback-points" class="font-black text-4xl text-white mt-4">+850 pts</div>
+        <div class="mt-8 bg-black/50 rounded-2xl p-6 border-2 border-white/20 w-full max-w-sm">
+            <div class="text-gray-300 text-xl mb-2 uppercase tracking-widest font-bold">Puntaje Total</div>
+            <div id="feedback-total" class="font-black text-6xl text-fuchsia-400 drop-shadow-[0_0_15px_rgba(255,0,255,0.5)]">1500</div>
+        </div>
+    </div>
 </main>
 
 <script>
@@ -194,9 +204,15 @@
     const joinScreen = document.getElementById('join-screen');
     const waitingScreen = document.getElementById('waiting-screen');
     const controllerScreen = document.getElementById('controller-screen');
+    const feedbackScreen = document.getElementById('feedback-screen');
+    
     const waitingText = document.getElementById('waiting-text');
     const statusBadge = document.getElementById('player-status-badge');
     const pinDisplay = document.getElementById('top-pin-display');
+    
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackPoints = document.getElementById('feedback-points');
+    const feedbackTotal = document.getElementById('feedback-total');
 
     document.getElementById('join-btn').addEventListener('click', () => {
         const pin = document.getElementById('pin-input').value.replace(/\s+/g, '').trim();
@@ -234,8 +250,11 @@
                     hasAnswered = false;
                     currentOptions = data.options || [];
                     
+                    document.body.style.backgroundColor = ''; // Limpiar color de fondo si venimos de feedback
                     waitingScreen.classList.remove('flex');
                     waitingScreen.classList.add('hidden');
+                    feedbackScreen.classList.remove('flex');
+                    feedbackScreen.classList.add('hidden');
                     controllerScreen.classList.remove('hidden');
                     controllerScreen.classList.add('flex');
                     statusBadge.innerText = "¡Adivina rápido!";
@@ -244,9 +263,36 @@
                     // El Host terminó la ronda o la partida
                     controllerScreen.classList.remove('flex');
                     controllerScreen.classList.add('hidden');
-                    waitingScreen.classList.remove('hidden');
-                    waitingScreen.classList.add('flex');
-                    waitingText.innerText = data.status === 'finished' ? "¡Partida Terminada!" : "¡Tiempo! Mira la pantalla...";
+                    
+                    // Solo mostramos waiting si no estamos viendo un feedback de puntos
+                    if (feedbackScreen.classList.contains('hidden')) {
+                        waitingScreen.classList.remove('hidden');
+                        waitingScreen.classList.add('flex');
+                        waitingText.innerText = data.status === 'finished' ? "¡Partida Terminada!" : "¡Tiempo! Mira la pantalla...";
+                    }
+                }
+            } else if (data.type === 'score_update') {
+                const nick = document.getElementById('nick-input').value.trim();
+                if (data.target === nick) {
+                    waitingScreen.classList.remove('flex');
+                    waitingScreen.classList.add('hidden');
+                    controllerScreen.classList.remove('flex');
+                    controllerScreen.classList.add('hidden');
+                    
+                    feedbackScreen.classList.remove('hidden');
+                    feedbackScreen.classList.add('flex');
+
+                    feedbackTotal.innerText = data.totalScore;
+
+                    if (data.isCorrect) {
+                        document.body.style.backgroundColor = '#166534'; // bg-green-800
+                        feedbackTitle.innerText = "¡Correcto!";
+                        feedbackPoints.innerText = `+${data.pointsEarned} pts`;
+                    } else {
+                        document.body.style.backgroundColor = '#991b1b'; // bg-red-800
+                        feedbackTitle.innerText = "¡Incorrecto!";
+                        feedbackPoints.innerText = "+0 pts";
+                    }
                 }
             }
         };
