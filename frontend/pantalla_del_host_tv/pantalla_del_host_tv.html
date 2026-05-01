@@ -174,21 +174,23 @@
 
 <!-- Lobby Screen -->
 <div id="lobby-screen" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col items-center justify-center px-md w-full h-full">
-    <h2 class="text-white font-headline-md text-5xl mb-6 text-center w-full">Únete en tu celular y entra con este PIN:</h2>
-    <div id="lobby-pin-display" class="text-display-xl text-[180px] font-black text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.8)] tracking-widest leading-none mb-16 text-center w-full">
+    <h1 class="text-[120px] font-black italic text-fuchsia-500 drop-shadow-[0_0_40px_rgba(255,0,255,0.8)] mb-4">Dale Play</h1>
+    <h2 class="text-gray-300 font-headline-md text-4xl mb-6 text-center w-full">Únete en tu celular y entra con este PIN:</h2>
+    <div id="lobby-pin-display" class="text-display-xl text-[180px] font-black text-cyan-400 drop-shadow-[0_0_40px_rgba(0,227,253,0.8)] tracking-widest leading-none mb-12 text-center w-full">
         --- ---
     </div>
-    <div class="bg-gray-800 border-2 border-gray-700 rounded-3xl p-10 w-full max-w-4xl shadow-[0_0_40px_rgba(0,0,0,0.8)] flex flex-col">
-        <div class="flex justify-between items-center mb-8">
+    <div class="bg-gray-800 border-2 border-gray-700 rounded-3xl p-8 w-full max-w-4xl shadow-[0_0_40px_rgba(0,0,0,0.8)] flex flex-col relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-fuchsia-500/10 to-transparent pointer-events-none"></div>
+        <div class="flex justify-between items-center mb-8 relative z-10">
             <h3 class="text-white font-headline-md text-4xl">Jugadores Conectados</h3>
-            <div class="bg-primary text-white font-black rounded-full px-6 py-2 text-3xl shadow-[0_0_15px_rgba(255,171,243,0.6)]" id="player-count">0</div>
+            <div class="bg-fuchsia-600 text-white font-black rounded-full px-6 py-2 text-3xl shadow-[0_0_15px_rgba(255,0,255,0.6)]" id="player-count">0</div>
         </div>
-        <div id="players-grid" class="flex flex-wrap gap-4 min-h-[200px] content-start justify-center w-full">
-            <div class="text-gray-400 w-full text-center italic mt-12 text-2xl" id="waiting-players-msg">Esperando jugadores...</div>
+        <div id="players-grid" class="flex flex-wrap gap-4 min-h-[160px] content-start justify-center relative z-10 w-full">
+            <div class="text-gray-500 w-full text-center italic mt-8 text-2xl" id="waiting-players-msg">Esperando jugadores...</div>
         </div>
     </div>
     
-    <button id="start-trivia-btn" class="mt-16 py-8 px-16 bg-blue-600 text-white font-headline-md text-4xl uppercase tracking-wider rounded-2xl border-b-8 border-blue-800 shadow-[0_0_30px_rgba(30,64,175,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[12px] active:translate-y-3 active:border-b-2 transition-all opacity-50 pointer-events-none">
+    <button id="start-trivia-btn" class="mt-12 py-6 px-16 bg-fuchsia-600 text-white font-headline-md text-4xl uppercase tracking-wider rounded-2xl border-b-8 border-fuchsia-900 shadow-[0_0_30px_rgba(255,0,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[12px] active:translate-y-3 active:border-b-2 transition-all opacity-50 pointer-events-none z-10">
         CARGANDO YOUTUBE...
     </button>
 </div>
@@ -296,7 +298,8 @@
         timer: 15,
         intervalId: null,
         hasTimerStarted: false,
-        fadeInterval: null
+        fadeInterval: null,
+        currentOptions: null
     };
 
     // Variables de Red (WebSocket)
@@ -506,6 +509,16 @@
                     console.log(`[WebSocket] Jugador se ha unido: ${data.player_name}`);
                     connectedPlayers = data.players_list;
                     updatePlayersLobby();
+                    
+                    // Sincronizar jugador rezagado si ya empezó la ronda
+                    if (gameState.hasTimerStarted && gameState.timer > 0 && gameState.currentOptions) {
+                        ws.send(JSON.stringify({ 
+                            type: 'state_change', 
+                            status: 'guessing', 
+                            songIndex: gameState.currentSongIndex,
+                            options: gameState.currentOptions.map(opt => ({ id: opt.id, title: opt.title, artist: opt.artist.name }))
+                        }));
+                    }
                     break;
                 case 'player_left':
                     console.log(`[WebSocket] Jugador se ha desconectado: ${data.player_name}`);
@@ -576,6 +589,7 @@
 
         const currentSong = songs[index];
         const options = getRandomOptions(currentSong);
+        gameState.currentOptions = options;
 
         // Sincronización WebSocket (Inicio de Ronda - Adivinanza)
         if (ws && ws.readyState === WebSocket.OPEN) {

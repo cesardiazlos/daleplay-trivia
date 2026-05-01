@@ -108,11 +108,7 @@
             }
         };
     </script>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
+
   </head>
 <body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden antialiased selection:bg-primary-container selection:text-on-primary-container">
 <!-- TopAppBar -->
@@ -136,10 +132,10 @@
 </div>
 </header>
 <!-- Main Canvas: Player Controller Grid -->
-<main class="flex-1 w-full max-w-5xl mx-auto mt-[80px] p-md pt-lg flex flex-col items-center justify-center h-[calc(100vh-80px)] relative">
+<main class="flex-1 w-full max-w-5xl mx-auto mt-[80px] flex flex-col items-center justify-center min-h-[calc(100dvh-80px)] relative">
     
     <!-- JOIN SCREEN -->
-    <div id="join-screen" class="w-full max-w-sm flex flex-col gap-md">
+    <div id="join-screen" class="w-full max-w-sm flex flex-col gap-6 px-4">
         <div class="bg-surface-container border-2 border-outline px-6 py-8 rounded-2xl shadow-[0_0_20px_rgba(255,171,243,0.2)] flex flex-col gap-6">
             <h2 class="font-headline-md text-primary text-center">¡Únete a Dale Play!</h2>
             <input type="text" id="pin-input" placeholder="PIN de la Sala" class="bg-surface-container-highest text-on-surface text-center font-headline-md py-4 rounded-xl border-2 border-outline focus:border-primary focus:ring-0 outline-none uppercase tracking-widest" autocomplete="off">
