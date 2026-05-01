@@ -355,12 +355,16 @@
             controllerScreen.classList.add('hidden');
             waitingScreen.classList.remove('hidden');
             waitingScreen.classList.add('flex');
-            waitingText.innerText = "Desconectado. Intenta recargar la página.";
+            waitingText.innerHTML = '<span class="text-red-500 font-bold text-2xl drop-shadow-md">Error de conexión:<br>La sala no existe o el Host se desconectó.</span><br><br><button onclick="window.location.reload()" class="px-6 py-3 mt-4 bg-red-600 text-white rounded-full uppercase font-bold shadow-[0_0_15px_rgba(220,38,38,0.6)] active:scale-95 transition-all">Volver a Intentar</button>';
         };
 
         ws.onerror = (err) => {
             console.error("Error WS", err);
-            waitingText.innerText = "Error de red. Revisa tu conexión.";
+            controllerScreen.classList.remove('flex');
+            controllerScreen.classList.add('hidden');
+            waitingScreen.classList.remove('hidden');
+            waitingScreen.classList.add('flex');
+            waitingText.innerHTML = '<span class="text-red-500 font-bold text-2xl drop-shadow-md">Error de conexión:<br>La sala no existe o el Host se desconectó.</span><br><br><button onclick="window.location.reload()" class="px-6 py-3 mt-4 bg-red-600 text-white rounded-full uppercase font-bold shadow-[0_0_15px_rgba(220,38,38,0.6)] active:scale-95 transition-all">Volver a Intentar</button>';
         };
     });
 
