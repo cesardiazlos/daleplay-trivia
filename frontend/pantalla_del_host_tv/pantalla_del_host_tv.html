@@ -223,22 +223,22 @@
 <!-- Options Grid -->
 <section class="grid grid-cols-2 gap-4 w-full mt-2 flex-grow min-h-0 mb-4">
 <!-- Card 1: Red Triangle -->
-<div class="flex flex-col items-center justify-center p-8 rounded-xl bg-red-600 shadow-[0_8px_0_0_#991b1b] active:translate-y-2 active:shadow-[0_0px_0_0_#991b1b] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
+<div id="card-0" class="flex flex-col items-center justify-center p-8 rounded-xl bg-red-600 shadow-[0_8px_0_0_#991b1b] active:translate-y-2 active:shadow-[0_0px_0_0_#991b1b] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="change_history" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">change_history</span>
 <span id="text-0" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md whitespace-normal break-words"></span>
 </div>
 <!-- Card 2: Blue Diamond -->
-<div class="flex flex-col items-center justify-center p-8 rounded-xl bg-blue-600 shadow-[0_8px_0_0_#1e40af] active:translate-y-2 active:shadow-[0_0px_0_0_#1e40af] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
+<div id="card-1" class="flex flex-col items-center justify-center p-8 rounded-xl bg-blue-600 shadow-[0_8px_0_0_#1e40af] active:translate-y-2 active:shadow-[0_0px_0_0_#1e40af] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="diamond" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">diamond</span>
 <span id="text-1" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md whitespace-normal break-words"></span>
 </div>
 <!-- Card 3: Yellow Circle -->
-<div class="flex flex-col items-center justify-center p-8 rounded-xl bg-yellow-500 shadow-[0_8px_0_0_#b45309] active:translate-y-2 active:shadow-[0_0px_0_0_#b45309] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
+<div id="card-2" class="flex flex-col items-center justify-center p-8 rounded-xl bg-yellow-500 shadow-[0_8px_0_0_#b45309] active:translate-y-2 active:shadow-[0_0px_0_0_#b45309] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="circle" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">circle</span>
 <span id="text-2" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md whitespace-normal break-words"></span>
 </div>
 <!-- Card 4: Green Square -->
-<div class="flex flex-col items-center justify-center p-8 rounded-xl bg-green-600 shadow-[0_8px_0_0_#166534] active:translate-y-2 active:shadow-[0_0px_0_0_#166534] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
+<div id="card-3" class="flex flex-col items-center justify-center p-8 rounded-xl bg-green-600 shadow-[0_8px_0_0_#166534] active:translate-y-2 active:shadow-[0_0px_0_0_#166534] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="square" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">square</span>
 <span id="text-3" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md whitespace-normal break-words"></span>
 </div>
@@ -325,6 +325,8 @@
     };
 
     let playersReadyCount = 0;
+    let playerScores = {};
+    let currentRoundAnswers = {};
 
     function instantiatePlayers() {
         if (players.A && players.B) return;
@@ -561,7 +563,13 @@
                     break;
                 case 'player_answered':
                     console.log(`[WebSocket] El jugador ${data.player_name} respondió:`, data);
-                    // Aquí se manejará la puntuación en el futuro
+                    // Registrar la respuesta en el currentRoundAnswers local
+                    if (!currentRoundAnswers[data.player_name]) {
+                        currentRoundAnswers[data.player_name] = {
+                            answerId: data.answer_id,
+                            timeRemaining: gameState.timer > 0 ? gameState.timer : 0
+                        };
+                    }
                     break;
                 default:
                     console.log("[WebSocket] Mensaje recibido:", data);
@@ -644,11 +652,21 @@
         // Ocultar visualmente el iframe de YouTube (posicionado fuera de pantalla)
         youtubeContainer.classList.add('absolute', 'left-[-9999px]', 'top-[-9999px]');
         
-        // Poner las opciones de texto en los botones geométricos
+        // Limpiar la ronda anterior y restaurar estilos de botones
+        currentRoundAnswers = {};
         for (let i = 0; i < 4; i++) {
+            const cardEl = document.getElementById(`card-${i}`);
+            if (cardEl) {
+                cardEl.classList.remove('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'scale-105', 'z-20', 'opacity-40', 'grayscale');
+                // Eliminar los contadores de votos inyectados previamente
+                const badges = cardEl.querySelectorAll('.vote-badge');
+                badges.forEach(b => b.remove());
+            }
+
+            // Poner SÓLO el nombre del artista en las opciones de texto
             const textEl = document.getElementById(`text-${i}`);
             if (options[i]) {
-                textEl.innerText = `${options[i].title} - ${options[i].artist.name}`;
+                textEl.innerText = `${options[i].artist.name}`;
             } else {
                 textEl.innerText = "Opción de relleno"; 
             }
@@ -723,6 +741,57 @@
         songInfoCard.classList.add('scale-100');
         
         youtubeContainer.classList.remove('absolute', 'left-[-9999px]', 'top-[-9999px]');
+
+        // Scoring Engine
+        let voteCounts = {};
+        for (let i = 0; i < 4; i++) {
+            if (gameState.currentOptions[i]) {
+                voteCounts[gameState.currentOptions[i].id] = 0;
+            }
+        }
+
+        // Calcular puntajes
+        for (const playerName in currentRoundAnswers) {
+            const answer = currentRoundAnswers[playerName];
+            const ansId = answer.answerId;
+            if (voteCounts[ansId] !== undefined) {
+                voteCounts[ansId]++;
+            }
+
+            if (!playerScores[playerName]) {
+                playerScores[playerName] = { score: 0 };
+            }
+
+            if (ansId === currentSong.id) {
+                const speedBonus = Math.floor(answer.timeRemaining * 50);
+                playerScores[playerName].score += 1000 + speedBonus;
+            } else {
+                playerScores[playerName].score += 0;
+            }
+        }
+        console.log("[Scoring] Puntajes actualizados:", playerScores);
+
+        // Actualizar visual de los 4 botones
+        for (let i = 0; i < 4; i++) {
+            const cardEl = document.getElementById(`card-${i}`);
+            if (!cardEl || !gameState.currentOptions[i]) continue;
+            
+            const optId = gameState.currentOptions[i].id;
+
+            // Inyectar contador de votos
+            const badge = document.createElement('div');
+            badge.className = "vote-badge mt-4 bg-black/60 text-white text-xl rounded-full px-6 py-2 font-black z-20 shadow-[0_0_15px_rgba(0,0,0,0.8)] border-2 border-white/20";
+            badge.innerText = `${voteCounts[optId] || 0} votos`;
+            cardEl.appendChild(badge);
+
+            if (optId === currentSong.id) {
+                // Correcta: resaltar brillantemente
+                cardEl.classList.add('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'scale-105', 'z-20');
+            } else {
+                // Incorrecta: atenuar y poner en escala de grises
+                cardEl.classList.add('opacity-40', 'grayscale');
+            }
+        }
     }
 </script>
 <style>
