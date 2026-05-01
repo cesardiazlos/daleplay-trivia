@@ -364,6 +364,42 @@
         }
     }
 
+    function buildPlayer(playerKey, videoId, startSeconds, isHidden) {
+        if (players[playerKey]) {
+            players[playerKey].destroy();
+        }
+        
+        const oldDiv = document.getElementById(`player-${playerKey}`);
+        if (oldDiv) oldDiv.remove();
+
+        const newDiv = document.createElement('div');
+        newDiv.id = `player-${playerKey}`;
+        newDiv.className = isHidden ? "absolute inset-0 z-0 opacity-0 pointer-events-none" : "absolute inset-0 z-10 opacity-100";
+        youtubeContainer.appendChild(newDiv);
+
+        players[playerKey] = new YT.Player(`player-${playerKey}`, {
+            height: '225',
+            width: '400',
+            videoId: videoId,
+            playerVars: {
+                'start': startSeconds,
+                'autoplay': 1,
+                'controls': 0,
+                'rel': 0,
+                'showinfo': 0,
+                'modestbranding': 1,
+                'disablekb': 1
+            },
+            events: {
+                'onReady': (event) => {
+                    event.target.setVolume(0);
+                },
+                'onStateChange': onPlayerStateChange,
+                'onError': onPlayerError
+            }
+        });
+    }
+
     // Manejo del Visualizador y Reloj
     function onPlayerStateChange(event) {
         const isActivePlayer = (event.target === players[activePlayer]);
@@ -630,12 +666,9 @@
 
         activePlayer = inactivePlayerKey;
         const newActive = players[activePlayer];
-        const newInactive = players[(activePlayer === 'A') ? 'B' : 'A'];
 
         const divActive = document.getElementById(`player-${activePlayer}`);
-        const divInactive = document.getElementById(`player-${(activePlayer === 'A') ? 'B' : 'A'}`);
-        divActive.className = "absolute inset-0 z-10 opacity-100";
-        divInactive.className = "absolute inset-0 z-0 opacity-0 pointer-events-none";
+        if (divActive) divActive.className = "absolute inset-0 z-10 opacity-100";
 
         // Resetear bandera de reloj y visuales mientras YouTube hace buffering
         gameState.hasTimerStarted = false;
@@ -648,29 +681,22 @@
 
         if (index === 0) {
             // Si es la primera ronda, hay que forzar la carga en el activo
-            newActive.loadVideoById({
-                videoId: videoId,
-                startSeconds: startSeconds
-            });
+            buildPlayer(activePlayer, videoId, startSeconds, false);
         } else {
             // Ya estaba precargado y pausado, aseguramos inicio exacto
-            newActive.seekTo(startSeconds, true);
+            if (newActive && newActive.seekTo) {
+                newActive.seekTo(startSeconds, true);
+                newActive.setVolume(0);
+                newActive.playVideo();
+            }
         }
         
-        // Volumen 0 inicial preventivo
-        newActive.setVolume(0);
-        newActive.playVideo();
-
-        // Mandar a precargar la SIGUIENTE canción en el inactivo
+        // Mandar a precargar la SIGUIENTE canción en el inactivo destruyéndolo y recreándolo
         const nextIndex = index + 1;
         if (nextIndex < songs.length) {
             const nextSong = songs[nextIndex];
-            newInactive.loadVideoById({
-                videoId: nextSong.youtube_url_id,
-                startSeconds: nextSong.preview_start_time_sec || 45
-            });
-            newInactive.setVolume(0);
-            // newInactive hará buffering y cuando entre a PLAYING, onPlayerStateChange lo pausará
+            const nextInactiveKey = (activePlayer === 'A') ? 'B' : 'A';
+            buildPlayer(nextInactiveKey, nextSong.youtube_url_id, nextSong.preview_start_time_sec || 45, true);
         }
     }
 
