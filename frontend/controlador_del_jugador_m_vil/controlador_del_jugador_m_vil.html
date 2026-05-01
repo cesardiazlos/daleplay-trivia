@@ -250,7 +250,7 @@
                     hasAnswered = false;
                     currentOptions = data.options || [];
                     
-                    document.body.style.backgroundColor = ''; // Limpiar color de fondo si venimos de feedback
+                    document.body.classList.remove('bg-green-500', 'bg-red-500'); // Limpiar fondo verde/rojo
                     waitingScreen.classList.remove('flex');
                     waitingScreen.classList.add('hidden');
                     feedbackScreen.classList.remove('flex');
@@ -285,12 +285,12 @@
                     feedbackTotal.innerText = data.totalScore;
 
                     if (data.isCorrect) {
-                        document.body.style.backgroundColor = '#166534'; // bg-green-800
+                        document.body.classList.add('bg-green-500');
                         feedbackTitle.innerText = "¡Correcto!";
                         feedbackPoints.innerText = `+${data.pointsEarned} pts`;
                     } else {
-                        document.body.style.backgroundColor = '#991b1b'; // bg-red-800
-                        feedbackTitle.innerText = "¡Incorrecto!";
+                        document.body.classList.add('bg-red-500');
+                        feedbackTitle.innerText = "¡Fallaste!";
                         feedbackPoints.innerText = "+0 pts";
                     }
                 }
