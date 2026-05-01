@@ -249,7 +249,7 @@
     <div id="song-info-card" class="grid grid-cols-2 gap-8 items-stretch p-8 rounded-3xl border-4 border-primary shadow-[0_0_50px_rgba(255,171,243,0.4)] bg-surface max-w-6xl w-full mx-4 transform scale-95 transition-transform duration-500">
         
         <!-- Columna Izquierda: Video -->
-        <div class="flex flex-col items-center justify-center text-center">
+        <div class="col-span-1 flex flex-col items-center justify-center text-center">
             <span class="material-symbols-outlined text-primary text-6xl mb-2">music_note</span>
             <h2 id="song-title" class="text-[32px] leading-tight font-black text-primary drop-shadow-[0_0_10px_rgba(255,171,243,0.8)] px-4 line-clamp-2"></h2>
             <h3 id="song-artist" class="text-[20px] font-bold text-secondary px-4 mt-1 mb-4"></h3>
@@ -267,7 +267,7 @@
         </div>
 
         <!-- Columna Derecha: Ranking en Vivo -->
-        <div class="flex flex-col bg-gray-900 rounded-2xl border-2 border-gray-700 p-6 overflow-hidden max-h-[500px]">
+        <div class="col-span-1 flex flex-col bg-gray-900 rounded-2xl border-2 border-gray-700 p-6 overflow-hidden max-h-[500px]">
             <h3 class="text-3xl font-black italic text-fuchsia-400 mb-6 text-center uppercase tracking-widest border-b-2 border-gray-700 pb-4">Ranking en Vivo</h3>
             <div id="live-ranking-list" class="flex flex-col gap-3 overflow-y-auto flex-grow h-full pr-2">
                 <!-- JS inyectará el ranking parcial aquí -->
@@ -536,7 +536,8 @@
         if (lobbyPinDisplay) lobbyPinDisplay.innerText = formattedPIN;
 
         // Conexión WebSocket Dinámica
-        const wsUrl = 'ws://' + window.location.hostname + ':8000/ws/host/' + roomPIN;
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsUrl = wsProtocol + window.location.hostname + ':8000/ws/host/' + roomPIN;
         ws = new WebSocket(wsUrl);
         ws.onopen = () => {
             console.log(`[WebSocket] Conectado como Host a la sala ${roomPIN}`);

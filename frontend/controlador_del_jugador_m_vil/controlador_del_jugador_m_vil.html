@@ -254,7 +254,8 @@
         }
 
         // Conectar WebSocket Dinámicamente
-        const wsUrl = 'ws://' + window.location.hostname + ':8000/ws/player/' + pin + '/' + nick;
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsUrl = wsProtocol + window.location.hostname + ':8000/ws/player/' + pin + '/' + nick;
         ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
