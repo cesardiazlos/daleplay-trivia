@@ -736,7 +736,7 @@
         for (let i = 0; i < 4; i++) {
             const cardEl = document.getElementById(`card-${i}`);
             if (cardEl) {
-                cardEl.classList.remove('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'scale-105', 'z-20', 'opacity-40', 'grayscale');
+                cardEl.classList.remove('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'scale-105', 'scale-90', '-translate-y-2', 'z-20', 'opacity-40', 'grayscale', 'transition-all', 'duration-500');
                 // Eliminar los contadores de votos inyectados previamente
                 const badges = cardEl.querySelectorAll('.vote-badge');
                 badges.forEach(b => b.remove());
@@ -744,6 +744,9 @@
 
             // Poner SÓLO el nombre del artista en las opciones de texto
             const textEl = document.getElementById(`text-${i}`);
+            if (textEl) {
+                textEl.classList.remove('truncate', 'text-2xl', 'w-full', 'px-2');
+            }
             if (options[i]) {
                 textEl.innerText = `${options[i].artist.name}`;
             } else {
@@ -874,18 +877,27 @@
             
             const optId = gameState.currentOptions[i].id;
 
+            // Transiciones y animaciones
+            cardEl.classList.add('transition-all', 'duration-500');
+            
+            // Texto adaptativo
+            const textEl = document.getElementById(`text-${i}`);
+            if (textEl) {
+                textEl.classList.add('truncate', 'w-full', 'px-2');
+            }
+
             // Inyectar contador de votos
             const badge = document.createElement('div');
-            badge.className = "vote-badge mt-4 bg-black/60 text-white text-xl rounded-full px-6 py-2 font-black z-20 shadow-[0_0_15px_rgba(0,0,0,0.8)] border-2 border-white/20";
+            badge.className = "vote-badge mt-2 bg-black/60 text-white text-xl rounded-full px-6 py-2 font-black z-20 shadow-[0_0_15px_rgba(0,0,0,0.8)] border-2 border-white/20";
             badge.innerText = `${voteCounts[optId] || 0} votos`;
             cardEl.appendChild(badge);
 
             if (optId === currentSong.id) {
-                // Correcta: resaltar brillantemente
-                cardEl.classList.add('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'scale-105', 'z-20');
+                // Correcta: resaltar brillantemente y encoger ligeramente
+                cardEl.classList.add('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'scale-90', '-translate-y-2', 'z-20');
             } else {
-                // Incorrecta: atenuar y poner en escala de grises
-                cardEl.classList.add('opacity-40', 'grayscale');
+                // Incorrecta: atenuar suavemente
+                cardEl.classList.add('opacity-40', 'grayscale', 'scale-90', '-translate-y-2');
             }
         }
 
