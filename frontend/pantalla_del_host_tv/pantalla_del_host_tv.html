@@ -224,23 +224,31 @@
 <section class="grid grid-cols-2 gap-4 w-full mt-2 flex-grow min-h-0 mb-4">
 <!-- Card 1: Red Triangle -->
 <div id="card-0" class="flex flex-col items-center justify-center p-8 rounded-xl bg-red-600 shadow-[0_8px_0_0_#991b1b] active:translate-y-2 active:shadow-[0_0px_0_0_#991b1b] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
+<div class="content-wrapper transition-all duration-500 ease-in-out transform flex flex-col items-center justify-center h-full w-full">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="change_history" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">change_history</span>
-<span id="text-0" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md whitespace-normal break-words"></span>
+<span id="text-0" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md break-words"></span>
+</div>
 </div>
 <!-- Card 2: Blue Diamond -->
 <div id="card-1" class="flex flex-col items-center justify-center p-8 rounded-xl bg-blue-600 shadow-[0_8px_0_0_#1e40af] active:translate-y-2 active:shadow-[0_0px_0_0_#1e40af] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
+<div class="content-wrapper transition-all duration-500 ease-in-out transform flex flex-col items-center justify-center h-full w-full">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="diamond" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">diamond</span>
-<span id="text-1" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md whitespace-normal break-words"></span>
+<span id="text-1" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md break-words"></span>
+</div>
 </div>
 <!-- Card 3: Yellow Circle -->
 <div id="card-2" class="flex flex-col items-center justify-center p-8 rounded-xl bg-yellow-500 shadow-[0_8px_0_0_#b45309] active:translate-y-2 active:shadow-[0_0px_0_0_#b45309] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
+<div class="content-wrapper transition-all duration-500 ease-in-out transform flex flex-col items-center justify-center h-full w-full">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="circle" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">circle</span>
-<span id="text-2" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md whitespace-normal break-words"></span>
+<span id="text-2" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md break-words"></span>
+</div>
 </div>
 <!-- Card 4: Green Square -->
 <div id="card-3" class="flex flex-col items-center justify-center p-8 rounded-xl bg-green-600 shadow-[0_8px_0_0_#166534] active:translate-y-2 active:shadow-[0_0px_0_0_#166534] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
+<div class="content-wrapper transition-all duration-500 ease-in-out transform flex flex-col items-center justify-center h-full w-full">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="square" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">square</span>
-<span id="text-3" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md whitespace-normal break-words"></span>
+<span id="text-3" class="text-white text-center font-bold text-3xl mt-6 z-10 w-full px-4 leading-tight drop-shadow-md break-words"></span>
+</div>
 </div>
 </section>
 
@@ -483,15 +491,16 @@
     // 2.5 Evento de Error Auto-Sanable
     function onPlayerError(event) {
         const isActivePlayer = (event.target === players[activePlayer]);
-        if (!isActivePlayer) return; // Si falla la precarga, lo ignoramos por ahora
-
-        console.warn("YouTube Player Error (Auto-Sanable):", event.data);
         const currentSong = songs[gameState.currentSongIndex];
         
-        // Reportar invalidación al backend silenciosamente
-        fetch(`http://127.0.0.1:8000/api/songs/${currentSong.id}/invalidate`, {
-            method: 'PATCH'
-        }).catch(err => console.error("Error invalidando canción:", err));
+        console.warn("YouTube Player Error (Auto-Sanable):", event.data);
+        
+        // Reportar error al backend via WS para reemplazo de emergencia
+        if (ws && ws.readyState === WebSocket.OPEN && currentSong) {
+            ws.send(JSON.stringify({ type: 'youtube_error', track_id: currentSong.id }));
+        }
+
+        if (!isActivePlayer) return; // Si falla la precarga, esperamos a que inicie para saltar o dejamos que el reemplazo actúe.
         
         // Saltar inmediatamente a la siguiente canción sin alertar a los jugadores
         gameState.currentSongIndex++;
@@ -592,6 +601,23 @@
                             answerId: data.answer_id,
                             timeRemaining: gameState.timer > 0 ? gameState.timer : 0
                         };
+                    }
+                    break;
+                case 'replacement_round':
+                    console.warn("[WebSocket] Reemplazo de ronda de emergencia recibido.");
+                    if (data.options && data.options.length === 4) {
+                        gameState.currentOptions = data.options;
+                        songs[gameState.currentSongIndex] = data.options[0];
+                        // Actualizar UI
+                        for (let i = 0; i < 4; i++) {
+                            const textEl = document.getElementById(`text-${i}`);
+                            if (textEl && data.options[i]) {
+                                textEl.innerText = `${data.options[i].artist.name}`;
+                            }
+                        }
+                        // Reconstruir el reproductor activo silenciosamente
+                        const newSong = data.options[0];
+                        buildPlayer(activePlayer, newSong.youtube_url_id, newSong.preview_start_time_sec || 45, false);
                     }
                     break;
                 default:
@@ -737,6 +763,11 @@
             const cardEl = document.getElementById(`card-${i}`);
             if (cardEl) {
                 cardEl.classList.remove('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'scale-105', 'scale-90', '-translate-y-2', 'z-20', 'opacity-40', 'grayscale', 'transition-all', 'duration-500');
+                // Restaurar content-wrapper
+                const wrapper = cardEl.querySelector('.content-wrapper');
+                if (wrapper) {
+                    wrapper.classList.remove('scale-75', '-translate-y-4');
+                }
                 // Eliminar los contadores de votos inyectados previamente
                 const badges = cardEl.querySelectorAll('.vote-badge');
                 badges.forEach(b => b.remove());
@@ -745,7 +776,7 @@
             // Poner SÓLO el nombre del artista en las opciones de texto
             const textEl = document.getElementById(`text-${i}`);
             if (textEl) {
-                textEl.classList.remove('truncate', 'text-2xl', 'w-full', 'px-2');
+                textEl.classList.remove('truncate', 'line-clamp-2');
             }
             if (options[i]) {
                 textEl.innerText = `${options[i].artist.name}`;
@@ -883,21 +914,30 @@
             // Texto adaptativo
             const textEl = document.getElementById(`text-${i}`);
             if (textEl) {
-                textEl.classList.add('truncate', 'w-full', 'px-2');
+                textEl.classList.add('line-clamp-2');
+            }
+
+            // Encoger el content-wrapper interno
+            const wrapper = cardEl.querySelector('.content-wrapper');
+            if (wrapper) {
+                wrapper.classList.add('scale-75', '-translate-y-4');
             }
 
             // Inyectar contador de votos
             const badge = document.createElement('div');
-            badge.className = "vote-badge mt-2 bg-black/60 text-white text-xl rounded-full px-6 py-2 font-black z-20 shadow-[0_0_15px_rgba(0,0,0,0.8)] border-2 border-white/20";
+            badge.className = "vote-badge absolute bottom-4 bg-black/60 text-white text-xl rounded-full px-6 py-2 font-black z-20 shadow-[0_0_15px_rgba(0,0,0,0.8)] border-2 border-white/20 opacity-0 transition-opacity duration-500";
             badge.innerText = `${voteCounts[optId] || 0} votos`;
             cardEl.appendChild(badge);
+            
+            // Forzar reflow y mostrar
+            setTimeout(() => { badge.classList.remove('opacity-0'); badge.classList.add('opacity-100'); }, 50);
 
             if (optId === currentSong.id) {
-                // Correcta: resaltar brillantemente y encoger ligeramente
-                cardEl.classList.add('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'scale-90', '-translate-y-2', 'z-20');
+                // Correcta: resaltar brillantemente
+                cardEl.classList.add('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'z-20');
             } else {
                 // Incorrecta: atenuar suavemente
-                cardEl.classList.add('opacity-40', 'grayscale', 'scale-90', '-translate-y-2');
+                cardEl.classList.add('opacity-40', 'grayscale');
             }
         }
 

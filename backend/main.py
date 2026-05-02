@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
 
-from database import get_db
+from database import get_db, SessionLocal
 from models import Category, Song
 from schemas import CategoryResponse, SongResponse
 
@@ -138,8 +138,28 @@ async def websocket_host(websocket: WebSocket, pin: str):
     try:
         while True:
             data = await websocket.receive_json()
-            # El Host reenvía el estado o comandos a los jugadores
-            await manager.send_to_players(pin, data)
+            if data.get("type") == "youtube_error":
+                track_id = data.get("track_id")
+                db = SessionLocal()
+                try:
+                    song = db.query(Song).filter(Song.id == track_id).first()
+                    if song:
+                        song.youtube_url_id = None
+                        db.commit()
+                        
+                        # Obtener reemplazo: canción aleatoria válida
+                        replacement = db.query(Song).filter(Song.youtube_url_id != None).order_by(func.random()).first()
+                        if replacement:
+                            # 3 distractores
+                            others = db.query(Song).filter(Song.id != replacement.id, Song.artist_id != replacement.artist_id).order_by(func.random()).limit(3).all()
+                            
+                            options = [SongResponse.model_validate(replacement).model_dump(mode='json')] + [SongResponse.model_validate(o).model_dump(mode='json') for o in others]
+                            await websocket.send_json({"type": "replacement_round", "options": options})
+                finally:
+                    db.close()
+            else:
+                # El Host reenvía el estado o comandos a los jugadores
+                await manager.send_to_players(pin, data)
     except WebSocketDisconnect:
         manager.disconnect_host(pin)
 
