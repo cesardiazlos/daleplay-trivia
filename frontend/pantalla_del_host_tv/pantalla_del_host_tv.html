@@ -292,6 +292,7 @@
     <div id="podium-list" class="w-full max-w-4xl mx-auto flex flex-col gap-4 px-8">
         <!-- Rellenado por JS -->
     </div>
+    <button id="restart-btn" class="mt-12 px-12 py-4 bg-fuchsia-600 text-white rounded-full font-bold text-3xl uppercase tracking-wider hover:bg-fuchsia-500 transition-colors shadow-[0_0_20px_rgba(217,70,239,0.8)]">Volver al Inicio</button>
 </div>
 
 <!-- BottomNavBar -->
@@ -634,6 +635,19 @@
         if (songsJSON) {
             songs = JSON.parse(songsJSON);
             document.dispatchEvent(new Event('songsLoaded'));
+        }
+
+        const restartBtn = document.getElementById('restart-btn');
+        if (restartBtn) {
+            restartBtn.addEventListener('click', () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'reset_game' }));
+                }
+                // Redirigir a configuración después de un pequeño delay
+                setTimeout(() => {
+                    window.location.href = '../configuraci_n_de_partida_host/configuraci_n_de_partida_host.html';
+                }, 500);
+            });
         }
 
         startTriviaBtn.addEventListener('click', () => {

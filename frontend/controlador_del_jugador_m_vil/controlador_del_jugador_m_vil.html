@@ -345,6 +345,8 @@
                 // Mostrar pantalla de Game Over
                 gameOverScreen.classList.remove('hidden');
                 gameOverScreen.classList.add('flex');
+            } else if (data.type === 'reset_game') {
+                window.location.reload();
             }
         };
 
