@@ -223,30 +223,30 @@
 <!-- Options Grid -->
 <section class="grid grid-cols-2 gap-4 w-full mt-2 flex-grow min-h-0 mb-4">
 <!-- Card 1: Red Triangle -->
-<div id="card-0" class="flex flex-col items-center justify-center p-8 rounded-xl bg-red-600 shadow-[0_8px_0_0_#991b1b] active:translate-y-2 active:shadow-[0_0px_0_0_#991b1b] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
-<div class="content-wrapper transition-all duration-500 transform w-full text-center">
+<div id="card-0" class="flex flex-col items-center justify-center p-8 rounded-xl bg-red-600 shadow-[0_8px_0_0_#991b1b] active:translate-y-2 active:shadow-[0_0px_0_0_#991b1b] transition-all duration-75 cursor-pointer relative overflow-hidden h-40">
+<div class="content-wrapper transition-all duration-300 transform flex flex-col justify-center items-center w-full text-center">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="change_history" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">change_history</span>
-<span id="text-0" class="text-white font-bold text-3xl mt-6 z-10 w-full px-2 leading-tight drop-shadow-md truncate block"></span>
+<span id="text-0" class="text-white font-bold text-3xl mt-2 z-10 w-full px-2 leading-tight drop-shadow-md line-clamp-2 block"></span>
 </div>
 </div>
 <!-- Card 2: Blue Diamond -->
-<div id="card-1" class="flex flex-col items-center justify-center p-8 rounded-xl bg-blue-600 shadow-[0_8px_0_0_#1e40af] active:translate-y-2 active:shadow-[0_0px_0_0_#1e40af] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
-<div class="content-wrapper transition-all duration-500 transform w-full text-center">
+<div id="card-1" class="flex flex-col items-center justify-center p-8 rounded-xl bg-blue-600 shadow-[0_8px_0_0_#1e40af] active:translate-y-2 active:shadow-[0_0px_0_0_#1e40af] transition-all duration-75 cursor-pointer relative overflow-hidden h-40">
+<div class="content-wrapper transition-all duration-300 transform flex flex-col justify-center items-center w-full text-center">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="diamond" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">diamond</span>
-<span id="text-1" class="text-white font-bold text-3xl mt-6 z-10 w-full px-2 leading-tight drop-shadow-md truncate block"></span>
+<span id="text-1" class="text-white font-bold text-3xl mt-2 z-10 w-full px-2 leading-tight drop-shadow-md line-clamp-2 block"></span>
 </div>
 </div>
 <!-- Card 3: Yellow Circle -->
-<div id="card-2" class="flex flex-col items-center justify-center p-8 rounded-xl bg-yellow-500 shadow-[0_8px_0_0_#b45309] active:translate-y-2 active:shadow-[0_0px_0_0_#b45309] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
-<div class="content-wrapper transition-all duration-500 transform w-full text-center">
+<div id="card-2" class="flex flex-col items-center justify-center p-8 rounded-xl bg-yellow-500 shadow-[0_8px_0_0_#b45309] active:translate-y-2 active:shadow-[0_0px_0_0_#b45309] transition-all duration-75 cursor-pointer relative overflow-hidden h-40">
+<div class="content-wrapper transition-all duration-300 transform flex flex-col justify-center items-center w-full text-center">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="circle" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">circle</span>
-<span id="text-2" class="text-white font-bold text-3xl mt-6 z-10 w-full px-2 leading-tight drop-shadow-md truncate block"></span>
+<span id="text-2" class="text-white font-bold text-3xl mt-2 z-10 w-full px-2 leading-tight drop-shadow-md line-clamp-2 block"></span>
 </div>
 </div>
-<div id="card-3" class="flex flex-col items-center justify-center p-8 rounded-xl bg-green-600 shadow-[0_8px_0_0_#166534] active:translate-y-2 active:shadow-[0_0px_0_0_#166534] transition-all duration-75 cursor-pointer relative overflow-hidden h-full">
-<div class="content-wrapper transition-all duration-500 transform w-full text-center">
+<div id="card-3" class="flex flex-col items-center justify-center p-8 rounded-xl bg-green-600 shadow-[0_8px_0_0_#166534] active:translate-y-2 active:shadow-[0_0px_0_0_#166534] transition-all duration-75 cursor-pointer relative overflow-hidden h-40">
+<div class="content-wrapper transition-all duration-300 transform flex flex-col justify-center items-center w-full text-center">
 <span class="material-symbols-outlined text-white text-display-xl drop-shadow-md z-10" data-icon="square" style="font-variation-settings: 'FILL' 1; font-size: 6rem;">square</span>
-<span id="text-3" class="text-white font-bold text-3xl mt-6 z-10 w-full px-2 leading-tight drop-shadow-md truncate block"></span>
+<span id="text-3" class="text-white font-bold text-3xl mt-2 z-10 w-full px-2 leading-tight drop-shadow-md line-clamp-2 block"></span>
 </div>
 </div>
 </section>
@@ -438,6 +438,8 @@
                 // El gatillo exacto: recién cuando arranca a sonar, soltamos el reloj
                 if (!gameState.hasTimerStarted) {
                     gameState.hasTimerStarted = true;
+                    window.roundStartTime = Date.now(); // Precision timer style Kahoot
+                    
                     startVisualizer();
                     fadeInVolume(100, 2000);
                     
@@ -594,11 +596,13 @@
                     break;
                 case 'player_answered':
                     console.log(`[WebSocket] El jugador ${data.player_name} respondió:`, data);
-                    // Registrar la respuesta en el currentRoundAnswers local
+                    // Registrar la respuesta en el currentRoundAnswers local con precisión de ms
                     if (!currentRoundAnswers[data.player_name]) {
+                        let answerTime = Date.now();
+                        let timeElapsedMs = answerTime - (window.roundStartTime || answerTime);
                         currentRoundAnswers[data.player_name] = {
                             answerId: data.answer_id,
-                            timeRemaining: gameState.timer > 0 ? gameState.timer : 0
+                            timeElapsedMs: timeElapsedMs
                         };
                     }
                     break;
@@ -765,7 +769,7 @@
                 // Restaurar content-wrapper
                 const wrapper = cardEl.querySelector('.content-wrapper');
                 if (wrapper) {
-                    wrapper.classList.remove('-translate-y-4', 'scale-75');
+                    wrapper.classList.remove('-translate-y-3');
                 }
                 // Eliminar los contadores de votos inyectados previamente
                 const badges = cardEl.querySelectorAll('.vote-badge');
@@ -867,10 +871,14 @@
             }
 
             if (ansId === currentSong.id) {
-                const speedBonus = Math.floor(answer.timeRemaining * 50);
-                playerScores[playerName].score += 1000 + speedBonus;
+                // Cálculo de puntos tipo Kahoot: base 1000 que decrece según los ms tardados sobre un total de 15000ms
+                const points = Math.max(0, Math.round(1000 * (1 - (answer.timeElapsedMs / 15000))));
+                playerScores[playerName].score += points;
+                // Guardar los puntos ganados para mostrarlos
+                answer.pointsEarned = points;
             } else {
                 playerScores[playerName].score += 0;
+                answer.pointsEarned = 0;
             }
         }
         console.log("[Scoring] Puntajes actualizados:", playerScores);
@@ -885,7 +893,7 @@
                 const ansId = answer.answerId;
                 if (ansId === currentSong.id) {
                     isCorrect = true;
-                    pointsEarned = 1000 + Math.floor(answer.timeRemaining * 50);
+                    pointsEarned = answer.pointsEarned || 0;
                 }
             }
 
@@ -913,13 +921,13 @@
             // Subir el content-wrapper interno suavemente
             const wrapper = cardEl.querySelector('.content-wrapper');
             if (wrapper) {
-                wrapper.classList.add('-translate-y-4');
+                wrapper.classList.add('-translate-y-3');
             }
 
-            // Inyectar contador de votos
+            // Inyectar contador de votos en la base de la tarjeta
             const badge = document.createElement('div');
-            badge.className = "vote-badge absolute bottom-4 w-full text-center opacity-0 transition-opacity duration-500 z-20";
-            badge.innerHTML = `<span class="bg-black/60 text-white text-xl rounded-full px-6 py-2 font-black shadow-[0_0_15px_rgba(0,0,0,0.8)] border-2 border-white/20">${voteCounts[optId] || 0} votos</span>`;
+            badge.className = "vote-badge absolute bottom-0 w-full bg-black bg-opacity-50 text-white font-bold py-1 opacity-0 transition-opacity duration-500 text-center";
+            badge.innerText = `${voteCounts[optId] || 0} votos`;
             cardEl.appendChild(badge);
             
             // Forzar reflow y mostrar
