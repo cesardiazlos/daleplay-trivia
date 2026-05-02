@@ -316,6 +316,10 @@
 </nav>
 
 <script>
+    // Configuración dinámica guardada desde la pantalla de setup
+    const daleplayConfig = JSON.parse(localStorage.getItem('daleplay_config') || '{}');
+    const timePerQuestion = daleplayConfig.timePerQuestion || 15;
+
     // Variables globales
     let activePlayer = 'A';
     const players = { A: null, B: null };
@@ -323,7 +327,7 @@
     let gameState = {
         currentSongIndex: 0,
         score: 0,
-        timer: 15,
+        timer: timePerQuestion,
         intervalId: null,
         hasTimerStarted: false,
         fadeInterval: null,
@@ -444,7 +448,7 @@
                     startVisualizer();
                     fadeInVolume(100, 2000);
                     
-                    gameState.timer = 15;
+                    gameState.timer = timePerQuestion;
                     timerDisplay.innerText = gameState.timer;
                     
                     clearInterval(gameState.intervalId);
@@ -586,6 +590,7 @@
                             type: 'state_change', 
                             status: 'guessing', 
                             songIndex: gameState.currentSongIndex,
+                            timePerQuestion: timePerQuestion,
                             options: gameState.currentOptions.map(opt => ({ id: opt.id, title: opt.title, artist: opt.artist.name }))
                         }));
                     }
@@ -753,6 +758,7 @@
                 type: 'state_change', 
                 status: 'guessing', 
                 songIndex: index,
+                timePerQuestion: timePerQuestion,
                 options: options.map(opt => ({ id: opt.id, title: opt.title, artist: opt.artist.name }))
             }));
         }
@@ -885,8 +891,9 @@
             }
 
             if (ansId === currentSong.id) {
-                // Cálculo de puntos tipo Kahoot: base 1000 que decrece según los ms tardados sobre un total de 15000ms
-                const points = Math.max(0, Math.round(1000 * (1 - (answer.timeElapsedMs / 15000))));
+                // Cálculo de puntos tipo Kahoot: base 1000 que decrece según los ms tardados sobre el total configurado
+                const maxTimeMs = timePerQuestion * 1000;
+                const points = Math.max(0, Math.round(1000 * (1 - (answer.timeElapsedMs / maxTimeMs))));
                 playerScores[playerName].score += points;
                 // Guardar los puntos ganados para mostrarlos
                 answer.pointsEarned = points;
