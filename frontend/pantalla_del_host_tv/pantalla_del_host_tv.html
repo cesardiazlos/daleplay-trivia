@@ -205,7 +205,7 @@
 <!-- Glow effect -->
 <div class="absolute inset-0 rounded-full shadow-[0_0_30px_rgba(0,227,253,0.5)]"></div>
 <div id="timer-display" class="text-display-xl font-display-xl text-secondary-container drop-shadow-[0_0_10px_rgba(0,227,253,0.8)] z-10">
-          15
+          —
         </div>
 </div>
 <!-- Music Visualizer -->
@@ -617,16 +617,21 @@
                     if (data.options && data.options.length === 4) {
                         gameState.currentOptions = data.options;
                         songs[gameState.currentSongIndex] = data.options[0];
-                        // Actualizar UI
+                        // Actualizar UI de botones
                         for (let i = 0; i < 4; i++) {
                             const textEl = document.getElementById(`text-${i}`);
                             if (textEl && data.options[i]) {
                                 textEl.innerText = `${data.options[i].artist.name}`;
                             }
                         }
-                        // Reconstruir el reproductor activo silenciosamente
+                        // Cargar video de reemplazo SIN destruir el iframe (evita crash www-widgetapi.js)
                         const newSong = data.options[0];
-                        buildPlayer(activePlayer, newSong.youtube_url_id, newSong.preview_start_time_sec || 45, false);
+                        const startSec = newSong.preview_start_time_sec || 45;
+                        const currentPlayer = players[activePlayer];
+                        if (currentPlayer && currentPlayer.loadVideoById) {
+                            currentPlayer.loadVideoById({ videoId: newSong.youtube_url_id, startSeconds: startSec });
+                            currentPlayer.setVolume(0);
+                        }
                     }
                     break;
                 default:
@@ -825,30 +830,38 @@
         // Resetear bandera de reloj y visuales mientras YouTube hace buffering
         gameState.hasTimerStarted = false;
         clearInterval(gameState.fadeInterval);
-        timerDisplay.innerText = "15"; 
+        timerDisplay.innerText = timePerQuestion; 
         stopVisualizer();
 
         const startSeconds = currentSong.preview_start_time_sec || 45;
         const videoId = currentSong.youtube_url_id;
 
         if (index === 0) {
-            // Si es la primera ronda, hay que forzar la carga en el activo
+            // Primera ronda: forzar la carga en el activo
             buildPlayer(activePlayer, videoId, startSeconds, false);
         } else {
-            // Ya estaba precargado y pausado, aseguramos inicio exacto
-            if (newActive && newActive.seekTo) {
-                newActive.seekTo(startSeconds, true);
+            // Rondas subsiguientes: el video ya fue precargado en el buffer inactivo
+            // Usamos loadVideoById para mayor seguridad (garantiza carga del video correcto)
+            if (newActive && newActive.loadVideoById) {
+                newActive.loadVideoById({ videoId: videoId, startSeconds: startSeconds });
                 newActive.setVolume(0);
-                newActive.playVideo();
             }
         }
         
-        // Mandar a precargar la SIGUIENTE canción en el inactivo destruyéndolo y recreándolo
+        // Precargar la SIGUIENTE canción en el reproductor inactivo
         const nextIndex = index + 1;
         if (nextIndex < songs.length) {
             const nextSong = songs[nextIndex];
             const nextInactiveKey = (activePlayer === 'A') ? 'B' : 'A';
-            buildPlayer(nextInactiveKey, nextSong.youtube_url_id, nextSong.preview_start_time_sec || 45, true);
+            const nextPlayer = players[nextInactiveKey];
+            if (nextPlayer && nextPlayer.loadVideoById) {
+                // Cargar sin destruir iframe, evitando crash de www-widgetapi.js
+                nextPlayer.loadVideoById({ videoId: nextSong.youtube_url_id, startSeconds: nextSong.preview_start_time_sec || 45 });
+                nextPlayer.setVolume(0);
+            } else {
+                // Fallback: solo si el player no existe aún
+                buildPlayer(nextInactiveKey, nextSong.youtube_url_id, nextSong.preview_start_time_sec || 45, true);
+            }
         }
     }
 
