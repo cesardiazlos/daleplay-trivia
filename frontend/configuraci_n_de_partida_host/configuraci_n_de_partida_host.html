@@ -192,65 +192,31 @@
 </div>
 <!-- Game Filters Sidebar -->
 <aside class="space-y-8 bg-surface-container-low p-6 rounded-2xl border-2 border-surface-variant shadow-[0_8px_0_0_#170527]">
-<!-- Game Mode -->
-<div class="space-y-4">
-<h3 class="font-headline-md text-headline-md text-secondary">Modo de Juego</h3>
-<div class="grid grid-cols-2 gap-4">
-<button class="bg-surface-container border-2 border-surface-variant p-4 rounded-xl flex flex-col items-center gap-2 hover:bg-surface-bright transition-colors">
-<span class="material-symbols-outlined text-3xl text-on-surface-variant">person</span>
-<span class="font-label-bold text-label-bold text-on-surface-variant">Individual</span>
-</button>
-<button class="bg-primary/10 border-2 border-primary p-4 rounded-xl flex flex-col items-center gap-2 shadow-[0_4px_0_0_#a900a9] transform -translate-y-1">
-<span class="material-symbols-outlined text-3xl text-primary drop-shadow-[0_0_5px_rgba(255,171,243,0.8)]">group</span>
-<span class="font-label-bold text-label-bold text-on-background">Equipos</span>
-</button>
-</div>
-</div>
 <!-- Sliders Section -->
 <div class="space-y-6">
 <!-- Preguntas -->
 <div class="space-y-2">
 <div class="flex justify-between items-center">
 <label class="font-label-bold text-label-bold text-on-surface">Número de Preguntas</label>
-<span class="font-body-md text-body-md text-secondary">15</span>
+<span id="preguntas-val" class="font-body-md text-body-md text-secondary">15</span>
 </div>
-<input class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="30" min="10" step="5" type="range" value="15"/>
+<input id="preguntas-slider" class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="50" min="5" step="1" type="range" value="15"/>
 <div class="flex justify-between text-xs text-on-surface-variant font-label-bold">
-<span>10</span>
-<span>20</span>
-<span>30</span>
+<span>5</span>
+<span>50</span>
 </div>
 </div>
 <!-- Tiempo -->
 <div class="space-y-2">
 <div class="flex justify-between items-center">
 <label class="font-label-bold text-label-bold text-on-surface">Tiempo por Pregunta</label>
-<span class="font-body-md text-body-md text-secondary">30s</span>
+<span id="tiempo-val" class="font-body-md text-body-md text-secondary">15s</span>
 </div>
-<input class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="45" min="15" step="15" type="range" value="30"/>
+<input id="tiempo-slider" class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="60" min="5" step="1" type="range" value="15"/>
 <div class="flex justify-between text-xs text-on-surface-variant font-label-bold">
-<span>15s</span>
-<span>30s</span>
-<span>45s</span>
+<span>5s</span>
+<span>60s</span>
 </div>
-</div>
-</div>
-<!-- Difficulty -->
-<div class="space-y-4">
-<h3 class="font-headline-md text-headline-md text-secondary text-lg">Dificultad</h3>
-<div class="flex flex-col gap-3">
-<label class="flex items-center gap-3 p-3 bg-surface-container rounded-lg border-2 border-surface-variant cursor-pointer hover:bg-surface-bright transition-colors">
-<input class="text-secondary-container focus:ring-secondary-container bg-surface border-outline" name="difficulty" type="radio"/>
-<span class="font-body-md text-body-md text-on-surface flex-1">Fácil (Éxitos conocidos)</span>
-</label>
-<label class="flex items-center gap-3 p-3 bg-secondary/10 rounded-lg border-2 border-secondary cursor-pointer shadow-[0_2px_0_0_#00daf3]">
-<input checked="" class="text-secondary focus:ring-secondary bg-surface border-secondary" name="difficulty" type="radio"/>
-<span class="font-body-md text-body-md text-on-background flex-1 font-bold">Pro (Mezcla de épocas)</span>
-</label>
-<label class="flex items-center gap-3 p-3 bg-surface-container rounded-lg border-2 border-surface-variant cursor-pointer hover:bg-surface-bright transition-colors">
-<input class="text-error focus:ring-error bg-surface border-outline" name="difficulty" type="radio"/>
-<span class="font-body-md text-body-md text-on-surface flex-1">Leyenda (Lados B y rarezas)</span>
-</label>
 </div>
 </div>
 <!-- CTA -->
@@ -317,6 +283,20 @@
             })
             .catch(err => console.error("Error cargando categorías:", err));
 
+        // Manejo dinámico de los sliders
+        const preguntasSlider = document.getElementById('preguntas-slider');
+        const preguntasVal = document.getElementById('preguntas-val');
+        const tiempoSlider = document.getElementById('tiempo-slider');
+        const tiempoVal = document.getElementById('tiempo-val');
+
+        preguntasSlider.addEventListener('input', (e) => {
+            preguntasVal.innerText = e.target.value;
+        });
+
+        tiempoSlider.addEventListener('input', (e) => {
+            tiempoVal.innerText = e.target.value + 's';
+        });
+
         // Click en Empezar Juego
         startBtn.addEventListener('click', () => {
             if (!selectedCategoryId) {
@@ -327,13 +307,25 @@
             const originalContent = startBtn.innerHTML;
             startBtn.innerHTML = '<span class="relative z-10 font-black">CARGANDO...</span>';
 
+            const numPreguntas = parseInt(preguntasSlider.value, 10);
+            const tiempoPorPregunta = parseInt(tiempoSlider.value, 10);
+
+            // Guardar configuración en localStorage
+            localStorage.setItem('daleplay_config', JSON.stringify({
+                categoryId: selectedCategoryId,
+                numQuestions: numPreguntas,
+                timePerQuestion: tiempoPorPregunta
+            }));
+
             fetch(`http://127.0.0.1:8000/api/categories/${selectedCategoryId}/play`)
                 .then(res => {
                     if(!res.ok) throw new Error("No se pudieron cargar las canciones");
                     return res.json();
                 })
                 .then(data => {
-                    localStorage.setItem('daleplay_songs', JSON.stringify(data));
+                    // Tomar la cantidad de preguntas elegidas
+                    const selectedSongs = data.slice(0, numPreguntas);
+                    localStorage.setItem('daleplay_songs', JSON.stringify(selectedSongs));
                     window.location.href = '../pantalla_del_host_tv/pantalla_del_host_tv.html';
                 })
                 .catch(err => {
