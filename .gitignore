@@ -8,3 +8,17 @@ __pycache__/
 node_modules/
 build/
 .DS_Store
+
+# Ignorar imágenes en la carpeta principal de categorías
+frontend/assets/categorias/*.jpg
+frontend/assets/categorias/*.png
+frontend/assets/categorias/*.jpeg
+
+# Ignorar imágenes en la carpeta del host (por si acaso quedaron rastros ahí)
+frontend/configuraci_n_de_partida_host/assets/categorias/*.jpg
+frontend/configuraci_n_de_partida_host/assets/categorias/*.png
+
+# Opcional: Si quieres ignorar TODAS las imágenes del proyecto en cualquier carpeta
+# *.jpg
+# *.png
+# *.jpeg
