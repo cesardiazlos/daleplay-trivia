@@ -127,67 +127,14 @@
 <!-- Header Section -->
 <section class="text-center md:text-left space-y-4">
 <h1 class="font-headline-lg text-headline-lg text-primary drop-shadow-[0_0_15px_rgba(255,171,243,0.5)]">CONFIGURACIÓN DE PARTIDA</h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant">Selecciona las categorías y ajusta las reglas para la próxima ronda.</p>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Selecciona la categoría y ajusta las reglas para la próxima ronda.</p>
 </section>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 <!-- Category Grid (Main Canvas) -->
 <div class="lg:col-span-2 space-y-6">
-<h2 class="font-headline-md text-headline-md text-secondary">Categorías (Elige al menos 1)</h2>
-<div id="categories-container" class="grid grid-cols-2 md:grid-cols-3 gap-6">
-<!-- Selected Card: Rock -->
-<button class="relative aspect-square rounded-xl bg-surface-container-high border-4 border-primary shadow-[0_8px_0_0_#ff00ff] transform -translate-y-2 overflow-hidden group">
-<div class="absolute inset-0 bg-primary/20 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4">
-<span class="material-symbols-outlined text-primary text-5xl mb-2 drop-shadow-[0_0_10px_rgba(255,171,243,0.8)]" data-weight="fill">electric_bolt</span>
-<span class="font-label-bold text-label-bold text-on-background uppercase tracking-wider">Rock</span>
-</div>
-<img alt="Rock music genre" class="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-overlay" data-alt="electric guitar abstract close up in neon lighting dark moody concert vibe" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3xSYsnyBz0jkF5JczMDqpTCvT_3k8-ISQ2kr1mgIwxVx91XBsT_ftPb82bGwS8YHdlEPKAgkmYPyY9KSbAFNKk-gEtrnyx-SCKPI_ae_I1p7W5srZuGxj_Xc641bbPOlFa1gqIbY8dpWLnsv-UNECcxN_rxyJbnUaoYPkLzXycPTPJmRaTfE1VOVPUHmE1nH0spgjYJJqhG8FYyxvU1EP1DdtVmVckmjVx8fNdYaCn9RrBOZ8siPXN7WGPAGzZjlqk_Qsp_17NQg"/>
-<div class="absolute top-2 right-2 z-20">
-<span class="material-symbols-outlined text-primary drop-shadow-[0_0_5px_rgba(255,171,243,1)]" data-weight="fill">check_circle</span>
-</div>
-</button>
-<!-- Inactive Card: Pop -->
-<button class="relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group">
-<div class="absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
-<span class="material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">mic</span>
-<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background">Pop</span>
-</div>
-<img alt="Pop music genre" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="pop music concert audience with pink and blue stage lights shining" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbcI1fvNd9RVw9XhsLp3GBJ1Klc6V0SMbwJWJ0bvom76gBuYshqOCAumcvOTpoNtzJtMUarCklVdwAfcfB9gWUzN0PrOausSA4k00rvH_0GaGicvlbOlE9FCPcGaC7R3llzEi4bDowbrmZPEz7P-NzgWq9qKPMevrNpLByP3J-XT34XnZ20SB43Fqywj9GNMAgAgmlDlTCFb1mfXbbPzDbr3ZsZpm0q0CwYbzDI9i0IBlWnLUyvRu6X_MU4qXIn8gzYWOMsu9DTqU"/>
-</button>
-<!-- Inactive Card: Reggaetón -->
-<button class="relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group">
-<div class="absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
-<span class="material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">graphic_eq</span>
-<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background">Reggaetón</span>
-</div>
-<img alt="Reggaeton music genre" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="dj mixing desk glowing in the dark club environment neon accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOYcLl8NByB-hQW7aNjWTkMXd-0vBJwTCy81G4niq2DRxqRCg9xIQabeMNdOs0LDHzE8TsqNDhFZKUfuC1wSUEKBjLnbaTASuEnmww04XB016AdTmvcxD4Sa4wOteDj7mcAoPyNKnIDCFh1WdZD0lpkj9cWjF0838BUOiy1PN-JiH7hkdQNtm0jbjgmjIstazghkA_ua9A2QNG8fgnMxjLJgwl5p4NCm1ivH0Imz0XhBuQupyM-2e9A3KVUxlKk3dkVVq-5aqQCkQ"/>
-</button>
-<!-- Selected Card: 80s -->
-<button class="relative aspect-square rounded-xl bg-surface-container-high border-4 border-secondary-container shadow-[0_8px_0_0_#00daf3] transform -translate-y-2 overflow-hidden group">
-<div class="absolute inset-0 bg-secondary-container/20 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4">
-<span class="material-symbols-outlined text-secondary-container text-5xl mb-2 drop-shadow-[0_0_10px_rgba(0,227,253,0.8)]" data-weight="fill">album</span>
-<span class="font-label-bold text-label-bold text-on-background uppercase tracking-wider">80s Hits</span>
-</div>
-<img alt="80s music genre" class="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-overlay" data-alt="retro cassette tape glowing with synthwave neon pink and cyan lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAuAOvi8oBIqNsuv7LPQxvfnp0smlyqccA_ZpbVRzKDVJVH8tanoy-_bqiQdz7WlzC8vA2xY30pOsFbHtIPctPKTHkzOsGgO5aFQf4qk5diFAt6oi51IsIbJVbMnwucHOEO-ZguV_y7HPADpv1OAWmrHXrb5HSlS5rroVT9GzVOB2bOMIRISF9BmyRByPug5P4lETHUb81sAnM-JSo402kNWDaVGPxTOzzdlZjSHXeV2V6J4HP0KOkaSZh2JyvhljpVlY7MAsCY78"/>
-<div class="absolute top-2 right-2 z-20">
-<span class="material-symbols-outlined text-secondary-container drop-shadow-[0_0_5px_rgba(0,227,253,1)]" data-weight="fill">check_circle</span>
-</div>
-</button>
-<!-- Inactive Card: Indie -->
-<button class="relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group">
-<div class="absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
-<span class="material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">piano</span>
-<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background">Indie</span>
-</div>
-<img alt="Indie music genre" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="acoustic guitar leaning against wall in dimly lit indie music studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIUgNJxJVwd_wVI2STCWnjj24GFMEr4YtBuZdaeh5oSXNfvH5mp2QqAszlydLjtkcDv7brxOCyABFuWL7VgQweCi26nJNtmi54bnMnZ4bG1aSeIxkrwjj6EfI5r_5UW3tVSjWDTR3C9pHJEaVaCfwQpiGgj_TGiAWnqjBlGf0_9828jcOmu9sMPbZz8C19oPYmLClzGjvW7Krk3gMo-0A-I8Nk_1sPKxQ3f9frVlnDJoxhwQ97u1OioJMZUqGhTx-Ie0MpCFgGViU"/>
-</button>
-<!-- Inactive Card: Global Hits -->
-<button class="relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group">
-<div class="absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
-<span class="material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">public</span>
-<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background">Hits Globales</span>
-</div>
-<img alt="Global hits genre" class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="massive crowd at outdoor stadium music festival with bright stage lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMM3rFliMCR7TmBIo6CQBw4E2KgRHbYeYot-P-AbZxC1ej-hFSXusYiOoLy8EMVxBvszCjam9AMl2qRvsy448k1oApqMMHuv85wYAzwX2SjPfAKQrv7kTUg2vMCKgM1lOGd0-ok9abjziRNkdRnGWHZ5WA1AoTVxEA-pDE_zjqSC7ZGSRXEq_tD3hfQJAjamSt0gPBkmMW5MdWjYysz_tm6y8Hit753jO_UPGlq_jptnW8VFs57S1JlRGpHDlEV6nxZCUUAyHtbts"/>
-</button>
+<h2 class="font-headline-md text-headline-md text-secondary">Categorías (Elige 1)</h2>
+<div id="categories-container" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<!-- JS inyectará tarjetas premium dinámicamente -->
 </div>
 </div>
 <!-- Game Filters Sidebar -->
@@ -237,45 +184,59 @@
         const startBtn = document.getElementById('start-btn');
         let selectedCategoryId = null;
 
+        // Mapeo de nombre de categoría a imagen local
+        const categoryImageMap = {
+            'ROCK LATINO': 'assets/categorias/rock-latino.jpg',
+            'CLASICOS ANGLO 80S': 'assets/categorias/anglo-80s.jpg',
+            'EXITOS DE CUMBIA': 'assets/categorias/cumbia.jpg',
+            'MALDITO CUPIDO': 'assets/categorias/cupido.jpg',
+            'REGGAETON ANTIGUO': 'assets/categorias/reggaeton-antiguo.jpg',
+            "PA' PEGARSE EL SHOW CANTANDO": 'assets/categorias/show-cantando.jpg',
+            'FIESTA DE LOS 90': 'assets/categorias/fiesta-90s.jpg',
+            'DIVAS DEL POP': 'assets/categorias/divas-pop.jpg',
+            'DIVOS HISPANOS': 'assets/categorias/divos-hispanos.jpg'
+        };
+
         // Fetch de categorías
         fetch('http://127.0.0.1:8000/api/categories')
             .then(res => res.json())
             .then(categories => {
-                categoriesContainer.innerHTML = ''; // Limpiar tarjetas hardcodeadas
+                categoriesContainer.innerHTML = '';
                 categories.forEach(category => {
+                    const imgSrc = categoryImageMap[category.name.toUpperCase()] || 'assets/categorias/rock-latino.jpg';
                     const btn = document.createElement('button');
-                    btn.className = "category-btn relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group";
+                    btn.className = "category-btn relative overflow-hidden rounded-xl border-2 border-gray-700 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 hover:-translate-y-1 hover:border-gray-500 hover:shadow-[0_6px_20px_rgba(0,0,0,0.5)]";
                     btn.dataset.id = category.id;
-                    
+
                     btn.innerHTML = `
-                        <div class="overlay-layer absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors">
-                            <span class="icon-layer material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors">queue_music</span>
-                            <span class="text-layer font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background text-center">${category.name}</span>
+                        <img src="${imgSrc}" class="bg-img absolute inset-0 w-full h-full object-cover opacity-40 blur-[2px] transition-all duration-500 group-hover:scale-110 group-hover:opacity-50" alt="${category.name}">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"></div>
+                        <div class="relative z-10 flex flex-col items-center pointer-events-none drop-shadow-md">
+                            <span class="icon-layer material-symbols-outlined text-gray-300 text-4xl mb-1 group-hover:text-fuchsia-400 transition-colors drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">queue_music</span>
+                            <span class="text-layer font-label-bold text-label-bold text-gray-200 uppercase tracking-wider text-center group-hover:text-white px-2 leading-tight">${category.name}</span>
                         </div>
                         <div class="check-icon absolute top-2 right-2 z-20 hidden">
-                            <span class="material-symbols-outlined text-primary drop-shadow-[0_0_5px_rgba(255,171,243,1)]" data-weight="fill">check_circle</span>
+                            <span class="material-symbols-outlined text-fuchsia-400 drop-shadow-[0_0_8px_rgba(217,70,239,1)]" style="font-variation-settings: 'FILL' 1">check_circle</span>
                         </div>
                     `;
 
                     btn.addEventListener('click', () => {
-                        // Resetear todas las tarjetas a su estado inactivo
                         document.querySelectorAll('.category-btn').forEach(b => {
-                            b.className = "category-btn relative aspect-square rounded-xl bg-surface-container border-4 border-surface-variant shadow-[0_4px_0_0_#402d50] hover:-translate-y-1 hover:shadow-[0_6px_0_0_#402d50] transition-all overflow-hidden group";
+                            b.className = "category-btn relative overflow-hidden rounded-xl border-2 border-gray-700 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 hover:-translate-y-1 hover:border-gray-500 hover:shadow-[0_6px_20px_rgba(0,0,0,0.5)]";
                             b.querySelector('.check-icon').classList.add('hidden');
-                            
-                            b.querySelector('.overlay-layer').className = "overlay-layer absolute inset-0 bg-background/60 z-10 flex flex-col items-center justify-center p-4 group-hover:bg-background/40 transition-colors";
-                            b.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-on-surface-variant text-5xl mb-2 group-hover:text-secondary transition-colors";
-                            b.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider group-hover:text-on-background text-center";
+                            const bImg = b.querySelector('.bg-img');
+                            if (bImg) { bImg.classList.remove('opacity-60'); bImg.classList.add('opacity-40'); }
+                            b.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-gray-300 text-4xl mb-1 group-hover:text-fuchsia-400 transition-colors drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]";
+                            b.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-gray-200 uppercase tracking-wider text-center group-hover:text-white px-2 leading-tight";
                         });
-                        
-                        // Aplicar estilos activos a la tarjeta clickeada
+
                         selectedCategoryId = category.id;
-                        btn.className = "category-btn relative aspect-square rounded-xl bg-surface-container-high border-4 border-primary shadow-[0_8px_0_0_#ff00ff] transform -translate-y-2 overflow-hidden group";
+                        btn.className = "category-btn relative overflow-hidden rounded-xl border-2 border-fuchsia-500 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 -translate-y-1 shadow-[0_0_25px_rgba(217,70,239,0.5)]";
                         btn.querySelector('.check-icon').classList.remove('hidden');
-                        
-                        btn.querySelector('.overlay-layer').className = "overlay-layer absolute inset-0 bg-primary/20 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4";
-                        btn.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-primary text-5xl mb-2 drop-shadow-[0_0_10px_rgba(255,171,243,0.8)]";
-                        btn.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-on-background uppercase tracking-wider text-center";
+                        const selImg = btn.querySelector('.bg-img');
+                        if (selImg) { selImg.classList.remove('opacity-40'); selImg.classList.add('opacity-60'); }
+                        btn.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-fuchsia-400 text-4xl mb-1 drop-shadow-[0_0_12px_rgba(217,70,239,0.8)]";
+                        btn.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-white uppercase tracking-wider text-center px-2 leading-tight";
                     });
 
                     categoriesContainer.appendChild(btn);

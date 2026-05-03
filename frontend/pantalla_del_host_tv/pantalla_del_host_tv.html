@@ -338,6 +338,7 @@
     let roomPIN = Math.floor(100000 + Math.random() * 900000).toString();
     let ws = null;
     let connectedPlayers = [];
+    let isReplacing = false; // Candado anti-spam para errores de YouTube
 
     // Referencias al DOM
     let timerDisplay, songInfo, songInfoCard, songTitle, songArtist, nextSongBtn, youtubeContainer, startTriviaBtn, visualizerBars;
@@ -494,23 +495,18 @@
         }, 100);
     }
 
-    // 2.5 Evento de Error Auto-Sanable
+    // 2.5 Evento de Error Auto-Sanable (con candado anti-spam)
     function onPlayerError(event) {
-        const isActivePlayer = (event.target === players[activePlayer]);
-        const currentSong = songs[gameState.currentSongIndex];
+        if (isReplacing) return; // Ya pedimos reemplazo, ignorar errores duplicados
         
+        const currentSong = songs[gameState.currentSongIndex];
         console.warn("YouTube Player Error (Auto-Sanable):", event.data);
         
-        // Reportar error al backend via WS para reemplazo de emergencia
+        // Activar candado y reportar al backend
+        isReplacing = true;
         if (ws && ws.readyState === WebSocket.OPEN && currentSong) {
             ws.send(JSON.stringify({ type: 'youtube_error', track_id: currentSong.id }));
         }
-
-        if (!isActivePlayer) return; // Si falla la precarga, esperamos a que inicie para saltar o dejamos que el reemplazo actúe.
-        
-        // Saltar inmediatamente a la siguiente canción sin alertar a los jugadores
-        gameState.currentSongIndex++;
-        playRound(gameState.currentSongIndex);
     }
 
     function startVisualizer() {
@@ -614,24 +610,47 @@
                     break;
                 case 'replacement_round':
                     console.warn("[WebSocket] Reemplazo de ronda de emergencia recibido.");
-                    if (data.options && data.options.length === 4) {
-                        gameState.currentOptions = data.options;
-                        songs[gameState.currentSongIndex] = data.options[0];
-                        // Actualizar UI de botones
-                        for (let i = 0; i < 4; i++) {
-                            const textEl = document.getElementById(`text-${i}`);
-                            if (textEl && data.options[i]) {
-                                textEl.innerText = `${data.options[i].artist.name}`;
+                    if (data.options && data.options.length >= 1) {
+                        // 1. Liberar candado anti-spam
+                        isReplacing = false;
+
+                        // 2. Abortar TODO de la ronda fallida
+                        clearInterval(gameState.intervalId);
+                        clearInterval(gameState.fadeInterval);
+                        gameState.hasTimerStarted = false;
+                        stopVisualizer();
+
+                        // 3. Destrucción quirúrgica de los reproductores YouTube
+                        ['A', 'B'].forEach(key => {
+                            if (players[key]) {
+                                try { players[key].destroy(); } catch(e) {}
+                                players[key] = null;
                             }
+                        });
+
+                        // 4. Limpiar y recrear los contenedores DOM (mata refs huérfanas de www-widgetapi.js)
+                        if (youtubeContainer) {
+                            youtubeContainer.innerHTML = `
+                                <div id="player-A" class="absolute inset-0 z-10 opacity-100"></div>
+                                <div id="player-B" class="absolute inset-0 z-0 opacity-0 pointer-events-none"></div>
+                            `;
                         }
-                        // Cargar video de reemplazo SIN destruir el iframe (evita crash www-widgetapi.js)
-                        const newSong = data.options[0];
-                        const startSec = newSong.preview_start_time_sec || 45;
-                        const currentPlayer = players[activePlayer];
-                        if (currentPlayer && currentPlayer.loadVideoById) {
-                            currentPlayer.loadVideoById({ videoId: newSong.youtube_url_id, startSeconds: startSec });
-                            currentPlayer.setVolume(0);
-                        }
+
+                        // 5. Reinstanciar los reproductores desde cero
+                        activePlayer = 'A';
+                        playersReadyCount = 0;
+                        instantiatePlayers();
+
+                        // 6. Inyectar canción de reemplazo y esperar a que los players estén listos
+                        songs[gameState.currentSongIndex] = data.options[0];
+
+                        // 7. Iniciar ronda cuando ambos players estén ready
+                        const waitForReady = setInterval(() => {
+                            if (playersReadyCount >= 2) {
+                                clearInterval(waitForReady);
+                                playRound(gameState.currentSongIndex);
+                            }
+                        }, 200);
                     }
                     break;
                 default:
@@ -663,6 +682,12 @@
         startTriviaBtn.addEventListener('click', () => {
             lobbyScreen.style.display = 'none';
             gameScreen.classList.remove('hidden');
+
+            // Informar al backend la categoría activa para filtrar reemplazos en-genre
+            if (ws && ws.readyState === WebSocket.OPEN && daleplayConfig.categoryId) {
+                ws.send(JSON.stringify({ type: 'set_category', category_id: daleplayConfig.categoryId }));
+            }
+
             playRound(gameState.currentSongIndex);
         });
 
