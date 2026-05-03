@@ -136,8 +136,8 @@ def load_playlist_to_db(playlist_id: str, category_name: str):
 
 if __name__ == "__main__":
     # Pon aquí el ID de tu primera playlist y el nombre que quieres que tenga en el juego
-    test_id = "6lRDcv9f2GvKN6prHAdby5" 
-    test_name = "Divos Hispano" # (O el nombre que le quieras dar)
+    test_id = "4fDbTNJtXTALJv95DahU68" 
+    test_name = "TikTok Trends" # (O el nombre que le quieras dar)
     
     print(f"Iniciando pipeline para la categoría: {test_name}")
     load_playlist_to_db(test_id, test_name)

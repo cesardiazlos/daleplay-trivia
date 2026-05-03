@@ -184,17 +184,21 @@
         const startBtn = document.getElementById('start-btn');
         let selectedCategoryId = null;
 
-        // Mapeo de nombre de categoría a imagen local
+        // Mapeo de nombre de categoría a imagen local (ruta compartida: frontend/assets/categorias/)
         const categoryImageMap = {
-            'ROCK LATINO': 'assets/categorias/rock-latino.jpg',
-            'CLASICOS ANGLO 80S': 'assets/categorias/anglo-80s.jpg',
-            'EXITOS DE CUMBIA': 'assets/categorias/cumbia.jpg',
-            'MALDITO CUPIDO': 'assets/categorias/cupido.jpg',
-            'REGGAETON ANTIGUO': 'assets/categorias/reggaeton-antiguo.jpg',
-            "PA' PEGARSE EL SHOW CANTANDO": 'assets/categorias/show-cantando.jpg',
-            'FIESTA DE LOS 90': 'assets/categorias/fiesta-90s.jpg',
-            'DIVAS DEL POP': 'assets/categorias/divas-pop.jpg',
-            'DIVOS HISPANOS': 'assets/categorias/divos-hispanos.jpg'
+            'ROCK LATINO': '../assets/categorias/rock-latino.jpg',
+            'CLASICOS ANGLO 80S': '../assets/categorias/anglo-80s.jpg',
+            'EXITOS DE CUMBIA': '../assets/categorias/cumbia.jpg',
+            'MALDITO CUPIDO': '../assets/categorias/cupido.jpg',
+            'REGGAETON ANTIGUO': '../assets/categorias/reggaeton-antiguo.jpg',
+            "PA' PEGARSE EL SHOW CANTANDO": '../assets/categorias/show-cantando.jpg',
+            'FIESTA DE LOS 90': '../assets/categorias/fiesta-90s.jpg',
+            'DIVAS DEL POP': '../assets/categorias/divas-pop.jpg',
+            'DIVOS HISPANOS': '../assets/categorias/divos-hispanos.jpg',
+            'PURO CHILE!': '../assets/categorias/puro-chile.jpg',
+            "GENERACIÓN Z": '../assets/categorias/generacion-z.jpg',
+            'GENERACION Z': '../assets/categorias/generacion-z.jpg',
+            'TIKTOK TRENDS': '../assets/categorias/tiktok-trends.jpg'
         };
 
         // Fetch de categorías
@@ -203,7 +207,7 @@
             .then(categories => {
                 categoriesContainer.innerHTML = '';
                 categories.forEach(category => {
-                    const imgSrc = categoryImageMap[category.name.toUpperCase()] || 'assets/categorias/rock-latino.jpg';
+                    const imgSrc = categoryImageMap[category.name.toUpperCase()] || '../assets/categorias/rock-latino.jpg';
                     const btn = document.createElement('button');
                     btn.className = "category-btn relative overflow-hidden rounded-xl border-2 border-gray-700 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 hover:-translate-y-1 hover:border-gray-500 hover:shadow-[0_6px_20px_rgba(0,0,0,0.5)]";
                     btn.dataset.id = category.id;
