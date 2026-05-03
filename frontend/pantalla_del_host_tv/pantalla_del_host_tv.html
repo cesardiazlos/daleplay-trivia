@@ -438,6 +438,9 @@
 
     // Manejo del Visualizador y Reloj
     function onPlayerStateChange(event) {
+        // Ignorar eventos de YouTube durante reconstrucción de ronda
+        if (isRebuildingRound) return;
+
         const isActivePlayer = (event.target === players[activePlayer]);
 
         if (event.data === YT.PlayerState.PLAYING) {
@@ -706,6 +709,8 @@
         });
 
         nextSongBtn.addEventListener('click', () => {
+            // Cancelar auto-avance pendiente si el host pulsa manualmente
+            if (window.nextRoundTimeout) { clearTimeout(window.nextRoundTimeout); window.nextRoundTimeout = null; }
             gameState.currentSongIndex++;
             playRound(gameState.currentSongIndex);
         });
@@ -744,6 +749,9 @@
 
     // 4. Lógica de la Ronda
     function playRound(index) {
+        // Limpiar auto-avance pendiente de ronda anterior
+        if (window.nextRoundTimeout) { clearTimeout(window.nextRoundTimeout); window.nextRoundTimeout = null; }
+
         if (index >= songs.length) {
             timerDisplay.innerText = "FIN";
             stopVisualizer();
@@ -1057,6 +1065,14 @@
                     liveRankingList.appendChild(row);
                 });
             }
+
+            // Auto-avance: 5 segundos después de mostrar el split screen
+            if (window.nextRoundTimeout) clearTimeout(window.nextRoundTimeout);
+            window.nextRoundTimeout = setTimeout(() => {
+                window.nextRoundTimeout = null;
+                gameState.currentSongIndex++;
+                playRound(gameState.currentSongIndex);
+            }, 5000);
 
         }, 3000);
 
