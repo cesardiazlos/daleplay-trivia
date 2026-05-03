@@ -687,8 +687,6 @@
         });
 
         nextSongBtn.addEventListener('click', () => {
-            // Cancelar auto-avance pendiente si el host pulsa manualmente
-            if (window.nextRoundTimeout) { clearTimeout(window.nextRoundTimeout); window.nextRoundTimeout = null; }
             gameState.currentSongIndex++;
             playRound(gameState.currentSongIndex);
         });
@@ -727,8 +725,7 @@
 
     // 4. Lógica de la Ronda
     function playRound(index) {
-        // Limpiar auto-avance pendiente de ronda anterior
-        if (window.nextRoundTimeout) { clearTimeout(window.nextRoundTimeout); window.nextRoundTimeout = null; }
+
 
         if (index >= songs.length) {
             timerDisplay.innerText = "FIN";
@@ -1031,14 +1028,6 @@
                     liveRankingList.appendChild(row);
                 });
             }
-
-            // Auto-avance: 5 segundos después de mostrar el split screen
-            if (window.nextRoundTimeout) clearTimeout(window.nextRoundTimeout);
-            window.nextRoundTimeout = setTimeout(() => {
-                window.nextRoundTimeout = null;
-                gameState.currentSongIndex++;
-                playRound(gameState.currentSongIndex);
-            }, 5000);
 
         }, 3000);
 
