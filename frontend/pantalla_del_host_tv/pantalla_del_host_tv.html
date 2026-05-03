@@ -339,7 +339,8 @@
     let ws = null;
     let connectedPlayers = [];
     let isReplacing = false; // Candado anti-spam para errores de YouTube
-    let isRebuildingRound = false; // Bloquea respuestas de jugadores durante reconstrucción
+    let isRebuildingRound = false; // Bloquea respuestas durante reconstrucción de replacement
+    let isTransitioning = false; // Bloquea respuestas durante transición entre rondas
 
     // Referencias al DOM
     let timerDisplay, songInfo, songInfoCard, songTitle, songArtist, nextSongBtn, youtubeContainer, startTriviaBtn, visualizerBars;
@@ -364,20 +365,24 @@
     let playerScores = {};
     let currentRoundAnswers = {};
 
+    // Configuración base anti-CORS para todos los reproductores
+    const BASE_PLAYER_VARS = {
+        autoplay: 0,
+        controls: 0,
+        rel: 0,
+        showinfo: 0,
+        modestbranding: 1,
+        disablekb: 1,
+        origin: window.location.origin
+    };
+
     function instantiatePlayers() {
         if (players.A && players.B) return;
         
         const config = {
             height: '225',
             width: '400',
-            playerVars: {
-                'autoplay': 0, // Fundamental para evitar fallos antes del clic
-                'controls': 0,
-                'rel': 0,
-                'showinfo': 0,
-                'modestbranding': 1,
-                'disablekb': 1
-            },
+            playerVars: { ...BASE_PLAYER_VARS },
             events: {
                 'onReady': onPlayerReady,
                 'onStateChange': onPlayerStateChange,
@@ -400,9 +405,11 @@
         }
     }
 
+    // Hard Reset: destruye player, recrea DOM, instancia desde cero
     function buildPlayer(playerKey, videoId, startSeconds, isHidden) {
         if (players[playerKey]) {
-            players[playerKey].destroy();
+            try { players[playerKey].destroy(); } catch(e) {}
+            players[playerKey] = null;
         }
         
         const oldDiv = document.getElementById(`player-${playerKey}`);
@@ -410,7 +417,9 @@
 
         const newDiv = document.createElement('div');
         newDiv.id = `player-${playerKey}`;
-        newDiv.className = isHidden ? "absolute top-0 left-0 w-full h-full opacity-0 pointer-events-none z-0" : "absolute top-0 left-0 w-full h-full opacity-100 z-10";
+        newDiv.className = isHidden
+            ? "absolute top-0 left-0 w-full h-full opacity-0 pointer-events-none z-0"
+            : "absolute top-0 left-0 w-full h-full opacity-100 z-10";
         youtubeContainer.appendChild(newDiv);
 
         players[playerKey] = new YT.Player(`player-${playerKey}`, {
@@ -418,17 +427,14 @@
             width: '100%',
             videoId: videoId,
             playerVars: {
-                'start': startSeconds,
-                'autoplay': 1,
-                'controls': 0,
-                'rel': 0,
-                'showinfo': 0,
-                'modestbranding': 1,
-                'disablekb': 1
+                ...BASE_PLAYER_VARS,
+                start: startSeconds,
+                autoplay: 1
             },
             events: {
                 'onReady': (event) => {
                     event.target.setVolume(0);
+                    isTransitioning = false; // Player listo, desbloquear respuestas
                 },
                 'onStateChange': onPlayerStateChange,
                 'onError': onPlayerError
@@ -601,9 +607,9 @@
                     updatePlayersLobby();
                     break;
                 case 'player_answered':
-                    // Ignorar respuestas durante reconstrucción de ronda
-                    if (isRebuildingRound) {
-                        console.warn(`[WebSocket] Respuesta de ${data.player_name} ignorada (ronda en reconstrucción)`);
+                    // Ignorar respuestas durante reconstrucción o transición
+                    if (isRebuildingRound || isTransitioning) {
+                        console.warn(`[WebSocket] Respuesta de ${data.player_name} ignorada (${isRebuildingRound ? 'rebuild' : 'transición'})`);
                         break;
                     }
                     console.log(`[WebSocket] El jugador ${data.player_name} respondió:`, data);
@@ -860,59 +866,69 @@
             }
         }
 
-        // Alternar reproductores (Ping-Pong / Double Buffering)
-        const inactivePlayerKey = (activePlayer === 'A') ? 'B' : 'A';
-        
-        // Detener el que estaba sonando en la ronda anterior
-        if (players[activePlayer] && players[activePlayer].pauseVideo) {
-            players[activePlayer].pauseVideo();
-        }
+        // === HARD RESET: Un solo reproductor, destruir y recrear cada ronda ===
+        isTransitioning = true; // Bloquear respuestas hasta que el player esté listo
 
-        activePlayer = inactivePlayerKey;
-        const newActive = players[activePlayer];
-
-        const divActive = document.getElementById(`player-${activePlayer}`);
-        if (divActive) divActive.className = "absolute inset-0 z-10 opacity-100";
-
-        // Resetear bandera de reloj y visuales mientras YouTube hace buffering
+        // Resetear banderas de reloj y visuales
         gameState.hasTimerStarted = false;
+        clearInterval(gameState.intervalId);
         clearInterval(gameState.fadeInterval);
-        timerDisplay.innerText = timePerQuestion; 
+        gameState.intervalId = null;
+        gameState.fadeInterval = null;
+        timerDisplay.innerText = timePerQuestion;
         stopVisualizer();
 
         const startSeconds = currentSong.preview_start_time_sec || 45;
         const videoId = currentSong.youtube_url_id;
 
-        if (index === 0) {
-            // Primera ronda: forzar la carga en el activo
-            buildPlayer(activePlayer, videoId, startSeconds, false);
-        } else {
-            // Rondas subsiguientes: el video ya fue precargado en el buffer inactivo
-            // Usamos loadVideoById para mayor seguridad (garantiza carga del video correcto)
-            if (newActive && newActive.loadVideoById) {
-                newActive.loadVideoById({ videoId: videoId, startSeconds: startSeconds });
-                newActive.setVolume(0);
+        // 1. Destruir AMBOS reproductores existentes
+        ['A', 'B'].forEach(key => {
+            if (players[key]) {
+                try { players[key].destroy(); } catch(e) {}
+                players[key] = null;
             }
+        });
+
+        // 2. Limpiar el DOM completamente (mata refs huérfanas de www-widgetapi.js)
+        if (youtubeContainer) {
+            youtubeContainer.innerHTML = '';
         }
-        
-        // Precargar la SIGUIENTE canción en el reproductor inactivo
-        const nextIndex = index + 1;
-        if (nextIndex < songs.length) {
-            const nextSong = songs[nextIndex];
-            const nextInactiveKey = (activePlayer === 'A') ? 'B' : 'A';
-            const nextPlayer = players[nextInactiveKey];
-            if (nextPlayer && nextPlayer.loadVideoById) {
-                // Cargar sin destruir iframe, evitando crash de www-widgetapi.js
-                nextPlayer.loadVideoById({ videoId: nextSong.youtube_url_id, startSeconds: nextSong.preview_start_time_sec || 45 });
-                nextPlayer.setVolume(0);
-            } else {
-                // Fallback: solo si el player no existe aún
-                buildPlayer(nextInactiveKey, nextSong.youtube_url_id, nextSong.preview_start_time_sec || 45, true);
-            }
-        }
+
+        // 3. Delay de 150ms para que el browser limpie el Event Loop
+        setTimeout(() => {
+            // Crear un div fresco para el player
+            const freshDiv = document.createElement('div');
+            freshDiv.id = 'player-A';
+            freshDiv.className = 'absolute top-0 left-0 w-full h-full opacity-100 z-10';
+            youtubeContainer.appendChild(freshDiv);
+
+            activePlayer = 'A';
+            players.B = null;
+
+            // Instanciar un nuevo reproductor desde cero
+            players.A = new YT.Player('player-A', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    ...BASE_PLAYER_VARS,
+                    start: startSeconds,
+                    autoplay: 1
+                },
+                events: {
+                    'onReady': (event) => {
+                        event.target.setVolume(0);
+                        isTransitioning = false; // Player listo, desbloquear respuestas
+                    },
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
+                }
+            });
+        }, 150);
     }
 
     function revealAnswer(currentSong) {
+        isTransitioning = true; // Bloquear respuestas durante revelación/transición
         stopVisualizer();
         clearInterval(gameState.fadeInterval); // Limpieza preventiva
         const currentPlayer = players[activePlayer];
