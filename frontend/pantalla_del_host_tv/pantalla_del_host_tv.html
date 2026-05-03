@@ -339,6 +339,7 @@
     let ws = null;
     let connectedPlayers = [];
     let isReplacing = false; // Candado anti-spam para errores de YouTube
+    let isRebuildingRound = false; // Bloquea respuestas de jugadores durante reconstrucción
 
     // Referencias al DOM
     let timerDisplay, songInfo, songInfoCard, songTitle, songArtist, nextSongBtn, youtubeContainer, startTriviaBtn, visualizerBars;
@@ -597,8 +598,12 @@
                     updatePlayersLobby();
                     break;
                 case 'player_answered':
+                    // Ignorar respuestas durante reconstrucción de ronda
+                    if (isRebuildingRound) {
+                        console.warn(`[WebSocket] Respuesta de ${data.player_name} ignorada (ronda en reconstrucción)`);
+                        break;
+                    }
                     console.log(`[WebSocket] El jugador ${data.player_name} respondió:`, data);
-                    // Registrar la respuesta en el currentRoundAnswers local con precisión de ms
                     if (!currentRoundAnswers[data.player_name]) {
                         let answerTime = Date.now();
                         let timeElapsedMs = answerTime - (window.roundStartTime || answerTime);
@@ -611,46 +616,55 @@
                 case 'replacement_round':
                     console.warn("[WebSocket] Reemplazo de ronda de emergencia recibido.");
                     if (data.options && data.options.length >= 1) {
-                        // 1. Liberar candado anti-spam
+                        // Activar bloqueo de respuestas y liberar candado anti-spam
+                        isRebuildingRound = true;
                         isReplacing = false;
 
-                        // 2. Abortar TODO de la ronda fallida
+                        // FASE 1: Abortar todo de la ronda fallida
                         clearInterval(gameState.intervalId);
                         clearInterval(gameState.fadeInterval);
+                        gameState.intervalId = null;
+                        gameState.fadeInterval = null;
                         gameState.hasTimerStarted = false;
+                        currentRoundAnswers = {};
                         stopVisualizer();
 
-                        // 3. Destrucción quirúrgica de los reproductores YouTube
+                        // FASE 2: Destruir players ANTES de tocar el DOM
                         ['A', 'B'].forEach(key => {
                             if (players[key]) {
-                                try { players[key].destroy(); } catch(e) {}
+                                try { players[key].destroy(); } catch(e) { console.warn('Destroy error:', e); }
                                 players[key] = null;
                             }
                         });
 
-                        // 4. Limpiar y recrear los contenedores DOM (mata refs huérfanas de www-widgetapi.js)
-                        if (youtubeContainer) {
-                            youtubeContainer.innerHTML = `
-                                <div id="player-A" class="absolute inset-0 z-10 opacity-100"></div>
-                                <div id="player-B" class="absolute inset-0 z-0 opacity-0 pointer-events-none"></div>
-                            `;
-                        }
-
-                        // 5. Reinstanciar los reproductores desde cero
-                        activePlayer = 'A';
-                        playersReadyCount = 0;
-                        instantiatePlayers();
-
-                        // 6. Inyectar canción de reemplazo y esperar a que los players estén listos
+                        // FASE 3: Inyectar canción de reemplazo en el array (ANTES del rebuild)
                         songs[gameState.currentSongIndex] = data.options[0];
 
-                        // 7. Iniciar ronda cuando ambos players estén ready
-                        const waitForReady = setInterval(() => {
-                            if (playersReadyCount >= 2) {
-                                clearInterval(waitForReady);
-                                playRound(gameState.currentSongIndex);
+                        // FASE 4: setTimeout da tiempo al navegador para liberar eventos huérfanos
+                        //          de www-widgetapi.js antes de recrear los iframes
+                        setTimeout(() => {
+                            // Recrear contenedores DOM limpios
+                            if (youtubeContainer) {
+                                youtubeContainer.innerHTML = `
+                                    <div id="player-A" class="absolute inset-0 z-10 opacity-100"></div>
+                                    <div id="player-B" class="absolute inset-0 z-0 opacity-0 pointer-events-none"></div>
+                                `;
                             }
-                        }, 200);
+
+                            // Reinstanciar reproductores desde cero
+                            activePlayer = 'A';
+                            playersReadyCount = 0;
+                            instantiatePlayers();
+
+                            // Esperar a que ambos players estén ready, luego arrancar
+                            const waitForReady = setInterval(() => {
+                                if (playersReadyCount >= 2) {
+                                    clearInterval(waitForReady);
+                                    isRebuildingRound = false; // Desbloquear respuestas
+                                    playRound(gameState.currentSongIndex);
+                                }
+                            }, 200);
+                        }, 150); // 150ms de gracia para limpieza del browser
                     }
                     break;
                 default:
