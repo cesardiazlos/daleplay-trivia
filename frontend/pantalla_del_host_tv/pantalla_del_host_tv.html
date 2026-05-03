@@ -261,10 +261,10 @@
             <h2 id="song-title" class="text-[32px] leading-tight font-black text-primary drop-shadow-[0_0_10px_rgba(255,171,243,0.8)] px-4 line-clamp-2"></h2>
             <h3 id="song-artist" class="text-[20px] font-bold text-secondary px-4 mt-1 mb-4"></h3>
             
-            <!-- Contenedor del reproductor de YouTube (Doble Buffering) -->
+            <!-- Contenedor del reproductor de YouTube (Doble Buffering Alternante) -->
             <div id="youtube-container" class="relative w-full aspect-video rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,227,253,0.5)] border-2 border-secondary-container mb-6 transition-opacity duration-500 absolute left-[-9999px] top-[-9999px]">
-                <div id="player-A" class="absolute inset-0 z-10 opacity-100"></div>
-                <div id="player-B" class="absolute inset-0 z-0 opacity-0 pointer-events-none"></div>
+                <div id="player-container-1" class="absolute inset-0 z-10"><div id="player-1"></div></div>
+                <div id="player-container-2" class="absolute inset-0 z-0" style="display:none"><div id="player-2"></div></div>
             </div>
 
             <button id="next-song-btn" class="w-full py-4 bg-secondary text-on-secondary font-headline-md text-[20px] uppercase tracking-wider rounded-xl border-b-8 border-[#009fb0] shadow-[0_0_20px_rgba(189,244,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[10px] active:translate-y-2 active:border-b-2 transition-all flex justify-center items-center gap-3">
@@ -320,9 +320,9 @@
     const daleplayConfig = JSON.parse(localStorage.getItem('daleplay_config') || '{}');
     const timePerQuestion = daleplayConfig.timePerQuestion || 15;
 
-    // Variables globales
-    let activePlayer = 'A';
-    const players = { A: null, B: null };
+    // Variables globales — Doble Reproductor Alternante
+    let reproductorActivo = 1; // 1 o 2
+    const players = { 1: null, 2: null };
     let songs = [];
     let gameState = {
         currentSongIndex: 0,
@@ -353,14 +353,12 @@
         }
         
         if (songs.length > 0) {
-            instantiatePlayers();
+            initFirstPlayer();
         } else {
-            // Si la API cargó antes de DOMContentLoaded, esperamos el custom event
-            document.addEventListener('songsLoaded', instantiatePlayers);
+            document.addEventListener('songsLoaded', initFirstPlayer);
         }
     };
 
-    let playersReadyCount = 0;
     let playerScores = {};
     let currentRoundAnswers = {};
 
@@ -375,53 +373,46 @@
         origin: window.location.origin
     };
 
-    function instantiatePlayers() {
-        if (players.A && players.B) return;
-        
-        const config = {
-            height: '225',
-            width: '400',
+    // Crear solo el reproductor 1 (vacío) para el lobby
+    function initFirstPlayer() {
+        if (players[1]) return;
+        players[1] = new YT.Player('player-1', {
+            height: '100%',
+            width: '100%',
             playerVars: { ...BASE_PLAYER_VARS },
             events: {
-                'onReady': onPlayerReady,
+                'onReady': (event) => {
+                    if (startTriviaBtn) {
+                        startTriviaBtn.style.opacity = '1';
+                        startTriviaBtn.style.pointerEvents = 'auto';
+                        startTriviaBtn.innerHTML = '<span class="relative z-10 font-black">COMENZAR TRIVIA</span>';
+                    }
+                },
                 'onStateChange': onPlayerStateChange,
                 'onError': onPlayerError
             }
-        };
-
-        players.A = new YT.Player('player-A', config);
-        players.B = new YT.Player('player-B', config);
+        });
     }
 
-    // 2. Evento onReady del Player
-    function onPlayerReady(event) {
-        playersReadyCount++;
-        // Solo habilitamos el botón cuando ambos reproductores están listos
-        if (playersReadyCount === 2 && startTriviaBtn) {
-            startTriviaBtn.style.opacity = '1';
-            startTriviaBtn.style.pointerEvents = 'auto';
-            startTriviaBtn.innerHTML = '<span class="relative z-10 font-black">COMENZAR TRIVIA</span>';
+    // Destruir un reproductor y vaciar su contenedor DOM
+    function destroyPlayer(num) {
+        if (players[num]) {
+            try { players[num].destroy(); } catch(e) { console.warn(`Destroy player ${num} error:`, e); }
+            players[num] = null;
+        }
+        const container = document.getElementById(`player-container-${num}`);
+        if (container) {
+            container.innerHTML = `<div id="player-${num}"></div>`;
         }
     }
 
-    // Hard Reset: destruye player, recrea DOM, instancia desde cero
-    function buildPlayer(playerKey, videoId, startSeconds, isHidden) {
-        if (players[playerKey]) {
-            try { players[playerKey].destroy(); } catch(e) {}
-            players[playerKey] = null;
+    // Crear un reproductor nuevo dentro de su contenedor limpio
+    function createPlayer(num, videoId, startSeconds, onReadyCallback) {
+        const container = document.getElementById(`player-container-${num}`);
+        if (container) {
+            container.innerHTML = `<div id="player-${num}"></div>`;
         }
-        
-        const oldDiv = document.getElementById(`player-${playerKey}`);
-        if (oldDiv) oldDiv.remove();
-
-        const newDiv = document.createElement('div');
-        newDiv.id = `player-${playerKey}`;
-        newDiv.className = isHidden
-            ? "absolute top-0 left-0 w-full h-full opacity-0 pointer-events-none z-0"
-            : "absolute top-0 left-0 w-full h-full opacity-100 z-10";
-        youtubeContainer.appendChild(newDiv);
-
-        players[playerKey] = new YT.Player(`player-${playerKey}`, {
+        players[num] = new YT.Player(`player-${num}`, {
             height: '100%',
             width: '100%',
             videoId: videoId,
@@ -433,7 +424,7 @@
             events: {
                 'onReady': (event) => {
                     event.target.setVolume(0);
-                    isTransitioning = false; // Player listo, desbloquear respuestas
+                    if (onReadyCallback) onReadyCallback(event);
                 },
                 'onStateChange': onPlayerStateChange,
                 'onError': onPlayerError
@@ -441,12 +432,25 @@
         });
     }
 
+    // Alternar visibilidad de contenedores
+    function showContainer(num) {
+        const c1 = document.getElementById('player-container-1');
+        const c2 = document.getElementById('player-container-2');
+        if (num === 1) {
+            if (c1) { c1.style.display = 'block'; c1.style.zIndex = '10'; }
+            if (c2) { c2.style.display = 'none'; c2.style.zIndex = '0'; }
+        } else {
+            if (c2) { c2.style.display = 'block'; c2.style.zIndex = '10'; }
+            if (c1) { c1.style.display = 'none'; c1.style.zIndex = '0'; }
+        }
+    }
+
     // Manejo del Visualizador y Reloj
     function onPlayerStateChange(event) {
         // Ignorar eventos de YouTube durante transición entre rondas
         if (isTransitioning) return;
 
-        const isActivePlayer = (event.target === players[activePlayer]);
+        const isActivePlayer = (event.target === players[reproductorActivo]);
 
         if (event.data === YT.PlayerState.PLAYING) {
             if (isActivePlayer) {
@@ -487,7 +491,7 @@
     // Efecto Fade-In para entrada de audio
     function fadeInVolume(targetVolume, durationMs) {
         clearInterval(gameState.fadeInterval);
-        const currentPlayer = players[activePlayer];
+        const currentPlayer = players[reproductorActivo];
         if (!currentPlayer) return;
         currentPlayer.setVolume(0);
         let currentVol = 0;
@@ -729,8 +733,8 @@
         if (index >= songs.length) {
             timerDisplay.innerText = "FIN";
             stopVisualizer();
-            if (players.A && players.A.stopVideo) players.A.stopVideo();
-            if (players.B && players.B.stopVideo) players.B.stopVideo();
+            destroyPlayer(1);
+            destroyPlayer(2);
             
             // Ocultar pantalla de juego
             gameScreen.classList.add('hidden');
@@ -834,7 +838,7 @@
             }
         }
 
-        // === HARD RESET: Un solo reproductor, destruir y recrear cada ronda ===
+        // === DOBLE REPRODUCTOR ALTERNANTE ===
         isTransitioning = true; // Bloquear respuestas hasta que el player esté listo
 
         // Resetear banderas de reloj y visuales
@@ -849,48 +853,26 @@
         const startSeconds = currentSong.preview_start_time_sec || 45;
         const videoId = currentSong.youtube_url_id;
 
-        // 1. Destruir AMBOS reproductores existentes
-        ['A', 'B'].forEach(key => {
-            if (players[key]) {
-                try { players[key].destroy(); } catch(e) {}
-                players[key] = null;
-            }
-        });
+        // Determinar cuál es el inactivo (donde crearemos el nuevo video)
+        const nuevoNum = (reproductorActivo === 1) ? 2 : 1;
+        const viejoNum = reproductorActivo;
 
-        // 2. Limpiar el DOM completamente (mata refs huérfanas de www-widgetapi.js)
-        if (youtubeContainer) {
-            youtubeContainer.innerHTML = '';
-        }
+        // 1. Destruir el reproductor inactivo y limpiar su DOM
+        destroyPlayer(nuevoNum);
 
-        // 3. Delay de 150ms para que el browser limpie el Event Loop
+        // 2. Delay de 150ms para que el browser limpie event listeners huérfanos
         setTimeout(() => {
-            // Crear un div fresco para el player
-            const freshDiv = document.createElement('div');
-            freshDiv.id = 'player-A';
-            freshDiv.className = 'absolute top-0 left-0 w-full h-full opacity-100 z-10';
-            youtubeContainer.appendChild(freshDiv);
+            // 3. Crear un reproductor nuevo en el contenedor limpio
+            createPlayer(nuevoNum, videoId, startSeconds, (event) => {
+                // onReady: el nuevo reproductor está listo
+                isTransitioning = false;
 
-            activePlayer = 'A';
-            players.B = null;
+                // 4. Hacer el swap visual
+                showContainer(nuevoNum);
+                reproductorActivo = nuevoNum;
 
-            // Instanciar un nuevo reproductor desde cero
-            players.A = new YT.Player('player-A', {
-                height: '100%',
-                width: '100%',
-                videoId: videoId,
-                playerVars: {
-                    ...BASE_PLAYER_VARS,
-                    start: startSeconds,
-                    autoplay: 1
-                },
-                events: {
-                    'onReady': (event) => {
-                        event.target.setVolume(0);
-                        isTransitioning = false; // Player listo, desbloquear respuestas
-                    },
-                    'onStateChange': onPlayerStateChange,
-                    'onError': onPlayerError
-                }
+                // 5. Limpieza profunda: destruir el reproductor viejo (ya no está visible)
+                destroyPlayer(viejoNum);
             });
         }, 150);
     }
@@ -899,7 +881,7 @@
         isTransitioning = true; // Bloquear respuestas durante revelación/transición
         stopVisualizer();
         clearInterval(gameState.fadeInterval); // Limpieza preventiva
-        const currentPlayer = players[activePlayer];
+        const currentPlayer = players[reproductorActivo];
         if (currentPlayer && currentPlayer.setVolume) {
             currentPlayer.setVolume(100); // Asegurar volumen máximo al revelar
         }
