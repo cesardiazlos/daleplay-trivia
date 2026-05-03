@@ -138,6 +138,14 @@ async def websocket_host(websocket: WebSocket, pin: str):
     try:
         while True:
             data = await websocket.receive_json()
+
+            # El Host informa qué categoría se está jugando (enviado al inicio de partida)
+            if data.get("type") == "set_category":
+                cat_id = data.get("category_id")
+                if pin in manager.rooms and cat_id:
+                    manager.rooms[pin]["state"]["category_id"] = cat_id
+                continue
+
             if data.get("type") == "youtube_error":
                 track_id = data.get("track_id")
                 db = SessionLocal()
@@ -146,15 +154,38 @@ async def websocket_host(websocket: WebSocket, pin: str):
                     if song:
                         song.youtube_url_id = None
                         db.commit()
-                        
-                        # Obtener reemplazo: canción aleatoria válida
-                        replacement = db.query(Song).filter(Song.youtube_url_id != None).order_by(func.random()).first()
+
+                        # Obtener la categoría de la sala para filtrar reemplazos en-genre
+                        room_cat_id = None
+                        if pin in manager.rooms:
+                            room_cat_id = manager.rooms[pin]["state"].get("category_id")
+
+                        # Query base: canciones con video válido
+                        replacement_query = db.query(Song).filter(Song.youtube_url_id != None)
+                        if room_cat_id:
+                            replacement_query = replacement_query.filter(
+                                Song.categories.any(Category.id == room_cat_id)
+                            )
+
+                        replacement = replacement_query.order_by(func.random()).first()
                         if replacement:
-                            # 3 distractores
-                            others = db.query(Song).filter(Song.id != replacement.id, Song.artist_id != replacement.artist_id).order_by(func.random()).limit(3).all()
-                            
-                            options = [SongResponse.model_validate(replacement).model_dump(mode='json')] + [SongResponse.model_validate(o).model_dump(mode='json') for o in others]
-                            await websocket.send_json({"type": "replacement_round", "options": options})
+                            # 3 distractores del mismo género
+                            distractor_query = db.query(Song).filter(
+                                Song.id != replacement.id,
+                                Song.artist_id != replacement.artist_id
+                            )
+                            if room_cat_id:
+                                distractor_query = distractor_query.filter(
+                                    Song.categories.any(Category.id == room_cat_id)
+                                )
+                            others = distractor_query.order_by(func.random()).limit(3).all()
+
+                            options = [SongResponse.model_validate(replacement).model_dump(mode='json')] + \
+                                      [SongResponse.model_validate(o).model_dump(mode='json') for o in others]
+                            payload = {"type": "replacement_round", "options": options}
+                            await websocket.send_json(payload)
+                            # Sincronizar a los celulares también
+                            await manager.send_to_players(pin, payload)
                 finally:
                     db.close()
             else:
