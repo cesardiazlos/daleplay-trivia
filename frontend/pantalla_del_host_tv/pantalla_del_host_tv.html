@@ -748,7 +748,7 @@
         });
 
         startTriviaBtn.addEventListener('click', () => {
-            lobbyScreen.style.display = 'none';
+            lobbyScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
 
             // Informar al backend la categoría activa para filtrar reemplazos en-genre
