@@ -190,10 +190,67 @@
         </div>
     </div>
     
-    <button id="start-trivia-btn" class="mt-12 py-6 px-16 bg-fuchsia-600 text-white font-headline-md text-4xl uppercase tracking-wider rounded-2xl border-b-8 border-fuchsia-900 shadow-[0_0_30px_rgba(255,0,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[12px] active:translate-y-3 active:border-b-2 transition-all opacity-50 pointer-events-none z-10">
-        CARGANDO YOUTUBE...
+    <button id="start-trivia-btn" class="mt-12 py-6 px-16 bg-fuchsia-600 text-white font-headline-md text-4xl uppercase tracking-wider rounded-2xl border-b-8 border-fuchsia-900 shadow-[0_0_30px_rgba(255,0,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[12px] active:translate-y-3 active:border-b-2 transition-all z-10">
+        COMENZAR TRIVIA
     </button>
 </div>
+
+<!-- Configuration Screen -->
+<main id="config-screen" class="hidden pt-24 pb-32 px-6 md:px-12 max-w-7xl mx-auto space-y-12 w-full h-full absolute inset-0 z-50 bg-background overflow-y-auto">
+    <!-- Header Section -->
+    <section class="text-center md:text-left space-y-4">
+        <h1 class="font-headline-lg text-headline-lg text-primary drop-shadow-[0_0_15px_rgba(255,171,243,0.5)]">CONFIGURACIÓN DE PARTIDA</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">Selecciona la categoría y ajusta las reglas para la próxima ronda.</p>
+    </section>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Category Grid (Main Canvas) -->
+        <div class="lg:col-span-2 space-y-6">
+            <h2 class="font-headline-md text-headline-md text-secondary">Categorías (Elige 1)</h2>
+            <div id="categories-container" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- JS inyectará tarjetas premium dinámicamente -->
+            </div>
+        </div>
+        <!-- Game Filters Sidebar -->
+        <aside class="flex flex-col justify-between h-full bg-surface-container-low p-6 rounded-2xl border-2 border-surface-variant shadow-[0_8px_0_0_#170527]">
+            <!-- Sliders Section -->
+            <div class="space-y-6">
+                <!-- Preguntas -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="font-label-bold text-label-bold text-on-surface">Número de Preguntas</label>
+                        <span id="preguntas-val" class="font-body-md text-body-md text-secondary">15</span>
+                    </div>
+                    <input id="preguntas-slider" class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="50" min="5" step="1" type="range" value="15"/>
+                    <div class="flex justify-between text-xs text-on-surface-variant font-label-bold">
+                        <span>5</span>
+                        <span>50</span>
+                    </div>
+                </div>
+                <!-- Tiempo -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="font-label-bold text-label-bold text-on-surface">Tiempo por Pregunta</label>
+                        <span id="tiempo-val" class="font-body-md text-body-md text-secondary">15s</span>
+                    </div>
+                    <input id="tiempo-slider" class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="60" min="5" step="1" type="range" value="15"/>
+                    <div class="flex justify-between text-xs text-on-surface-variant font-label-bold">
+                        <span>5s</span>
+                        <span>60s</span>
+                    </div>
+                </div>
+            </div>
+            <!-- CTA -->
+            <div class="pt-6 border-t border-surface-variant mt-8">
+                <button id="start-btn" class="w-full py-5 bg-primary text-on-primary font-headline-md text-headline-md uppercase tracking-wider rounded-xl border-b-8 border-inverse-primary shadow-[0_0_20px_rgba(255,171,243,0.4)] hover:bg-primary-fixed hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(255,171,243,0.6)] hover:border-b-[10px] active:translate-y-2 active:border-b-2 active:shadow-none transition-all flex justify-center items-center gap-3 relative overflow-hidden group">
+                    <span class="relative z-10 font-black">EMPEZAR JUEGO</span>
+                    <span class="material-symbols-outlined relative z-10 text-3xl font-black">play_arrow</span>
+                    <!-- Pulsing background effect -->
+                    <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+                </button>
+            </div>
+        </aside>
+    </div>
+</main>
 
 <!-- Main Canvas -->
 <main id="game-screen" class="hidden flex-grow flex flex-col items-center pt-8 pb-4 px-md gap-6 w-full max-w-7xl mx-auto mt-[80px] h-[calc(100vh-80px)] overflow-hidden">
@@ -738,25 +795,24 @@
                 nextCatBtn.classList.remove('opacity-50', 'pointer-events-none');
                 nextCatBtn.disabled = false;
             }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'volver_a_lobby' }));
+            }
+            document.getElementById('podium-screen').classList.add('hidden');
+            document.getElementById('config-screen').classList.remove('hidden');
         });
 
         document.getElementById('restart-btn').addEventListener('click', () => {
             if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'cerrar_sala' }));
+                ws.send(JSON.stringify({ type: 'volver_a_lobby' }));
             }
-            window.location.reload();
+            document.getElementById('podium-screen').classList.add('hidden');
+            document.getElementById('config-screen').classList.remove('hidden');
         });
 
         startTriviaBtn.addEventListener('click', () => {
             lobbyScreen.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
-
-            // Informar al backend la categoría activa para filtrar reemplazos en-genre
-            if (ws && ws.readyState === WebSocket.OPEN && daleplayConfig.categoryId) {
-                ws.send(JSON.stringify({ type: 'set_category', category_id: daleplayConfig.categoryId }));
-            }
-
-            playRound(gameState.currentSongIndex);
+            document.getElementById('config-screen').classList.remove('hidden');
         });
 
         nextSongBtn.addEventListener('click', () => {
@@ -767,6 +823,145 @@
                 playRound(gameState.currentSongIndex);
             });
         });
+
+        // Configuración de Partida Logic
+        const categoriesContainer = document.getElementById('categories-container');
+        const startBtn = document.getElementById('start-btn');
+        let selectedCategoryId = null;
+
+        const categoryImageMap = {
+            'ROCK LATINO': '../assets/categorias/rock-latino.jpg',
+            'CLASICOS ANGLO 80S': '../assets/categorias/anglo-80s.jpg',
+            'EXITOS DE CUMBIA': '../assets/categorias/cumbia.jpg',
+            'MALDITO CUPIDO': '../assets/categorias/cupido.jpg',
+            'REGGAETON ANTIGUO': '../assets/categorias/reggaeton-antiguo.jpg',
+            "PA' PEGARSE EL SHOW CANTANDO": '../assets/categorias/show-cantando.jpg',
+            'FIESTA DE LOS 90': '../assets/categorias/fiesta-90s.jpg',
+            'DIVAS DEL POP': '../assets/categorias/divas-pop.jpg',
+            'DIVOS HISPANOS': '../assets/categorias/divos-hispanos.jpg',
+            'PURO CHILE!': '../assets/categorias/puro-chile.jpg',
+            "GENERACIÓN Z": '../assets/categorias/generacion-z.jpg',
+            'GENERACION Z': '../assets/categorias/generacion-z.jpg',
+            'TIKTOK TRENDS': '../assets/categorias/tiktok-trends.jpg'
+        };
+
+        fetch('http://127.0.0.1:8000/api/categories')
+            .then(res => res.json())
+            .then(categories => {
+                if (categoriesContainer) {
+                    categoriesContainer.innerHTML = '';
+                    categories.forEach(category => {
+                        const imgSrc = categoryImageMap[category.name.toUpperCase()] || '../assets/categorias/rock-latino.jpg';
+                        const btn = document.createElement('button');
+                        btn.className = "category-btn relative overflow-hidden rounded-xl border-2 border-gray-700 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 hover:-translate-y-1 hover:border-gray-500 hover:shadow-[0_6px_20px_rgba(0,0,0,0.5)]";
+                        btn.dataset.id = category.id;
+                        btn.innerHTML = `
+                            <img src="${imgSrc}" class="bg-img absolute inset-0 w-full h-full object-cover opacity-40 blur-[2px] transition-all duration-500 group-hover:scale-110 group-hover:opacity-50" alt="${category.name}">
+                            <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"></div>
+                            <div class="relative z-10 flex flex-col items-center pointer-events-none drop-shadow-md">
+                                <span class="icon-layer material-symbols-outlined text-gray-300 text-4xl mb-1 group-hover:text-fuchsia-400 transition-colors drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">queue_music</span>
+                                <span class="text-layer font-label-bold text-label-bold text-gray-200 uppercase tracking-wider text-center group-hover:text-white px-2 leading-tight">${category.name}</span>
+                            </div>
+                            <div class="check-icon absolute top-2 right-2 z-20 hidden">
+                                <span class="material-symbols-outlined text-fuchsia-400 drop-shadow-[0_0_8px_rgba(217,70,239,1)]" style="font-variation-settings: 'FILL' 1">check_circle</span>
+                            </div>
+                        `;
+                        btn.addEventListener('click', () => {
+                            document.querySelectorAll('.category-btn').forEach(b => {
+                                b.className = "category-btn relative overflow-hidden rounded-xl border-2 border-gray-700 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 hover:-translate-y-1 hover:border-gray-500 hover:shadow-[0_6px_20px_rgba(0,0,0,0.5)]";
+                                b.querySelector('.check-icon').classList.add('hidden');
+                                const bImg = b.querySelector('.bg-img');
+                                if (bImg) { bImg.classList.remove('opacity-60'); bImg.classList.add('opacity-40'); }
+                                b.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-gray-300 text-4xl mb-1 group-hover:text-fuchsia-400 transition-colors drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]";
+                                b.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-gray-200 uppercase tracking-wider text-center group-hover:text-white px-2 leading-tight";
+                            });
+                            selectedCategoryId = category.id;
+                            btn.className = "category-btn relative overflow-hidden rounded-xl border-2 border-fuchsia-500 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 -translate-y-1 shadow-[0_0_25px_rgba(217,70,239,0.5)]";
+                            btn.querySelector('.check-icon').classList.remove('hidden');
+                            const selImg = btn.querySelector('.bg-img');
+                            if (selImg) { selImg.classList.remove('opacity-40'); selImg.classList.add('opacity-60'); }
+                            btn.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-fuchsia-400 text-4xl mb-1 drop-shadow-[0_0_12px_rgba(217,70,239,0.8)]";
+                            btn.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-white uppercase tracking-wider text-center px-2 leading-tight";
+                        });
+                        categoriesContainer.appendChild(btn);
+                    });
+                }
+            })
+            .catch(err => console.error("Error cargando categorías:", err));
+
+        const preguntasSlider = document.getElementById('preguntas-slider');
+        const preguntasVal = document.getElementById('preguntas-val');
+        const tiempoSlider = document.getElementById('tiempo-slider');
+        const tiempoVal = document.getElementById('tiempo-val');
+
+        if (preguntasSlider) {
+            preguntasSlider.addEventListener('input', (e) => {
+                preguntasVal.innerText = e.target.value;
+            });
+        }
+        if (tiempoSlider) {
+            tiempoSlider.addEventListener('input', (e) => {
+                tiempoVal.innerText = e.target.value + 's';
+            });
+        }
+
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                if (!selectedCategoryId) {
+                    alert("Por favor selecciona una categoría primero.");
+                    return;
+                }
+
+                const originalContent = startBtn.innerHTML;
+                startBtn.innerHTML = '<span class="relative z-10 font-black">CARGANDO...</span>';
+
+                const numPreguntas = parseInt(preguntasSlider.value, 10);
+                const tiempoPorPregunta = parseInt(tiempoSlider.value, 10);
+
+                localStorage.setItem('daleplay_config', JSON.stringify({
+                    categoryId: selectedCategoryId,
+                    numQuestions: numPreguntas,
+                    timePerQuestion: tiempoPorPregunta
+                }));
+
+                fetch(`http://127.0.0.1:8000/api/categories/${selectedCategoryId}/play`)
+                    .then(res => {
+                        if(!res.ok) throw new Error("No se pudieron cargar las canciones");
+                        return res.json();
+                    })
+                    .then(data => {
+                        const selectedSongs = data.slice(0, numPreguntas);
+                        localStorage.setItem('daleplay_songs', JSON.stringify(selectedSongs));
+                        songs = selectedSongs;
+                        
+                        // Ocultar config y mostrar juego
+                        document.getElementById('config-screen').classList.add('hidden');
+                        gameScreen.classList.remove('hidden');
+
+                        // Informar al backend la categoría activa para filtrar reemplazos en-genre
+                        if (ws && ws.readyState === WebSocket.OPEN && selectedCategoryId) {
+                            ws.send(JSON.stringify({ type: 'set_category', category_id: selectedCategoryId }));
+                        }
+
+                        // Reset game state variables
+                        gameState.currentSongIndex = 0;
+                        gameState.score = 0;
+                        playerScores = {};
+                        
+                        const podiumList = document.getElementById('podium-list');
+                        if (podiumList) podiumList.innerHTML = '';
+
+                        // Iniciar la trivia
+                        playRound(gameState.currentSongIndex);
+                        startBtn.innerHTML = originalContent; // Resetear botón por si vuelven luego
+                    })
+                    .catch(err => {
+                        console.error("Error al iniciar juego:", err);
+                        alert("Hubo un error cargando las canciones de la categoría.");
+                        startBtn.innerHTML = originalContent;
+                    });
+            });
+        }
     });
 
     function getRandomOptions(correctSong) {

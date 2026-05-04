@@ -201,6 +201,13 @@ async def websocket_host(websocket: WebSocket, pin: str):
                     manager.rooms[pin]["state"]["category_id"] = cat_id
                 continue
 
+            if data.get("type") == "volver_a_lobby":
+                if pin in manager.rooms:
+                    manager.rooms[pin]["state"]["estado_juego"] = "lobby"
+                    manager.rooms[pin]["state"]["round_answers"] = set()
+                    await manager.send_to_players(pin, {"type": "reset_to_lobby"})
+                continue
+
             if data.get("type") == "youtube_error":
                 track_id = data.get("track_id")
                 db = SessionLocal()

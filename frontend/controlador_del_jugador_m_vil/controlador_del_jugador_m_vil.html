@@ -415,6 +415,17 @@
                 postContinueBtn.disabled = false;
                 postContinueBtn.innerText = "Continuar";
                 postContinueBtn.classList.remove('opacity-50');
+            } else if (data.type === 'reset_to_lobby') {
+                gameOverScreen.classList.remove('flex');
+                gameOverScreen.classList.add('hidden');
+                feedbackScreen.classList.remove('flex');
+                feedbackScreen.classList.add('hidden');
+                controllerScreen.classList.remove('flex');
+                controllerScreen.classList.add('hidden');
+                
+                waitingScreen.classList.remove('hidden');
+                waitingScreen.classList.add('flex');
+                waitingText.innerText = "Esperando a que el Host seleccione una categoría...";
             } else if (data.type === 'reset_game') {
                 window.location.reload();
             }
