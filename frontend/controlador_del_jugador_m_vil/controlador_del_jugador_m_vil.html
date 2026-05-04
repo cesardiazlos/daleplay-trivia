@@ -167,20 +167,24 @@
         <!-- 2x2 Controller Grid -->
         <div class="grid grid-cols-2 grid-rows-2 gap-md w-full h-full pb-xl">
             <!-- Button 0: Triangle (Red) -->
-            <button onclick="sendAnswer(0)" class="w-full h-full bg-red-600 rounded-2xl shadow-[0_12px_0_0_#991b1b] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex items-center justify-center focus:outline-none">
-                <span class="material-symbols-outlined text-white" data-icon="change_history" style="font-variation-settings: 'FILL' 1; font-size: 8rem;">change_history</span>
+            <button onclick="sendAnswer(0)" class="option-btn w-full h-full bg-red-600 rounded-2xl shadow-[0_12px_0_0_#991b1b] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3 gap-1">
+                <span class="material-symbols-outlined text-white drop-shadow-md" data-icon="change_history" style="font-variation-settings: 'FILL' 1; font-size: 3.5rem;">change_history</span>
+                <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
             <!-- Button 1: Diamond (Blue) -->
-            <button onclick="sendAnswer(1)" class="w-full h-full bg-blue-600 rounded-2xl shadow-[0_12px_0_0_#1e40af] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex items-center justify-center focus:outline-none">
-                <span class="material-symbols-outlined text-white" data-icon="diamond" style="font-variation-settings: 'FILL' 1; font-size: 8rem;">diamond</span>
+            <button onclick="sendAnswer(1)" class="option-btn w-full h-full bg-blue-600 rounded-2xl shadow-[0_12px_0_0_#1e40af] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3 gap-1">
+                <span class="material-symbols-outlined text-white drop-shadow-md" data-icon="diamond" style="font-variation-settings: 'FILL' 1; font-size: 3.5rem;">diamond</span>
+                <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
             <!-- Button 2: Circle (Yellow) -->
-            <button onclick="sendAnswer(2)" class="w-full h-full bg-yellow-500 rounded-2xl shadow-[0_12px_0_0_#b45309] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex items-center justify-center focus:outline-none">
-                <span class="material-symbols-outlined text-white" data-icon="circle" style="font-variation-settings: 'FILL' 1; font-size: 8rem;">circle</span>
+            <button onclick="sendAnswer(2)" class="option-btn w-full h-full bg-yellow-500 rounded-2xl shadow-[0_12px_0_0_#b45309] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3 gap-1">
+                <span class="material-symbols-outlined text-white drop-shadow-md" data-icon="circle" style="font-variation-settings: 'FILL' 1; font-size: 3.5rem;">circle</span>
+                <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
             <!-- Button 3: Square (Green) -->
-            <button onclick="sendAnswer(3)" class="w-full h-full bg-green-600 rounded-2xl shadow-[0_12px_0_0_#166534] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex items-center justify-center focus:outline-none">
-                <span class="material-symbols-outlined text-white" data-icon="square" style="font-variation-settings: 'FILL' 1; font-size: 8rem;">square</span>
+            <button onclick="sendAnswer(3)" class="option-btn w-full h-full bg-green-600 rounded-2xl shadow-[0_12px_0_0_#166534] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3 gap-1">
+                <span class="material-symbols-outlined text-white drop-shadow-md" data-icon="square" style="font-variation-settings: 'FILL' 1; font-size: 3.5rem;">square</span>
+                <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
         </div>
     </div>
@@ -279,6 +283,26 @@
                     controllerScreen.classList.remove('hidden');
                     controllerScreen.classList.add('flex');
                     statusBadge.innerText = "¡Adivina rápido!";
+
+                    // Inyectar nombres de artistas en los botones con tamaño dinámico
+                    const labels = document.querySelectorAll('.artist-label');
+                    labels.forEach((label, i) => {
+                        if (currentOptions[i] && currentOptions[i].artist) {
+                            const name = currentOptions[i].artist;
+                            label.innerText = name;
+                            // Achicar la letra progresivamente según largo del nombre
+                            if (name.length > 20) {
+                                label.style.fontSize = '15px';
+                            } else if (name.length > 12) {
+                                label.style.fontSize = '16px';
+                            } else {
+                                label.style.fontSize = ''; // default text-lg (18px)
+                            }
+                        } else {
+                            label.innerText = '';
+                            label.style.fontSize = '';
+                        }
+                    });
                 } 
                 else if (data.status === 'revealing' || data.status === 'finished') {
                     // El Host terminó la ronda o la partida
