@@ -136,6 +136,12 @@
 <!-- Main Canvas: Player Controller Grid -->
 <main class="flex-1 w-full max-w-5xl mx-auto mt-[80px] flex flex-col items-center justify-center min-h-[calc(100dvh-80px)] relative">
     
+    <!-- RECONNECTING OVERLAY -->
+    <div id="reconnecting-overlay" class="hidden absolute inset-0 flex-col items-center justify-center bg-black/80 z-[100] backdrop-blur-sm">
+        <div class="w-16 h-16 border-8 border-t-primary border-r-secondary border-b-error border-l-tertiary-container rounded-full animate-spin shadow-[0_0_20px_rgba(255,171,243,0.5)] mb-4"></div>
+        <h2 class="font-headline-md text-white text-center animate-pulse">Reconectando...</h2>
+    </div>
+
     <!-- JOIN SCREEN -->
     <div id="join-screen" class="w-full max-w-sm flex flex-col gap-6 px-4">
         <div class="bg-surface-container border-2 border-outline px-6 py-8 rounded-2xl shadow-[0_0_20px_rgba(255,171,243,0.2)] flex flex-col gap-6">
@@ -213,6 +219,10 @@
             <span class="text-gray-400 font-bold text-sm uppercase tracking-widest mb-1">Puntaje Final</span>
             <span id="game-over-score" class="text-5xl font-black text-fuchsia-400">0</span>
         </div>
+        <div class="flex flex-col sm:flex-row gap-4 w-full max-w-sm mt-8">
+            <button id="post-continue-btn" class="flex-1 py-4 bg-primary text-on-primary font-black uppercase text-lg rounded-xl border-b-8 border-[#ff00ff] active:translate-y-2 active:border-b-0 hover:brightness-110 transition-all focus:outline-none">Continuar</button>
+            <button id="post-exit-btn" class="flex-1 py-4 bg-gray-600 text-white font-black uppercase text-lg rounded-xl border-b-8 border-gray-800 active:translate-y-2 active:border-b-0 hover:brightness-110 transition-all focus:outline-none">Salir</button>
+        </div>
     </div>
 </main>
 
@@ -237,37 +247,72 @@
     
     const gameOverPosition = document.getElementById('game-over-position');
     const gameOverScore = document.getElementById('game-over-score');
+    
+    const reconnectingOverlay = document.getElementById('reconnecting-overlay');
+    const postContinueBtn = document.getElementById('post-continue-btn');
+    const postExitBtn = document.getElementById('post-exit-btn');
+    
+    let isReconnecting = false;
+    let intentionToLeave = false;
 
-    document.getElementById('join-btn').addEventListener('click', () => {
-        const pin = document.getElementById('pin-input').value.replace(/\s+/g, '').trim();
-        const nick = document.getElementById('nick-input').value.trim();
+    function connectPlayer(pin, nick, isSilent = false) {
+        if (!pin || !nick) return;
 
-        if (!pin || !nick) {
-            alert('Por favor ingresa un PIN y un Apodo');
-            return;
+        if (!isSilent) {
+            joinScreen.classList.add('hidden');
+            waitingScreen.classList.remove('hidden');
+            waitingScreen.classList.add('flex');
+            waitingText.innerText = "Conectando al Host...";
+            if (pinDisplay) pinDisplay.innerText = `PIN: ${pin.substring(0,3)} ${pin.substring(3)}`;
+        } else {
+            reconnectingOverlay.classList.remove('hidden');
+            reconnectingOverlay.classList.add('flex');
+            isReconnecting = true;
         }
 
-        // Transición visual
-        joinScreen.classList.add('hidden');
-        waitingScreen.classList.remove('hidden');
-        waitingScreen.classList.add('flex');
-        waitingText.innerText = "Conectando al Host...";
-        
-        if (pinDisplay) {
-            pinDisplay.innerText = `PIN: ${pin.substring(0,3)} ${pin.substring(3)}`;
-        }
-
-        // Conectar WebSocket Dinámicamente
         const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
         const wsUrl = wsProtocol + window.location.hostname + ':8000/ws/player/' + pin + '/' + nick;
         ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
+            if (isReconnecting) {
+                reconnectingOverlay.classList.remove('flex');
+                reconnectingOverlay.classList.add('hidden');
+                isReconnecting = false;
+            }
             waitingText.innerText = "¡Estás dentro! Mirá la pantalla del TV...";
         };
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
+
+            if (data.type === 'error' && data.message === 'name_taken') {
+                alert("Nombre en uso, elige otro");
+                ws.close();
+                sessionStorage.clear();
+                window.location.reload();
+                return;
+            }
+
+            if (data.type === 'join_success' || data.type === 'reconnect_success') {
+                sessionStorage.setItem('daleplay_pin', pin);
+                sessionStorage.setItem('daleplay_nick', nick);
+                if (data.type === 'reconnect_success') {
+                    // Update state if needed
+                    if (data.estado_juego === 'lobby') {
+                        document.body.classList.remove('bg-green-500', 'bg-red-500');
+                        controllerScreen.classList.remove('flex');
+                        controllerScreen.classList.add('hidden');
+                        feedbackScreen.classList.remove('flex');
+                        feedbackScreen.classList.add('hidden');
+                        gameOverScreen.classList.remove('flex');
+                        gameOverScreen.classList.add('hidden');
+                        waitingScreen.classList.remove('hidden');
+                        waitingScreen.classList.add('flex');
+                        waitingText.innerText = "¡Estás dentro! Mirá la pantalla del TV...";
+                    }
+                }
+            }
             
             if (data.type === 'state_change') {
                 if (data.status === 'guessing') {
@@ -340,15 +385,13 @@
                     }
                 }
             } else if (data.type === 'game_over') {
-                const nick = document.getElementById('nick-input').value.trim();
+                const nick = document.getElementById('nick-input').value.trim() || sessionStorage.getItem('daleplay_nick');
                 const leaderboard = data.leaderboard || [];
                 
-                // Buscar la posición del jugador
                 let positionIndex = leaderboard.findIndex(p => p.name === nick);
                 
-                document.body.classList.remove('bg-green-500', 'bg-red-500'); // Limpiar fondo verde/rojo
+                document.body.classList.remove('bg-green-500', 'bg-red-500');
                 
-                // Ocultar todo
                 waitingScreen.classList.remove('flex');
                 waitingScreen.classList.add('hidden');
                 controllerScreen.classList.remove('flex');
@@ -366,9 +409,12 @@
                     gameOverScore.innerText = "0";
                 }
 
-                // Mostrar pantalla de Game Over
                 gameOverScreen.classList.remove('hidden');
                 gameOverScreen.classList.add('flex');
+                
+                postContinueBtn.disabled = false;
+                postContinueBtn.innerText = "Continuar";
+                postContinueBtn.classList.remove('opacity-50');
             } else if (data.type === 'reset_game') {
                 window.location.reload();
             }
@@ -376,21 +422,79 @@
 
         ws.onclose = (e) => {
             console.warn("Desconectado", e);
-            controllerScreen.classList.remove('flex');
-            controllerScreen.classList.add('hidden');
-            waitingScreen.classList.remove('hidden');
-            waitingScreen.classList.add('flex');
-            waitingText.innerHTML = '<span class="text-red-500 font-bold text-2xl drop-shadow-md">Error de conexión:<br>La sala no existe o el Host se desconectó.</span><br><br><button onclick="window.location.reload()" class="px-6 py-3 mt-4 bg-red-600 text-white rounded-full uppercase font-bold shadow-[0_0_15px_rgba(220,38,38,0.6)] active:scale-95 transition-all">Volver a Intentar</button>';
+            if (intentionToLeave) return; // Don't reconnect if user intentionally left
+            
+            const savedPin = sessionStorage.getItem('daleplay_pin');
+            const savedNick = sessionStorage.getItem('daleplay_nick');
+            
+            if (savedPin && savedNick) {
+                setTimeout(() => {
+                    if (!isReconnecting) connectPlayer(savedPin, savedNick, true);
+                }, 1500);
+            } else {
+                controllerScreen.classList.remove('flex');
+                controllerScreen.classList.add('hidden');
+                waitingScreen.classList.remove('hidden');
+                waitingScreen.classList.add('flex');
+                waitingText.innerHTML = '<span class="text-red-500 font-bold text-2xl drop-shadow-md">Error de conexión:<br>La sala no existe o el Host se desconectó.</span><br><br><button onclick="window.location.reload()" class="px-6 py-3 mt-4 bg-red-600 text-white rounded-full uppercase font-bold shadow-[0_0_15px_rgba(220,38,38,0.6)] active:scale-95 transition-all">Volver a Intentar</button>';
+            }
         };
 
         ws.onerror = (err) => {
             console.error("Error WS", err);
-            controllerScreen.classList.remove('flex');
-            controllerScreen.classList.add('hidden');
-            waitingScreen.classList.remove('hidden');
-            waitingScreen.classList.add('flex');
-            waitingText.innerHTML = '<span class="text-red-500 font-bold text-2xl drop-shadow-md">Error de conexión:<br>La sala no existe o el Host se desconectó.</span><br><br><button onclick="window.location.reload()" class="px-6 py-3 mt-4 bg-red-600 text-white rounded-full uppercase font-bold shadow-[0_0_15px_rgba(220,38,38,0.6)] active:scale-95 transition-all">Volver a Intentar</button>';
         };
+    }
+
+    document.getElementById('join-btn').addEventListener('click', () => {
+        const pin = document.getElementById('pin-input').value.replace(/\s+/g, '').trim();
+        const nick = document.getElementById('nick-input').value.trim();
+        if (!pin || !nick) {
+            alert('Por favor ingresa un PIN y un Apodo');
+            return;
+        }
+        connectPlayer(pin, nick, false);
+    });
+
+    // Auto-reconnect on load
+    window.addEventListener('load', () => {
+        const savedPin = sessionStorage.getItem('daleplay_pin');
+        const savedNick = sessionStorage.getItem('daleplay_nick');
+        if (savedPin && savedNick) {
+            document.getElementById('pin-input').value = savedPin;
+            document.getElementById('nick-input').value = savedNick;
+            connectPlayer(savedPin, savedNick, true);
+        }
+    });
+
+    // Silent Reconnect on Visibility Change
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === 'visible' && (!ws || ws.readyState !== WebSocket.OPEN) && !intentionToLeave) {
+            const savedPin = sessionStorage.getItem('daleplay_pin');
+            const savedNick = sessionStorage.getItem('daleplay_nick');
+            if (savedPin && savedNick && !isReconnecting) {
+                connectPlayer(savedPin, savedNick, true);
+            }
+        }
+    });
+
+    // Post-round flow
+    postContinueBtn.addEventListener('click', () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'player_ready' }));
+            postContinueBtn.innerText = "¡Listo!";
+            postContinueBtn.disabled = true;
+            postContinueBtn.classList.add('opacity-50');
+        }
+    });
+
+    postExitBtn.addEventListener('click', () => {
+        intentionToLeave = true;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'leave_room' }));
+            ws.close();
+        }
+        sessionStorage.clear();
+        window.location.reload();
     });
 
     // Enviar respuesta al hacer clic en un botón de figura

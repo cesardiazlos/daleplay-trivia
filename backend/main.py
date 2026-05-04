@@ -84,7 +84,7 @@ class ConnectionManager:
     async def connect_host(self, websocket: WebSocket, pin: str):
         await websocket.accept()
         if pin not in self.rooms:
-            self.rooms[pin] = {"host": None, "players": {}, "state": {"current_song_index": 0, "round_answers": set()}}
+            self.rooms[pin] = {"host": None, "players": {}, "state": {"current_song_index": 0, "round_answers": set(), "estado_juego": "lobby", "last_guessing_event": None}}
         self.rooms[pin]["host"] = websocket
 
     def disconnect_host(self, pin: str):
@@ -93,29 +93,71 @@ class ConnectionManager:
             del self.rooms[pin]
 
     async def connect_player(self, websocket: WebSocket, pin: str, player_name: str):
-        await websocket.accept()
         if pin not in self.rooms:
-            # Si no existe la sala, cerramos la conexión
+            await websocket.accept()
+            await websocket.send_json({"type": "error", "message": "room_not_found"})
             await websocket.close(code=1008, reason="Room does not exist")
             return False
-        
-        self.rooms[pin]["players"][player_name] = websocket
-        # Notificamos al host que un jugador se unió
-        await self.send_to_host(pin, {
-            "type": "player_joined",
-            "player_name": player_name,
-            "players_list": list(self.rooms[pin]["players"].keys())
-        })
-        return True
+
+        if player_name in self.rooms[pin]["players"]:
+            player_data = self.rooms[pin]["players"][player_name]
+            if player_data["status"] == "active":
+                await websocket.accept()
+                await websocket.send_json({"type": "error", "message": "name_taken"})
+                await websocket.close(code=1008, reason="Name taken")
+                return False
+            else:
+                # Reconexión
+                await websocket.accept()
+                player_data["ws"] = websocket
+                player_data["status"] = "active"
+                
+                # Send current state to sync UI
+                state = self.rooms[pin]["state"]
+                if state.get("estado_juego") == "jugando" and state.get("last_guessing_event"):
+                    await websocket.send_json(state["last_guessing_event"])
+                
+                # Notify host
+                active_players = [p for p, d in self.rooms[pin]["players"].items() if d["status"] == "active"]
+                await self.send_to_host(pin, {
+                    "type": "player_joined",
+                    "player_name": player_name,
+                    "players_list": active_players
+                })
+                return True
+        else:
+            await websocket.accept()
+            self.rooms[pin]["players"][player_name] = {
+                "ws": websocket,
+                "score": 0,
+                "status": "active",
+                "is_ready": False
+            }
+            
+            # Late joiners
+            state = self.rooms[pin]["state"]
+            if state.get("estado_juego") == "jugando" and state.get("last_guessing_event"):
+                await websocket.send_json(state["last_guessing_event"])
+
+            await websocket.send_json({"type": "join_success"})
+
+            # Notify host
+            active_players = [p for p, d in self.rooms[pin]["players"].items() if d["status"] == "active"]
+            await self.send_to_host(pin, {
+                "type": "player_joined",
+                "player_name": player_name,
+                "players_list": active_players
+            })
+            return True
 
     async def disconnect_player(self, pin: str, player_name: str):
         if pin in self.rooms and player_name in self.rooms[pin]["players"]:
-            del self.rooms[pin]["players"][player_name]
-            # Notificamos al host que el jugador se desconectó
+            self.rooms[pin]["players"][player_name]["status"] = "inactive"
+            active_players = [p for p, d in self.rooms[pin]["players"].items() if d["status"] == "active"]
             await self.send_to_host(pin, {
                 "type": "player_left",
                 "player_name": player_name,
-                "players_list": list(self.rooms[pin]["players"].keys())
+                "players_list": active_players
             })
 
     async def send_to_host(self, pin: str, message: dict):
@@ -124,11 +166,12 @@ class ConnectionManager:
 
     async def send_to_players(self, pin: str, message: dict):
         if pin in self.rooms:
-            for player_ws in list(self.rooms[pin]["players"].values()):
-                try:
-                    await player_ws.send_json(message)
-                except Exception:
-                    pass
+            for player_name, player_data in self.rooms[pin]["players"].items():
+                if player_data["status"] == "active":
+                    try:
+                        await player_data["ws"].send_json(message)
+                    except Exception:
+                        pass
 
 manager = ConnectionManager()
 
@@ -138,6 +181,18 @@ async def websocket_host(websocket: WebSocket, pin: str):
     try:
         while True:
             data = await websocket.receive_json()
+
+            # Ciclo de Vida: crear_sala
+            if data.get("type") == "crear_sala":
+                if pin in manager.rooms:
+                    manager.rooms[pin]["state"]["estado_juego"] = "lobby"
+                continue
+
+            # Ciclo de Vida: cerrar_sala
+            if data.get("type") == "cerrar_sala":
+                manager.disconnect_host(pin)
+                # Opcional: desconectar a todos los clientes activos forzosamente
+                continue
 
             # El Host informa qué categoría se está jugando (enviado al inicio de partida)
             if data.get("type") == "set_category":
@@ -192,10 +247,20 @@ async def websocket_host(websocket: WebSocket, pin: str):
                 # El Host reenvía el estado o comandos a los jugadores
                 await manager.send_to_players(pin, data)
 
-                # Si el Host arranca una nueva ronda, resetear el contador de respuestas
-                if data.get("type") == "state_change" and data.get("status") == "guessing":
+                # Si el Host arranca una nueva ronda o cambia estado
+                if data.get("type") == "state_change":
                     if pin in manager.rooms:
-                        manager.rooms[pin]["state"]["round_answers"] = set()
+                        status = data.get("status")
+                        if status == "guessing":
+                            manager.rooms[pin]["state"]["round_answers"] = set()
+                            manager.rooms[pin]["state"]["estado_juego"] = "jugando"
+                            manager.rooms[pin]["state"]["last_guessing_event"] = data
+                            # Reset is_ready
+                            for p in manager.rooms[pin]["players"].values():
+                                p["is_ready"] = False
+                        elif status in ["revealing", "finished"]:
+                            manager.rooms[pin]["state"]["estado_juego"] = "post_ronda"
+                            manager.rooms[pin]["state"]["last_guessing_event"] = data
     except WebSocketDisconnect:
         manager.disconnect_host(pin)
 
@@ -212,12 +277,40 @@ async def websocket_player(websocket: WebSocket, pin: str, player_name: str):
             data["player_name"] = player_name
             await manager.send_to_host(pin, data)
 
+            # Jugador listo para siguiente ronda
+            if data.get("type") == "player_ready" and pin in manager.rooms:
+                if player_name in manager.rooms[pin]["players"]:
+                    manager.rooms[pin]["players"][player_name]["is_ready"] = True
+                    # Check if all active players are ready
+                    active_players = [d for d in manager.rooms[pin]["players"].values() if d["status"] == "active"]
+                    ready_players = [d for d in active_players if d["is_ready"]]
+                    await manager.send_to_host(pin, {
+                        "type": "ready_status",
+                        "ready": len(ready_players),
+                        "total": len(active_players)
+                    })
+
+            # Jugador abandona
+            if data.get("type") == "leave_room" and pin in manager.rooms:
+                if player_name in manager.rooms[pin]["players"]:
+                    manager.rooms[pin]["players"][player_name]["status"] = "inactive"
+                    active_players = [p for p, d in manager.rooms[pin]["players"].items() if d["status"] == "active"]
+                    await manager.send_to_host(pin, {
+                        "type": "player_left",
+                        "player_name": player_name,
+                        "players_list": active_players
+                    })
+                    await websocket.close()
+                    break
+
             # Tracking de respuestas para efecto Kahoot
             if data.get("type") == "player_answered" and pin in manager.rooms:
                 room = manager.rooms[pin]
                 room["state"]["round_answers"].add(player_name)
-                total_players = len(room["players"])
-                total_answers = len(room["state"]["round_answers"])
+                # Check only active players for all_answered
+                active_players = [p for p, d in room["players"].items() if d["status"] == "active"]
+                total_players = len(active_players)
+                total_answers = len([p for p in room["state"]["round_answers"] if p in active_players])
                 if total_players > 0 and total_answers >= total_players:
                     await manager.send_to_host(pin, {"type": "todos_respondieron"})
     except WebSocketDisconnect:

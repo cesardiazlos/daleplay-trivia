@@ -292,7 +292,11 @@
     <div id="podium-list" class="w-full max-w-4xl mx-auto flex flex-col gap-4 px-8">
         <!-- Rellenado por JS -->
     </div>
-    <button id="restart-btn" class="mt-12 px-12 py-4 bg-fuchsia-600 text-white rounded-full font-bold text-3xl uppercase tracking-wider hover:bg-fuchsia-500 transition-colors shadow-[0_0_20px_rgba(217,70,239,0.8)]">Volver al Inicio</button>
+    <div id="post-round-status" class="mt-8 text-3xl font-bold text-cyan-400">Jugadores Listos: 0 / 0</div>
+    <div class="flex gap-4 mt-8">
+        <button id="force-continue-btn" class="px-8 py-4 bg-yellow-600 text-white rounded-full font-bold text-xl uppercase tracking-wider hover:bg-yellow-500 transition-colors shadow-[0_0_20px_rgba(202,138,4,0.8)]">Forzar Continuación</button>
+        <button id="restart-btn" class="px-12 py-4 bg-fuchsia-600 text-white rounded-full font-bold text-3xl uppercase tracking-wider hover:bg-fuchsia-500 transition-colors shadow-[0_0_20px_rgba(217,70,239,0.8)] opacity-50 pointer-events-none" disabled>Siguiente Categoría</button>
+    </div>
 </div>
 
 <!-- BottomNavBar -->
@@ -640,9 +644,22 @@
                     }
                     break;
                 case 'player_left':
-                    console.log(`[WebSocket] Jugador se ha desconectado: ${data.player_name}`);
+                    console.log('Jugador desconectado:', data.player_name);
                     connectedPlayers = data.players_list;
                     updatePlayersLobby();
+                    break;
+                case 'ready_status':
+                    const statusText = document.getElementById('post-round-status');
+                    if (statusText) {
+                        statusText.innerText = `Jugadores Listos: ${data.ready} / ${data.total}`;
+                    }
+                    const nextCatBtn = document.getElementById('restart-btn');
+                    if (data.ready >= data.total && data.total > 0) {
+                        if (nextCatBtn) {
+                            nextCatBtn.classList.remove('opacity-50', 'pointer-events-none');
+                            nextCatBtn.disabled = false;
+                        }
+                    }
                     break;
                 case 'player_answered':
                     // Ignorar respuestas durante transición
@@ -714,18 +731,23 @@
             document.dispatchEvent(new Event('songsLoaded'));
         }
 
-        const restartBtn = document.getElementById('restart-btn');
-        if (restartBtn) {
-            restartBtn.addEventListener('click', () => {
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ type: 'reset_game' }));
-                }
-                // Redirigir a configuración después de un pequeño delay
-                setTimeout(() => {
-                    window.location.href = '../configuraci_n_de_partida_host/configuraci_n_de_partida_host.html';
-                }, 500);
-            });
-        }
+        // UI Listeners
+        document.getElementById('start-trivia-btn').addEventListener('click', startTrivia);
+        
+        document.getElementById('force-continue-btn').addEventListener('click', () => {
+            const nextCatBtn = document.getElementById('restart-btn');
+            if (nextCatBtn) {
+                nextCatBtn.classList.remove('opacity-50', 'pointer-events-none');
+                nextCatBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'cerrar_sala' }));
+            }
+            window.location.reload();
+        });
 
         startTriviaBtn.addEventListener('click', () => {
             lobbyScreen.style.display = 'none';
