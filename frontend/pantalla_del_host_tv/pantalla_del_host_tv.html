@@ -331,6 +331,7 @@
         intervalId: null,
         hasTimerStarted: false,
         fadeInterval: null,
+        fadeOutInterval: null,
         currentOptions: null
     };
 
@@ -508,6 +509,40 @@
         }, 100);
     }
 
+    // Efecto Fade-Out para salida de audio, ejecuta callback al terminar
+    function fadeOutAndAdvance(callback) {
+        if (gameState.fadeOutInterval) clearInterval(gameState.fadeOutInterval);
+        
+        const currentPlayer = players[reproductorActivo];
+        if (!currentPlayer || typeof currentPlayer.getVolume !== 'function') {
+            if (callback) callback();
+            return;
+        }
+
+        let currentVol = currentPlayer.getVolume();
+        const durationMs = 1500;
+        const intervalMs = 50;
+        const steps = durationMs / intervalMs;
+        const volStep = currentVol / steps;
+
+        gameState.fadeOutInterval = setInterval(() => {
+            currentVol -= volStep;
+            if (currentVol <= 0) {
+                currentVol = 0;
+                clearInterval(gameState.fadeOutInterval);
+                gameState.fadeOutInterval = null;
+                if (currentPlayer && typeof currentPlayer.setVolume === 'function') {
+                    currentPlayer.setVolume(0);
+                }
+                if (callback) callback();
+            } else {
+                if (currentPlayer && typeof currentPlayer.setVolume === 'function') {
+                    currentPlayer.setVolume(currentVol);
+                }
+            }
+        }, intervalMs);
+    }
+
     // 2.5 Evento de Error Auto-Sanable (con candado anti-spam)
     function onPlayerError(event) {
         if (isReplacing) return; // Ya pedimos reemplazo, ignorar errores duplicados
@@ -625,6 +660,24 @@
                         };
                     }
                     break;
+                case 'todos_respondieron':
+                    // Efecto Kahoot: todos respondieron → revelar en 1 segundo
+                    if (!isTransitioning && gameState.hasTimerStarted) {
+                        console.log('[Kahoot] ¡Todos respondieron! Revelando respuesta en 1s...');
+                        
+                        // Detener temporizador visual
+                        clearInterval(gameState.intervalId);
+                        gameState.intervalId = null;
+                        
+                        // Esperar 1 segundo antes de revelar
+                        setTimeout(() => {
+                            // Verificamos de nuevo isTransitioning por si el timer natural o el host se adelantó
+                            if (!isTransitioning) {
+                                revealAnswer(songs[gameState.currentSongIndex]);
+                            }
+                        }, 1000);
+                    }
+                    break;
                 case 'replacement_round':
                     console.warn("[WebSocket] Reemplazo de ronda de emergencia recibido.");
                     if (data.options && data.options.length >= 1) {
@@ -687,8 +740,12 @@
         });
 
         nextSongBtn.addEventListener('click', () => {
-            gameState.currentSongIndex++;
-            playRound(gameState.currentSongIndex);
+            // Evitar doble-click durante fade out
+            if (gameState.fadeOutInterval) return;
+            fadeOutAndAdvance(() => {
+                gameState.currentSongIndex++;
+                playRound(gameState.currentSongIndex);
+            });
         });
     });
 
@@ -842,6 +899,10 @@
         gameState.hasTimerStarted = false;
         clearInterval(gameState.intervalId);
         clearInterval(gameState.fadeInterval);
+        if (gameState.fadeOutInterval) {
+            clearInterval(gameState.fadeOutInterval);
+            gameState.fadeOutInterval = null;
+        }
         gameState.intervalId = null;
         gameState.fadeInterval = null;
         timerDisplay.innerText = timePerQuestion;

@@ -84,7 +84,7 @@ class ConnectionManager:
     async def connect_host(self, websocket: WebSocket, pin: str):
         await websocket.accept()
         if pin not in self.rooms:
-            self.rooms[pin] = {"host": None, "players": {}, "state": {"current_song_index": 0}}
+            self.rooms[pin] = {"host": None, "players": {}, "state": {"current_song_index": 0, "round_answers": set()}}
         self.rooms[pin]["host"] = websocket
 
     def disconnect_host(self, pin: str):
@@ -191,6 +191,11 @@ async def websocket_host(websocket: WebSocket, pin: str):
             else:
                 # El Host reenvía el estado o comandos a los jugadores
                 await manager.send_to_players(pin, data)
+
+                # Si el Host arranca una nueva ronda, resetear el contador de respuestas
+                if data.get("type") == "state_change" and data.get("status") == "guessing":
+                    if pin in manager.rooms:
+                        manager.rooms[pin]["state"]["round_answers"] = set()
     except WebSocketDisconnect:
         manager.disconnect_host(pin)
 
@@ -206,5 +211,14 @@ async def websocket_player(websocket: WebSocket, pin: str, player_name: str):
             # Inyectamos el nombre del jugador para que el Host sepa de quién es la respuesta
             data["player_name"] = player_name
             await manager.send_to_host(pin, data)
+
+            # Tracking de respuestas para efecto Kahoot
+            if data.get("type") == "player_answered" and pin in manager.rooms:
+                room = manager.rooms[pin]
+                room["state"]["round_answers"].add(player_name)
+                total_players = len(room["players"])
+                total_answers = len(room["state"]["round_answers"])
+                if total_players > 0 and total_answers >= total_players:
+                    await manager.send_to_host(pin, {"type": "todos_respondieron"})
     except WebSocketDisconnect:
         await manager.disconnect_player(pin, player_name)
