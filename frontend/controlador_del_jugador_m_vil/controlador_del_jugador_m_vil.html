@@ -287,6 +287,11 @@
             const data = JSON.parse(event.data);
 
             if (data.type === 'error' && data.message === 'name_taken') {
+                if (isReconnecting || sessionStorage.getItem('daleplay_nick')) {
+                    // Conexión fantasma en el backend, cerrar y dejar que onclose reintente
+                    ws.close();
+                    return;
+                }
                 alert("Nombre en uso, elige otro");
                 ws.close();
                 sessionStorage.clear();
@@ -439,8 +444,12 @@
             const savedNick = sessionStorage.getItem('daleplay_nick');
             
             if (savedPin && savedNick) {
+                reconnectingOverlay.classList.remove('hidden');
+                reconnectingOverlay.classList.add('flex');
+                isReconnecting = true;
+                
                 setTimeout(() => {
-                    if (!isReconnecting) connectPlayer(savedPin, savedNick, true);
+                    connectPlayer(savedPin, savedNick, true);
                 }, 1500);
             } else {
                 controllerScreen.classList.remove('flex');
