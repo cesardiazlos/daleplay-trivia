@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dale Play</title>
+    <!-- Google Fonts & Material Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#1c0a2c",
+                        "surface-container-highest": "#402d50",
+                    },
+                    fontFamily: {
+                        'spline-sans': ['"Spline Sans"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: theme('colors.background');
+            background-image: radial-gradient(circle at 50% 50%, theme('colors.surface-container-highest') 0%, theme('colors.background') 100%);
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-20px) scale(1.02); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 20px rgba(217,70,239,0.5), inset 0 0 10px rgba(217,70,239,0.2); }
+            50% { box-shadow: 0 0 40px rgba(217,70,239,0.8), inset 0 0 20px rgba(217,70,239,0.4); }
+            100% { box-shadow: 0 0 20px rgba(217,70,239,0.5), inset 0 0 10px rgba(217,70,239,0.2); }
+        }
+
+        .btn-glow {
+            animation: pulse-glow 3s infinite;
+        }
+
+        /* Ambient background glow */
+        .ambient-glow {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(217,70,239,0.15) 0%, rgba(217,70,239,0) 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-spline-sans overflow-hidden text-white relative items-center justify-center">
+
+    <div class="ambient-glow"></div>
+
+    <!-- Music Notes Decoration -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20 z-0">
+        <span class="material-symbols-outlined absolute top-[20%] left-[15%] text-6xl text-fuchsia-400 rotate-12 animate-pulse" style="animation-duration: 4s;">music_note</span>
+        <span class="material-symbols-outlined absolute bottom-[25%] right-[10%] text-8xl text-cyan-400 -rotate-12 animate-pulse" style="animation-duration: 5s;">music_cast</span>
+        <span class="material-symbols-outlined absolute top-[30%] right-[20%] text-5xl text-yellow-400 rotate-45 animate-pulse" style="animation-duration: 3s;">graphic_eq</span>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex flex-col items-center justify-center z-10 w-full max-w-4xl px-4 animate-float">
+        <div class="flex items-center gap-4 mb-4">
+            <span class="material-symbols-outlined text-fuchsia-500 text-6xl drop-shadow-[0_0_15px_rgba(255,0,255,0.8)]" data-icon="equalizer">equalizer</span>
+            <h1 class="text-[80px] sm:text-[140px] font-black italic text-fuchsia-500 drop-shadow-[0_0_40px_rgba(255,0,255,0.8)] tracking-tighter leading-none">Dale Play</h1>
+        </div>
+        
+        <h2 class="text-2xl sm:text-4xl text-gray-300 font-bold mb-16 text-center max-w-2xl leading-relaxed">
+            El juego interactivo de trivia musical definitivo. ¡Adivina, compite y gana!
+        </h2>
+        
+        <a href="pantalla_del_host_tv/pantalla_del_host_tv.html" 
+           class="btn-glow group relative inline-flex items-center justify-center px-16 py-6 font-black text-4xl uppercase tracking-widest text-white transition-all duration-300 ease-in-out bg-fuchsia-600 rounded-3xl border-b-8 border-fuchsia-900 hover:border-b-4 hover:translate-y-1 active:border-b-0 active:translate-y-2 overflow-hidden">
+            <span class="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
+            <span class="relative flex items-center gap-4 z-10">
+                CREAR SALA
+                <span class="material-symbols-outlined text-4xl group-hover:translate-x-2 transition-transform duration-300">play_circle</span>
+            </span>
+        </a>
+    </main>
+
+</body>
+</html>
