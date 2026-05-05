@@ -353,7 +353,8 @@
     </div>
     <div id="post-round-status" class="mt-8 text-3xl font-bold text-cyan-400">Jugadores Listos: 0 / 0</div>
     <div class="flex gap-4 mt-8">
-        <button id="force-continue-btn" class="px-8 py-4 bg-yellow-600 text-white rounded-full font-bold text-xl uppercase tracking-wider hover:bg-yellow-500 transition-colors shadow-[0_0_20px_rgba(202,138,4,0.8)]">Forzar Continuación</button>
+        <button id="close-room-btn" class="px-8 py-4 bg-red-600 text-white rounded-full font-bold text-xl uppercase tracking-wider hover:bg-red-500 transition-colors shadow-[0_0_20px_rgba(220,38,38,0.8)]">Cerrar Sala</button>
+        <button id="force-continue-btn" class="px-8 py-4 bg-yellow-600 text-white rounded-full font-bold text-xl uppercase tracking-wider hover:bg-yellow-500 transition-colors shadow-[0_0_20px_rgba(202,138,4,0.8)]">Avanzar sin esperar</button>
         <button id="restart-btn" class="px-12 py-4 bg-fuchsia-600 text-white rounded-full font-bold text-3xl uppercase tracking-wider hover:bg-fuchsia-500 transition-colors shadow-[0_0_20px_rgba(217,70,239,0.8)] opacity-50 pointer-events-none" disabled>Siguiente Categoría</button>
     </div>
 </div>
@@ -791,6 +792,13 @@
         }
 
         // UI Listeners
+        document.getElementById('close-room-btn').addEventListener('click', () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'cerrar_sala' }));
+            }
+            window.location.href = '../index.html';
+        });
+
         document.getElementById('force-continue-btn').addEventListener('click', () => {
             const nextCatBtn = document.getElementById('restart-btn');
             if (nextCatBtn) {

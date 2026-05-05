@@ -278,6 +278,7 @@
             if (isReconnecting) {
                 reconnectingOverlay.classList.remove('flex');
                 reconnectingOverlay.classList.add('hidden');
+                joinScreen.classList.add('hidden');
                 isReconnecting = false;
             }
             waitingText.innerText = "¡Estás dentro! Mirá la pantalla del TV...";
@@ -431,6 +432,9 @@
                 waitingScreen.classList.remove('hidden');
                 waitingScreen.classList.add('flex');
                 waitingText.innerText = "Esperando a que el Host seleccione una categoría...";
+            } else if (data.type === 'sala_cerrada') {
+                sessionStorage.clear();
+                window.location.reload();
             } else if (data.type === 'reset_game') {
                 window.location.reload();
             }

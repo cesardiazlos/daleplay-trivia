@@ -190,8 +190,8 @@ async def websocket_host(websocket: WebSocket, pin: str):
 
             # Ciclo de Vida: cerrar_sala
             if data.get("type") == "cerrar_sala":
+                await manager.send_to_players(pin, {"type": "sala_cerrada"})
                 manager.disconnect_host(pin)
-                # Opcional: desconectar a todos los clientes activos forzosamente
                 continue
 
             # El Host informa qué categoría se está jugando (enviado al inicio de partida)
