@@ -59,11 +59,10 @@ def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
     if not songs:
         raise HTTPException(status_code=404, detail="No se encontraron canciones para esta categoría.")
         
-    # --- CORRECCIÓN LÓGICA DE ALTERNATIVAS ---
-    # Obtener el pool grande de artistas de esta categoría (únicos)
-    all_artists = db.query(Artist).join(Song).filter(Song.categories.any(Category.id == category_id)).distinct().all()
+    # --- CORRECCIÓN LÓGICA DE ALTERNATIVAS (CASCADA DE PRIORIDADES) ---
+    category_artists = db.query(Artist).join(Song).filter(Song.categories.any(Category.id == category_id)).distinct().all()
+    db_artists = db.query(Artist).all()
     
-    # Nombres de fallback si el pool es muy pequeño
     fallback_names = [
         "Artista Desconocido", "Banda Misteriosa", "Voz Anónima", 
         "Cantante X", "Proyecto Secreto", "El Enmascarado",
@@ -73,22 +72,70 @@ def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
     
     for song in songs:
         correct_artist = song.artist
-        
-        # Filtrar artistas disponibles quitando al artista correcto
-        available_distractors = [a for a in all_artists if a.id != correct_artist.id]
-        
         chosen_distractors = []
-        if len(available_distractors) >= 3:
-            # Obtener una muestra única por iteración
-            chosen_distractors = random.sample(available_distractors, 3)
-        else:
-            # Fallback si no hay suficientes artistas distintos en la categoría
-            chosen_distractors = available_distractors[:]
-            needed = 3 - len(chosen_distractors)
+        
+        # Nivel 1: Filtro Óptimo - Misma Playlist, mismo entity_type, mismo gender
+        chosen_ids = {correct_artist.id}
+        lvl1_candidates = [
+            a for a in category_artists 
+            if a.id not in chosen_ids 
+            and a.entity_type == correct_artist.entity_type 
+            and a.gender == correct_artist.gender
+        ]
+        needed = 3 - len(chosen_distractors)
+        if lvl1_candidates and needed > 0:
+            chosen_distractors.extend(random.sample(lvl1_candidates, min(needed, len(lvl1_candidates))))
+            
+        # Nivel 2: Filtro Base de Datos - Mismo Género Musical, entity_type y gender
+        needed = 3 - len(chosen_distractors)
+        if needed > 0:
+            chosen_ids.update(a.id for a in chosen_distractors)
+            lvl2_candidates = [
+                a for a in db_artists 
+                if a.id not in chosen_ids 
+                and a.entity_type == correct_artist.entity_type 
+                and a.gender == correct_artist.gender
+                and a.main_genre == correct_artist.main_genre
+            ]
+            if lvl2_candidates:
+                chosen_distractors.extend(random.sample(lvl2_candidates, min(needed, len(lvl2_candidates))))
+                
+        # Nivel 3: Filtro Base de Datos - Misma Estructura (entity_type y gender)
+        needed = 3 - len(chosen_distractors)
+        if needed > 0:
+            chosen_ids.update(a.id for a in chosen_distractors)
+            lvl3_candidates = [
+                a for a in db_artists 
+                if a.id not in chosen_ids 
+                and a.entity_type == correct_artist.entity_type 
+                and a.gender == correct_artist.gender
+            ]
+            if lvl3_candidates:
+                chosen_distractors.extend(random.sample(lvl3_candidates, min(needed, len(lvl3_candidates))))
+                
+        # Nivel 4: Filtro Desesperado (solo entity_type)
+        needed = 3 - len(chosen_distractors)
+        if needed > 0:
+            chosen_ids.update(a.id for a in chosen_distractors)
+            lvl4_candidates = [
+                a for a in db_artists 
+                if a.id not in chosen_ids 
+                and a.entity_type == correct_artist.entity_type
+            ]
+            if lvl4_candidates:
+                chosen_distractors.extend(random.sample(lvl4_candidates, min(needed, len(lvl4_candidates))))
+                
+        # Nivel 5: Fallback Absoluto (Mocks)
+        needed = 3 - len(chosen_distractors)
+        if needed > 0:
             generic_sample = random.sample(fallback_names, needed)
             for name in generic_sample:
-                # Objeto mock (con las propiedades básicas esperadas por Schema)
-                mock_artist = Artist(name=name, main_genre=correct_artist.main_genre)
+                mock_artist = Artist(
+                    name=name, 
+                    main_genre=correct_artist.main_genre,
+                    entity_type=correct_artist.entity_type,
+                    gender=correct_artist.gender
+                )
                 chosen_distractors.append(mock_artist)
                 
         # Construir la lista de 4 alternativas (1 correcta + 3 incorrectas)
