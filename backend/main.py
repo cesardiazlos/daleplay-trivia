@@ -41,74 +41,70 @@ def get_distractors(
     excluded_ids: set,
     round_artist_ids: set = None
 ) -> List[Artist]:
-    """Helper function to get 3 distractor artists using a strict priority cascade logic."""
+    """Helper function to get 3 distractor artists using continuous filler logic."""
     if round_artist_ids is None:
         round_artist_ids = set()
         
     strict_excluded = round_artist_ids.union({correct_artist.id})
-    current_excluded = excluded_ids.union(strict_excluded)
 
-    # Prevención de Nulos
-    valid_db_artists = [
+    # Filtro Base: Excluir nulos y estrictamente los spoilers
+    valid_artists = [
         a for a in db_artists 
         if a.gender and a.gender.strip().lower() != "desconocido"
+        and a.id not in strict_excluded
     ]
 
-    def search_candidates(exclusion_set: set) -> List[Artist]:
-        chosen = []
-        
-        # Nivel 1 (Estricto): mismo entity_type, gender y main_genre
-        lvl1 = [
-            a for a in valid_db_artists 
-            if a.id not in exclusion_set
-            and a.entity_type == correct_artist.entity_type 
-            and a.gender == correct_artist.gender
-            and a.main_genre == correct_artist.main_genre
-        ]
-        needed = 3
-        if lvl1:
-            sample = random.sample(lvl1, min(needed, len(lvl1)))
-            chosen.extend(sample)
-            exclusion_set.update(a.id for a in sample)
-            
-        # Nivel 2 (Intermedio): mismo entity_type y gender
-        needed = 3 - len(chosen)
-        if needed > 0:
-            lvl2 = [
-                a for a in valid_db_artists 
-                if a.id not in exclusion_set
-                and a.entity_type == correct_artist.entity_type 
-                and a.gender == correct_artist.gender
-            ]
-            if lvl2:
-                sample = random.sample(lvl2, min(needed, len(lvl2)))
-                chosen.extend(sample)
-                exclusion_set.update(a.id for a in sample)
-                
-        # Nivel 3 (Filtro Base por Género): solo mismo gender
-        needed = 3 - len(chosen)
-        if needed > 0:
-            lvl3 = [
-                a for a in valid_db_artists 
-                if a.id not in exclusion_set
-                and a.gender == correct_artist.gender
-            ]
-            if lvl3:
-                sample = random.sample(lvl3, min(needed, len(lvl3)))
-                chosen.extend(sample)
-                exclusion_set.update(a.id for a in sample)
-                
-        return chosen
+    # Pools de Memoria
+    fresh_artists = [a for a in valid_artists if a.id not in excluded_ids]
+    recyclable_artists = [a for a in valid_artists if a.id in excluded_ids]
 
-    # Intento inicial con exclusión total
-    distractors = search_candidates(set(current_excluded))
+    chosen = []
 
-    # Fallback: Si no logramos los 3 cupos, relajamos los distractores históricos
-    if len(distractors) < 3:
-        # Volvemos a buscar omitiendo used_distractor_ids, pero respetando los strict_excluded (spoilers y correct_artist)
-        distractors = search_candidates(set(strict_excluded))
+    # Helper de Llenado Continuo
+    def fill_from(candidates: List[Artist], needed: int) -> int:
+        available = [c for c in candidates if c not in chosen]
+        if not available or needed <= 0:
+            return needed
+        sample = random.sample(available, min(needed, len(available)))
+        chosen.extend(sample)
+        return needed - len(sample)
 
-    return distractors
+    needed = 3
+
+    # Nivel 1 (Fresco, Estricto)
+    if needed > 0:
+        cands = [a for a in fresh_artists if a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender and a.main_genre == correct_artist.main_genre]
+        needed = fill_from(cands, needed)
+
+    # Nivel 2 (Fresco, Intermedio)
+    if needed > 0:
+        cands = [a for a in fresh_artists if a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender]
+        needed = fill_from(cands, needed)
+
+    # Nivel 3 (Fresco, Base)
+    if needed > 0:
+        cands = [a for a in fresh_artists if a.gender == correct_artist.gender]
+        needed = fill_from(cands, needed)
+
+    # Fallback 1 (Reciclable, Intermedio)
+    if needed > 0:
+        cands = [a for a in recyclable_artists if a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender]
+        needed = fill_from(cands, needed)
+
+    # Fallback 2 (Reciclable, Base)
+    if needed > 0:
+        cands = [a for a in recyclable_artists if a.gender == correct_artist.gender]
+        needed = fill_from(cands, needed)
+
+    # Fallback 3 (Desesperación)
+    if needed > 0:
+        needed = fill_from(fresh_artists, needed)
+
+    # Fallback 4 (Desesperación total)
+    if needed > 0:
+        needed = fill_from(recyclable_artists, needed)
+
+    return chosen
 
 @app.get("/api/categories/{category_id}/play", response_model=List[SongResponse])
 def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
