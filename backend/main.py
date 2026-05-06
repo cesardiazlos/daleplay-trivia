@@ -35,75 +35,24 @@ def get_categories(db: Session = Depends(get_db)):
     categories = db.query(Category).all()
     return categories
 
-def get_distractors(
-    correct_artist: Artist, 
-    db_artists: List[Artist],
-    excluded_ids: set,
-    round_artist_ids: set = None
-) -> List[Artist]:
-    """Helper function to get 3 distractor artists using continuous filler logic."""
-    if round_artist_ids is None:
-        round_artist_ids = set()
-        
-    strict_excluded = round_artist_ids.union({correct_artist.id})
-
-    # Filtro Base: Excluir nulos y estrictamente los spoilers
-    valid_artists = [
-        a for a in db_artists 
-        if a.gender and a.gender.strip().lower() != "desconocido"
-        and a.id not in strict_excluded
-    ]
-
-    # Pools de Memoria
-    fresh_artists = [a for a in valid_artists if a.id not in excluded_ids]
-    recyclable_artists = [a for a in valid_artists if a.id in excluded_ids]
-
+def get_distractors(correct_artist: Artist, db_artists: List[Artist], excluded_ids: set, round_artist_ids: set = None) -> List[Artist]:
+    if round_artist_ids is None: round_artist_ids = set()
+    valid_artists = [a for a in db_artists if a.gender and a.gender.strip().lower() != "desconocido" and a.id != correct_artist.id and a.id not in round_artist_ids]
+    fresh = [a for a in valid_artists if a.id not in excluded_ids]
+    recycled = [a for a in valid_artists if a.id in excluded_ids]
     chosen = []
-
-    # Helper de Llenado Continuo
-    def fill_from(candidates: List[Artist], needed: int) -> int:
-        available = [c for c in candidates if c not in chosen]
-        if not available or needed <= 0:
-            return needed
-        sample = random.sample(available, min(needed, len(available)))
-        chosen.extend(sample)
-        return needed - len(sample)
-
-    needed = 3
-
-    # Nivel 1 (Fresco, Estricto)
-    if needed > 0:
-        cands = [a for a in fresh_artists if a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender and a.main_genre == correct_artist.main_genre]
-        needed = fill_from(cands, needed)
-
-    # Nivel 2 (Fresco, Intermedio)
-    if needed > 0:
-        cands = [a for a in fresh_artists if a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender]
-        needed = fill_from(cands, needed)
-
-    # Nivel 3 (Fresco, Base)
-    if needed > 0:
-        cands = [a for a in fresh_artists if a.gender == correct_artist.gender]
-        needed = fill_from(cands, needed)
-
-    # Fallback 1 (Reciclable, Intermedio)
-    if needed > 0:
-        cands = [a for a in recyclable_artists if a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender]
-        needed = fill_from(cands, needed)
-
-    # Fallback 2 (Reciclable, Base)
-    if needed > 0:
-        cands = [a for a in recyclable_artists if a.gender == correct_artist.gender]
-        needed = fill_from(cands, needed)
-
-    # Fallback 3 (Desesperación)
-    if needed > 0:
-        needed = fill_from(fresh_artists, needed)
-
-    # Fallback 4 (Desesperación total)
-    if needed > 0:
-        needed = fill_from(recyclable_artists, needed)
-
+    
+    def fill(candidates, condition):
+        needed = 3 - len(chosen)
+        if needed <= 0: return
+        match = [a for a in candidates if a.id not in [c.id for c in chosen] and condition(a)]
+        chosen.extend(random.sample(match, min(needed, len(match))))
+    
+    fill(fresh, lambda a: a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender and a.main_genre == correct_artist.main_genre)
+    fill(fresh, lambda a: a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender)
+    fill(fresh, lambda a: a.gender == correct_artist.gender)
+    fill(recycled, lambda a: a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender)
+    fill(recycled, lambda a: a.gender == correct_artist.gender)
     return chosen
 
 @app.get("/api/categories/{category_id}/play", response_model=List[SongResponse])
@@ -337,6 +286,13 @@ async def websocket_host(websocket: WebSocket, pin: str):
                                 )
 
                             replacement = replacement_query.order_by(func.random()).first()
+                            if not replacement:
+                                # Fallback crítico: si no hay frescas, repetimos una válida de la categoría para no congelar el juego
+                                fallback_query = db.query(Song).filter(Song.youtube_url_id != None)
+                                if room_cat_id:
+                                    fallback_query = fallback_query.filter(Song.categories.any(Category.id == room_cat_id))
+                                replacement = fallback_query.order_by(func.random()).first()
+
                             if replacement:
                                 # 3 distractores usando la nueva Cascada de Prioridades
                                 db_artists = db.query(Artist).all()
