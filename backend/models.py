@@ -8,13 +8,7 @@ from database import Base
 
 class EntityTypeEnum(str, enum.Enum):
     Individual = "Individual"
-    Group = "Group"
-
-class GenderEnum(str, enum.Enum):
-    Male = "Male"
-    Female = "Female"
-    Mixed = "Mixed"
-    NA = "N/A"
+    Grupo = "Grupo"
 
 # Tabla de asociación para la relación Muchos a Muchos (N:M)
 category_songs = Table(
@@ -42,7 +36,7 @@ class Artist(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     entity_type: Mapped[EntityTypeEnum] = mapped_column(SQLEnum(EntityTypeEnum), nullable=False)
-    gender: Mapped[GenderEnum] = mapped_column(SQLEnum(GenderEnum), nullable=False)
+    gender: Mapped[str] = mapped_column(String, nullable=True, default="Desconocido")
     main_genre: Mapped[str] = mapped_column(String, nullable=True)
 
     # Relación bidireccional con canciones

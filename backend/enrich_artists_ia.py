@@ -26,27 +26,29 @@ generation_config = {
   "response_mime_type": "application/json",
 }
 
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+model_primary = genai.GenerativeModel(
+    model_name="gemini-3.1-flash-lite-preview",
+    generation_config=generation_config,
+)
+
+model_fallback = genai.GenerativeModel(
+    model_name="gemini-3-flash-preview",
     generation_config=generation_config,
 )
 
 PROMPT_TEMPLATE = """
 Eres un experto en la industria musical. Necesito que clasifiques la siguiente lista de artistas musicales.
-Para cada artista, devuelve un objeto JSON con los campos 'id', 'gender' y 'main_genre'.
+Para cada artista, devuelve un objeto JSON con los campos 'id', 'entity_type', 'gender' y 'main_genre'.
 
-REGLA ESTRICTA PARA 'gender':
-Debes clasificar al artista usando ESTRICTAMENTE una de las siguientes etiquetas exactas:
-- Solista Masculino
-- Solista Femenino
-- Grupo Masculino
-- Grupo Femenino
-- Dúo Masculino
-- Dúo Femenino
-- Dúo Mixto
-- Banda (Voz Masculina)
-- Banda (Voz Femenina)
-- Banda (Voz Mixta)
+REGLAS ESTRICTAS PARA 'entity_type':
+- Individual
+- Grupo
+
+REGLAS ESTRICTAS PARA 'gender':
+- Masculino
+- Femenino
+- Mixto (Esta opción SOLO aplica si el entity_type es "Grupo")
+- Desconocido
 
 REGLA PARA 'main_genre':
 Asigna el género musical principal más representativo (ej: Reggaetón, Rock, Pop, Balada, Trap, Cumbia, Salsa, etc.).
@@ -57,8 +59,8 @@ La lista de artistas es la siguiente:
 Devuelve ÚNICAMENTE un array JSON puro, sin markdown, sin backticks y sin texto adicional.
 Ejemplo de salida esperada:
 [
-  {{"id": "uuid-1", "gender": "Grupo Femenino", "main_genre": "Pop"}},
-  {{"id": "uuid-2", "gender": "Solista Masculino", "main_genre": "Reggaetón"}}
+  {{"id": "uuid-1", "entity_type": "Grupo", "gender": "Femenino", "main_genre": "Pop"}},
+  {{"id": "uuid-2", "entity_type": "Individual", "gender": "Masculino", "main_genre": "Reggaetón"}}
 ]
 """
 
@@ -66,9 +68,9 @@ def enrich_artists():
     db: Session = SessionLocal()
     try:
         # Extraer artistas que necesitan actualización
-        # gender es 'N/A' o nulo, O main_genre es 'Desconocido' o nulo
+        # gender es 'NA' o nulo, O main_genre es 'Desconocido' o nulo
         artists_to_update = db.query(Artist).filter(
-            (Artist.gender == 'N/A') | 
+            (Artist.gender == 'NA') | 
             (Artist.gender.is_(None)) | 
             (Artist.main_genre == 'Desconocido') | 
             (Artist.main_genre.is_(None))
@@ -87,6 +89,7 @@ def enrich_artists():
             batch = artists_to_update[i : i + batch_size]
             
             print(f"\n[*] Procesando lote {i//batch_size + 1} de {(total_artists + batch_size - 1)//batch_size} (Artistas {i+1} al {min(i+batch_size, total_artists)})...")
+            start_time = time.time()
             
             # Preparar datos para el prompt
             artists_data = []
@@ -96,9 +99,14 @@ def enrich_artists():
             prompt = PROMPT_TEMPLATE.format(artists_data="\n".join(artists_data))
             
             try:
-                # Llamada a Gemini
-                response = model.generate_content(prompt)
-                response_text = response.text.strip()
+                # Llamada a Gemini (Modelo principal)
+                try:
+                    response = model_primary.generate_content(prompt)
+                    response_text = response.text.strip()
+                except Exception as model_err:
+                    print(f"[-] Modelo principal falló: {model_err}. Intentando con modelo de respaldo...")
+                    response = model_fallback.generate_content(prompt)
+                    response_text = response.text.strip()
                 
                 # Parsear el JSON
                 enriched_data = json.loads(response_text)
@@ -113,15 +121,16 @@ def enrich_artists():
                     if str_id in enriched_dict:
                         data = enriched_dict[str_id]
                         
-                        # Nota: Si tu base de datos tiene `gender` definido como Enum en SQLAlchemy 
-                        # y en PostgreSQL, asegúrate de que soporta estas nuevas cadenas, 
-                        # de lo contrario, tendrás que migrar el tipo de columna a String.
+                        # Nota: Asegúrate de que 'entity_type' esté actualizado en la DB
+                        artist.entity_type = data.get("entity_type", artist.entity_type)
                         artist.gender = data.get("gender", artist.gender)
                         artist.main_genre = data.get("main_genre", artist.main_genre)
                         updated_count += 1
                 
                 db.commit()
-                print(f"[+] Lote actualizado exitosamente. ({updated_count} artistas actualizados)")
+                end_time = time.time()
+                elapsed_time = round(end_time - start_time, 2)
+                print(f"[+] Lote completado en {elapsed_time} segundos. ({updated_count} artistas actualizados)")
                 
             except json.JSONDecodeError as e:
                 db.rollback()
