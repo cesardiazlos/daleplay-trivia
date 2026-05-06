@@ -316,52 +316,56 @@ async def websocket_host(websocket: WebSocket, pin: str):
                 track_id = data.get("track_id")
                 played_ids = data.get("played_ids", [])
                 
-                db = SessionLocal()
                 try:
-                    song = db.query(Song).filter(Song.id == track_id).first()
-                    if song:
-                        song.youtube_url_id = None
-                        db.commit()
+                    db = SessionLocal()
+                    try:
+                        song = db.query(Song).filter(Song.id == track_id).first()
+                        if song:
+                            song.youtube_url_id = None
+                            db.commit()
 
-                        # Obtener la categoría de la sala para filtrar reemplazos en-genre
-                        room_cat_id = None
-                        if pin in manager.rooms:
-                            room_cat_id = manager.rooms[pin]["state"].get("category_id")
+                            # Obtener la categoría de la sala para filtrar reemplazos en-genre
+                            room_cat_id = None
+                            if pin in manager.rooms:
+                                room_cat_id = manager.rooms[pin]["state"].get("category_id")
 
-                        # Query base: canciones con video válido y que no se hayan jugado
-                        excluded_ids = played_ids + [track_id]
-                        replacement_query = db.query(Song).filter(
-                            Song.youtube_url_id != None,
-                            Song.id.notin_(excluded_ids)
-                        )
-                        if room_cat_id:
-                            replacement_query = replacement_query.filter(
-                                Song.categories.any(Category.id == room_cat_id)
+                            # Query base: canciones con video válido y que no se hayan jugado
+                            excluded_ids = played_ids + [track_id]
+                            replacement_query = db.query(Song).filter(
+                                Song.youtube_url_id != None,
+                                Song.id.notin_(excluded_ids)
                             )
+                            if room_cat_id:
+                                replacement_query = replacement_query.filter(
+                                    Song.categories.any(Category.id == room_cat_id)
+                                )
 
-                        replacement = replacement_query.order_by(func.random()).first()
-                        if replacement:
-                            # 3 distractores usando la nueva Cascada de Prioridades
-                            distractors = get_distractors(replacement.artist, room_cat_id, db)
-                            
-                            options = [replacement.artist] + distractors
-                            random.shuffle(options)
-                            
-                            # Formateamos solo id y name de los Artistas (Esquema correcto)
-                            formatted_options = [{"id": str(opt.id) if getattr(opt, 'id', None) else str(uuid.uuid4()), "name": opt.name} for opt in options]
+                            replacement = replacement_query.order_by(func.random()).first()
+                            if replacement:
+                                # 3 distractores usando la nueva Cascada de Prioridades
+                                db_artists = db.query(Artist).all()
+                                distractors = get_distractors(replacement.artist, db_artists, set())
+                                
+                                options = [replacement.artist] + distractors
+                                random.shuffle(options)
+                                
+                                # Formateamos solo id y name de los Artistas (Esquema correcto)
+                                formatted_options = [{"id": str(opt.id) if getattr(opt, 'id', None) else str(uuid.uuid4()), "name": opt.name} for opt in options]
 
-                            # Encapsulamos la canción completa con sus opciones formateadas
-                            replacement_dict = SongResponse.model_validate(replacement).model_dump(mode='json')
-                            replacement_dict["options"] = formatted_options
-                            
-                            # Nota para el Frontend: ahora enviamos "song" que es el objeto completo
-                            payload = {"type": "replacement_round", "song": replacement_dict}
-                            
-                            await websocket.send_json(payload)
-                            # Sincronizar a los celulares también
-                            await manager.send_to_players(pin, payload)
-                finally:
-                    db.close()
+                                # Encapsulamos la canción completa con sus opciones formateadas
+                                replacement_dict = SongResponse.model_validate(replacement).model_dump(mode='json')
+                                replacement_dict["options"] = formatted_options
+                                
+                                # Nota para el Frontend: ahora enviamos "song" que es el objeto completo
+                                payload = {"type": "replacement_round", "song": replacement_dict}
+                                
+                                await websocket.send_json(payload)
+                                # Sincronizar a los celulares también
+                                await manager.send_to_players(pin, payload)
+                    finally:
+                        db.close()
+                except Exception as e:
+                    print(f"Error crítico en reemplazo de YouTube: {e}")
             else:
                 # El Host reenvía el estado o comandos a los jugadores
                 await manager.send_to_players(pin, data)
