@@ -35,6 +35,98 @@ def get_categories(db: Session = Depends(get_db)):
     categories = db.query(Category).all()
     return categories
 
+def get_distractors(
+    correct_artist: Artist, 
+    category_id: uuid.UUID, 
+    db: Session, 
+    category_artists: List[Artist] = None, 
+    db_artists: List[Artist] = None
+) -> List[Artist]:
+    """Helper function to get 3 distractor artists using a priority cascade logic."""
+    if category_artists is None:
+        if category_id:
+            category_artists = db.query(Artist).join(Song).filter(Song.categories.any(Category.id == category_id)).distinct().all()
+        else:
+            category_artists = []
+            
+    if db_artists is None:
+        db_artists = db.query(Artist).all()
+        
+    fallback_names = [
+        "Artista Desconocido", "Banda Misteriosa", "Voz Anónima", 
+        "Cantante X", "Proyecto Secreto", "El Enmascarado",
+        "Grupo Sorpresa", "Talento Oculto", "Voz de las Sombras",
+        "El Solista", "Los Rebeldes", "Coro Fantasma"
+    ]
+    
+    chosen_distractors = []
+    
+    # Nivel 1: Filtro Óptimo - Misma Playlist, mismo entity_type, mismo gender
+    chosen_ids = {correct_artist.id}
+    lvl1_candidates = [
+        a for a in category_artists 
+        if a.id not in chosen_ids 
+        and a.entity_type == correct_artist.entity_type 
+        and a.gender == correct_artist.gender
+    ]
+    needed = 3 - len(chosen_distractors)
+    if lvl1_candidates and needed > 0:
+        chosen_distractors.extend(random.sample(lvl1_candidates, min(needed, len(lvl1_candidates))))
+        
+    # Nivel 2: Filtro Base de Datos - Mismo Género Musical, entity_type y gender
+    needed = 3 - len(chosen_distractors)
+    if needed > 0:
+        chosen_ids.update(a.id for a in chosen_distractors)
+        lvl2_candidates = [
+            a for a in db_artists 
+            if a.id not in chosen_ids 
+            and a.entity_type == correct_artist.entity_type 
+            and a.gender == correct_artist.gender
+            and a.main_genre == correct_artist.main_genre
+        ]
+        if lvl2_candidates:
+            chosen_distractors.extend(random.sample(lvl2_candidates, min(needed, len(lvl2_candidates))))
+            
+    # Nivel 3: Filtro Base de Datos - Misma Estructura (entity_type y gender)
+    needed = 3 - len(chosen_distractors)
+    if needed > 0:
+        chosen_ids.update(a.id for a in chosen_distractors)
+        lvl3_candidates = [
+            a for a in db_artists 
+            if a.id not in chosen_ids 
+            and a.entity_type == correct_artist.entity_type 
+            and a.gender == correct_artist.gender
+        ]
+        if lvl3_candidates:
+            chosen_distractors.extend(random.sample(lvl3_candidates, min(needed, len(lvl3_candidates))))
+            
+    # Nivel 4: Filtro Desesperado (solo entity_type)
+    needed = 3 - len(chosen_distractors)
+    if needed > 0:
+        chosen_ids.update(a.id for a in chosen_distractors)
+        lvl4_candidates = [
+            a for a in db_artists 
+            if a.id not in chosen_ids 
+            and a.entity_type == correct_artist.entity_type
+        ]
+        if lvl4_candidates:
+            chosen_distractors.extend(random.sample(lvl4_candidates, min(needed, len(lvl4_candidates))))
+            
+    # Nivel 5: Fallback Absoluto (Mocks)
+    needed = 3 - len(chosen_distractors)
+    if needed > 0:
+        generic_sample = random.sample(fallback_names, needed)
+        for name in generic_sample:
+            mock_artist = Artist(
+                name=name, 
+                main_genre=correct_artist.main_genre,
+                entity_type=correct_artist.entity_type,
+                gender=correct_artist.gender
+            )
+            chosen_distractors.append(mock_artist)
+            
+    return chosen_distractors
+
 @app.get("/api/categories/{category_id}/play", response_model=List[SongResponse])
 def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
     """
@@ -60,83 +152,21 @@ def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No se encontraron canciones para esta categoría.")
         
     # --- CORRECCIÓN LÓGICA DE ALTERNATIVAS (CASCADA DE PRIORIDADES) ---
+    # Cargamos en memoria para optimizar y pasamos al helper
     category_artists = db.query(Artist).join(Song).filter(Song.categories.any(Category.id == category_id)).distinct().all()
     db_artists = db.query(Artist).all()
     
-    fallback_names = [
-        "Artista Desconocido", "Banda Misteriosa", "Voz Anónima", 
-        "Cantante X", "Proyecto Secreto", "El Enmascarado",
-        "Grupo Sorpresa", "Talento Oculto", "Voz de las Sombras",
-        "El Solista", "Los Rebeldes", "Coro Fantasma"
-    ]
-    
     for song in songs:
         correct_artist = song.artist
-        chosen_distractors = []
         
-        # Nivel 1: Filtro Óptimo - Misma Playlist, mismo entity_type, mismo gender
-        chosen_ids = {correct_artist.id}
-        lvl1_candidates = [
-            a for a in category_artists 
-            if a.id not in chosen_ids 
-            and a.entity_type == correct_artist.entity_type 
-            and a.gender == correct_artist.gender
-        ]
-        needed = 3 - len(chosen_distractors)
-        if lvl1_candidates and needed > 0:
-            chosen_distractors.extend(random.sample(lvl1_candidates, min(needed, len(lvl1_candidates))))
-            
-        # Nivel 2: Filtro Base de Datos - Mismo Género Musical, entity_type y gender
-        needed = 3 - len(chosen_distractors)
-        if needed > 0:
-            chosen_ids.update(a.id for a in chosen_distractors)
-            lvl2_candidates = [
-                a for a in db_artists 
-                if a.id not in chosen_ids 
-                and a.entity_type == correct_artist.entity_type 
-                and a.gender == correct_artist.gender
-                and a.main_genre == correct_artist.main_genre
-            ]
-            if lvl2_candidates:
-                chosen_distractors.extend(random.sample(lvl2_candidates, min(needed, len(lvl2_candidates))))
-                
-        # Nivel 3: Filtro Base de Datos - Misma Estructura (entity_type y gender)
-        needed = 3 - len(chosen_distractors)
-        if needed > 0:
-            chosen_ids.update(a.id for a in chosen_distractors)
-            lvl3_candidates = [
-                a for a in db_artists 
-                if a.id not in chosen_ids 
-                and a.entity_type == correct_artist.entity_type 
-                and a.gender == correct_artist.gender
-            ]
-            if lvl3_candidates:
-                chosen_distractors.extend(random.sample(lvl3_candidates, min(needed, len(lvl3_candidates))))
-                
-        # Nivel 4: Filtro Desesperado (solo entity_type)
-        needed = 3 - len(chosen_distractors)
-        if needed > 0:
-            chosen_ids.update(a.id for a in chosen_distractors)
-            lvl4_candidates = [
-                a for a in db_artists 
-                if a.id not in chosen_ids 
-                and a.entity_type == correct_artist.entity_type
-            ]
-            if lvl4_candidates:
-                chosen_distractors.extend(random.sample(lvl4_candidates, min(needed, len(lvl4_candidates))))
-                
-        # Nivel 5: Fallback Absoluto (Mocks)
-        needed = 3 - len(chosen_distractors)
-        if needed > 0:
-            generic_sample = random.sample(fallback_names, needed)
-            for name in generic_sample:
-                mock_artist = Artist(
-                    name=name, 
-                    main_genre=correct_artist.main_genre,
-                    entity_type=correct_artist.entity_type,
-                    gender=correct_artist.gender
-                )
-                chosen_distractors.append(mock_artist)
+        # Obtenemos los distractores usando la función helper
+        chosen_distractors = get_distractors(
+            correct_artist=correct_artist, 
+            category_id=category_id, 
+            db=db, 
+            category_artists=category_artists, 
+            db_artists=db_artists
+        )
                 
         # Construir la lista de 4 alternativas (1 correcta + 3 incorrectas)
         options = [correct_artist] + chosen_distractors
@@ -299,6 +329,8 @@ async def websocket_host(websocket: WebSocket, pin: str):
 
             if data.get("type") == "youtube_error":
                 track_id = data.get("track_id")
+                played_ids = data.get("played_ids", [])
+                
                 db = SessionLocal()
                 try:
                     song = db.query(Song).filter(Song.id == track_id).first()
@@ -311,8 +343,12 @@ async def websocket_host(websocket: WebSocket, pin: str):
                         if pin in manager.rooms:
                             room_cat_id = manager.rooms[pin]["state"].get("category_id")
 
-                        # Query base: canciones con video válido
-                        replacement_query = db.query(Song).filter(Song.youtube_url_id != None)
+                        # Query base: canciones con video válido y que no se hayan jugado
+                        excluded_ids = played_ids + [track_id]
+                        replacement_query = db.query(Song).filter(
+                            Song.youtube_url_id != None,
+                            Song.id.notin_(excluded_ids)
+                        )
                         if room_cat_id:
                             replacement_query = replacement_query.filter(
                                 Song.categories.any(Category.id == room_cat_id)
@@ -320,20 +356,22 @@ async def websocket_host(websocket: WebSocket, pin: str):
 
                         replacement = replacement_query.order_by(func.random()).first()
                         if replacement:
-                            # 3 distractores del mismo género
-                            distractor_query = db.query(Song).filter(
-                                Song.id != replacement.id,
-                                Song.artist_id != replacement.artist_id
-                            )
-                            if room_cat_id:
-                                distractor_query = distractor_query.filter(
-                                    Song.categories.any(Category.id == room_cat_id)
-                                )
-                            others = distractor_query.order_by(func.random()).limit(3).all()
+                            # 3 distractores usando la nueva Cascada de Prioridades
+                            distractors = get_distractors(replacement.artist, room_cat_id, db)
+                            
+                            options = [replacement.artist] + distractors
+                            random.shuffle(options)
+                            
+                            # Formateamos solo id y name de los Artistas (Esquema correcto)
+                            formatted_options = [{"id": str(opt.id) if getattr(opt, 'id', None) else str(uuid.uuid4()), "name": opt.name} for opt in options]
 
-                            options = [SongResponse.model_validate(replacement).model_dump(mode='json')] + \
-                                      [SongResponse.model_validate(o).model_dump(mode='json') for o in others]
-                            payload = {"type": "replacement_round", "options": options}
+                            # Encapsulamos la canción completa con sus opciones formateadas
+                            replacement_dict = SongResponse.model_validate(replacement).model_dump(mode='json')
+                            replacement_dict["options"] = formatted_options
+                            
+                            # Nota para el Frontend: ahora enviamos "song" que es el objeto completo
+                            payload = {"type": "replacement_round", "song": replacement_dict}
+                            
                             await websocket.send_json(payload)
                             # Sincronizar a los celulares también
                             await manager.send_to_players(pin, payload)

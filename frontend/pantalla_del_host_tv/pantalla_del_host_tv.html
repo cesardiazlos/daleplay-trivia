@@ -616,7 +616,12 @@
         // Activar candado y reportar al backend
         isReplacing = true;
         if (ws && ws.readyState === WebSocket.OPEN && currentSong) {
-            ws.send(JSON.stringify({ type: 'youtube_error', track_id: currentSong.id }));
+            const playedIds = songs.slice(0, gameState.currentSongIndex + 1).map(song => song.id);
+            ws.send(JSON.stringify({ 
+                type: 'youtube_error', 
+                track_id: currentSong.id,
+                played_ids: playedIds
+            }));
         }
     }
 
@@ -756,7 +761,7 @@
                     break;
                 case 'replacement_round':
                     console.warn("[WebSocket] Reemplazo de ronda de emergencia recibido.");
-                    if (data.options && data.options.length >= 1) {
+                    if (data.song) {
                         // 1. Liberar candado
                         isReplacing = false;
 
@@ -770,7 +775,7 @@
                         stopVisualizer();
 
                         // 3. Inyectar canción de reemplazo
-                        songs[gameState.currentSongIndex] = data.options[0];
+                        songs[gameState.currentSongIndex] = data.song;
 
                         // 4. Delegar el hard reset completo a playRound
                         //    (destroy → clear DOM → setTimeout 150ms → new YT.Player)
