@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dale Play</title>
+    <title>KachaiLaSong - Trivia Musical</title>
     <!-- Google Fonts & Material Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,8 +29,7 @@
     </script>
     <style>
         body {
-            background-color: theme('colors.background');
-            background-image: radial-gradient(circle at 50% 50%, theme('colors.surface-container-highest') 0%, theme('colors.background') 100%);
+            /* Fallback si tailwind no carga rápido */
         }
         
         @keyframes float {
@@ -53,36 +52,33 @@
             animation: pulse-glow 3s infinite;
         }
 
-        /* Ambient background glow */
-        .ambient-glow {
-            position: absolute;
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, rgba(217,70,239,0.15) 0%, rgba(217,70,239,0) 70%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: -1;
-            pointer-events: none;
-        }
+        /* Ambient background glow removed to avoid clashing with rainbow logo */
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-spline-sans overflow-hidden text-white relative items-center justify-center">
+<body class="bg-gray-900 min-h-screen flex flex-col font-spline-sans overflow-hidden text-white relative items-center justify-center">
 
-    <div class="ambient-glow"></div>
+    <!-- Ambient glow removed -->
 
     <!-- Music Notes Decoration -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20 z-0">
-        <span class="material-symbols-outlined absolute top-[20%] left-[15%] text-6xl text-fuchsia-400 rotate-12 animate-pulse" style="animation-duration: 4s;">music_note</span>
-        <span class="material-symbols-outlined absolute bottom-[25%] right-[10%] text-8xl text-cyan-400 -rotate-12 animate-pulse" style="animation-duration: 5s;">music_cast</span>
-        <span class="material-symbols-outlined absolute top-[30%] right-[20%] text-5xl text-yellow-400 rotate-45 animate-pulse" style="animation-duration: 3s;">graphic_eq</span>
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <span class="material-symbols-outlined absolute top-[20%] left-[15%] text-6xl text-fuchsia-400 rotate-12 animate-pulse opacity-20" style="animation-duration: 4s;">music_note</span>
+        <span class="material-symbols-outlined absolute bottom-[25%] right-[10%] text-8xl text-cyan-400 -rotate-12 animate-pulse opacity-30" style="animation-duration: 5s;">music_cast</span>
+        <span class="material-symbols-outlined absolute top-[30%] right-[20%] text-5xl text-yellow-400 rotate-45 animate-pulse opacity-20" style="animation-duration: 3s;">graphic_eq</span>
+        <!-- Nuevos elementos de fondo -->
+        <span class="material-symbols-outlined absolute top-[10%] right-[30%] text-7xl text-purple-400 -rotate-6 animate-pulse opacity-10 scale-110" style="animation-duration: 6s;">headphones</span>
+        <span class="material-symbols-outlined absolute bottom-[15%] left-[20%] text-4xl text-green-400 rotate-90 animate-pulse opacity-25 scale-125" style="animation-duration: 3.5s;">play_circle</span>
+        <span class="material-symbols-outlined absolute top-[50%] left-[5%] text-9xl text-pink-500 rotate-180 animate-pulse opacity-10 scale-90" style="animation-duration: 7s;">album</span>
+        <span class="material-symbols-outlined absolute bottom-[40%] right-[5%] text-6xl text-blue-400 -rotate-45 animate-pulse opacity-20 scale-105" style="animation-duration: 4.5s;">speaker</span>
+        <span class="material-symbols-outlined absolute top-[70%] left-[40%] text-5xl text-yellow-300 rotate-12 animate-pulse opacity-15 scale-75" style="animation-duration: 5.5s;">star</span>
+        <span class="material-symbols-outlined absolute top-[15%] left-[50%] text-3xl text-fuchsia-300 -rotate-12 animate-pulse opacity-30 scale-150" style="animation-duration: 2.5s;">music_note</span>
+        <span class="material-symbols-outlined absolute bottom-[10%] right-[40%] text-7xl text-cyan-300 rotate-45 animate-pulse opacity-15 scale-95" style="animation-duration: 6.5s;">star</span>
+        <span class="material-symbols-outlined absolute top-[80%] right-[25%] text-4xl text-red-400 rotate-180 animate-pulse opacity-20 scale-110" style="animation-duration: 3.8s;">graphic_eq</span>
     </div>
 
     <!-- Main Content -->
     <main class="flex flex-col items-center justify-center z-10 w-full max-w-4xl px-4 animate-float">
-        <div class="flex items-center gap-4 mb-4">
-            <span class="material-symbols-outlined text-fuchsia-500 text-6xl drop-shadow-[0_0_15px_rgba(255,0,255,0.8)]" data-icon="equalizer">equalizer</span>
-            <h1 class="text-[80px] sm:text-[140px] font-black italic text-fuchsia-500 drop-shadow-[0_0_40px_rgba(255,0,255,0.8)] tracking-tighter leading-none">Dale Play</h1>
+        <div class="flex flex-col items-center gap-4 mb-4 w-full">
+            <img src="./assets/logo.png" alt="KachaiLaSong" class="w-80 md:w-[32rem] lg:w-[40rem] mx-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
         </div>
         
         <h2 class="text-2xl sm:text-4xl text-gray-300 font-bold mb-16 text-center max-w-2xl leading-relaxed">

@@ -3,7 +3,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Dale Play - Host Screen</title>
+<title>KachaiLaSong - Trivia Musical</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
@@ -151,17 +151,15 @@
 </script>
 <style>
   body {
-    background-color: theme('colors.background');
-    background-image: radial-gradient(circle at 50% 50%, theme('colors.surface-container-highest') 0%, theme('colors.background') 100%);
+    /* Fallback background */
   }
 </style>
 </head>
-<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden w-full m-0 p-0">
+<body class="bg-gray-900 text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden w-full m-0 p-0">
 <!-- TopAppBar -->
 <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-neutral-950/90 backdrop-blur-xl docked full-width top-0 border-b-4 border-neutral-900 border-b-4 border-black shadow-[0_4px_0_0_rgba(0,0,0,0.6)]">
 <div class="flex items-center gap-sm">
-<span class="material-symbols-outlined text-fuchsia-500 hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none transition-all duration-75 text-3xl" data-icon="equalizer">equalizer</span>
-<span class="font-spline-sans text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.8)]">Dale Play</span>
+<img src="../assets/logo.png" alt="KachaiLaSong" class="w-32 object-contain">
 </div>
 <div id="room-pin-display" class="font-spline-sans font-black uppercase tracking-tighter text-fuchsia-500 text-headline-md">
       PIN: 882 192
@@ -174,7 +172,7 @@
 
 <!-- Lobby Screen -->
 <div id="lobby-screen" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col items-center justify-center px-md w-full h-full">
-    <h1 class="text-[120px] font-black italic text-fuchsia-500 drop-shadow-[0_0_40px_rgba(255,0,255,0.8)] mb-4">Dale Play</h1>
+    <img src="../assets/logo.png" alt="KachaiLaSong" class="w-64 md:w-80 lg:w-96 mx-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-8">
     <h2 class="text-gray-300 font-headline-md text-4xl mb-6 text-center w-full">Únete en tu celular y entra con este PIN:</h2>
     <div id="lobby-pin-display" class="text-display-xl text-[180px] font-black text-cyan-400 drop-shadow-[0_0_40px_rgba(0,227,253,0.8)] tracking-widest leading-none mb-12 text-center w-full">
         --- ---
@@ -196,10 +194,11 @@
 </div>
 
 <!-- Configuration Screen -->
-<main id="config-screen" class="hidden absolute inset-0 z-50 bg-background w-full min-h-screen overflow-y-auto">
+<main id="config-screen" class="hidden absolute inset-0 z-50 bg-gray-900 w-full min-h-screen overflow-y-auto">
     <div class="pt-24 pb-32 px-6 md:px-12 max-w-7xl mx-auto space-y-12 w-full">
         <!-- Header Section -->
-        <section class="text-center md:text-left space-y-4">
+        <section class="text-center w-full space-y-4 flex flex-col items-center">
+            <img src="../assets/logo.png" alt="KachaiLaSong" class="w-48 md:w-64 mx-auto mb-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] object-contain">
             <h1 class="font-headline-lg text-headline-lg text-primary drop-shadow-[0_0_15px_rgba(255,171,243,0.5)]">CONFIGURACIÓN DE PARTIDA</h1>
             <p class="font-body-lg text-body-lg text-on-surface-variant">Selecciona la categoría y ajusta las reglas para la próxima ronda.</p>
         </section>

@@ -1,4 +1,5 @@
 import uuid
+import random
 from typing import List
 
 from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
@@ -7,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import func
 
 from database import get_db, SessionLocal
-from models import Category, Song
+from models import Category, Song, Artist
 from schemas import CategoryResponse, SongResponse
 
 # Inicializar la aplicación FastAPI
@@ -57,6 +58,47 @@ def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
     # 3. Retornar si hay menos de 10 canciones, la API responderá con las que encuentre.
     if not songs:
         raise HTTPException(status_code=404, detail="No se encontraron canciones para esta categoría.")
+        
+    # --- CORRECCIÓN LÓGICA DE ALTERNATIVAS ---
+    # Obtener el pool grande de artistas de esta categoría (únicos)
+    all_artists = db.query(Artist).join(Song).filter(Song.categories.any(Category.id == category_id)).distinct().all()
+    
+    # Nombres de fallback si el pool es muy pequeño
+    fallback_names = [
+        "Artista Desconocido", "Banda Misteriosa", "Voz Anónima", 
+        "Cantante X", "Proyecto Secreto", "El Enmascarado",
+        "Grupo Sorpresa", "Talento Oculto", "Voz de las Sombras",
+        "El Solista", "Los Rebeldes", "Coro Fantasma"
+    ]
+    
+    for song in songs:
+        correct_artist = song.artist
+        
+        # Filtrar artistas disponibles quitando al artista correcto
+        available_distractors = [a for a in all_artists if a.id != correct_artist.id]
+        
+        chosen_distractors = []
+        if len(available_distractors) >= 3:
+            # Obtener una muestra única por iteración
+            chosen_distractors = random.sample(available_distractors, 3)
+        else:
+            # Fallback si no hay suficientes artistas distintos en la categoría
+            chosen_distractors = available_distractors[:]
+            needed = 3 - len(chosen_distractors)
+            generic_sample = random.sample(fallback_names, needed)
+            for name in generic_sample:
+                # Objeto mock (con las propiedades básicas esperadas por Schema)
+                mock_artist = Artist(name=name, main_genre=correct_artist.main_genre)
+                chosen_distractors.append(mock_artist)
+                
+        # Construir la lista de 4 alternativas (1 correcta + 3 incorrectas)
+        options = [correct_artist] + chosen_distractors
+        
+        # Barajar para que la correcta no siempre esté primero
+        random.shuffle(options)
+        
+        # Inyectamos options en el objeto song
+        setattr(song, "options", options)
         
     return songs
 

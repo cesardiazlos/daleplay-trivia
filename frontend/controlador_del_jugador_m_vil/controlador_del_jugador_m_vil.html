@@ -3,7 +3,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Dale Play - Player Controller</title>
+<title>KachaiLaSong - Trivia Musical</title>
 <!-- Google Fonts & Material Icons -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -110,14 +110,11 @@
     </script>
 
   </head>
-<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden antialiased selection:bg-primary-container selection:text-on-primary-container">
+<body class="bg-gray-900 text-on-background min-h-screen flex flex-col font-body-md overflow-hidden antialiased selection:bg-primary-container selection:text-on-primary-container">
 <!-- TopAppBar -->
 <header class="bg-neutral-950/90 backdrop-blur-xl docked full-width top-0 border-b-4 border-black shadow-[0_4px_0_0_rgba(0,0,0,0.6)] fixed left-0 w-full z-50 flex justify-between items-center px-3 sm:px-6 py-4 font-spline-sans font-black uppercase tracking-tighter text-fuchsia-500 min-h-[80px]">
     <div class="flex items-center gap-1 sm:gap-sm shrink-0">
-        <button class="hover:text-fuchsia-300 transition-all duration-150 active:translate-y-1 active:shadow-none flex items-center justify-center p-2 rounded-full">
-            <span class="material-symbols-outlined text-2xl sm:text-3xl" data-icon="equalizer" data-weight="fill">equalizer</span>
-        </button>
-        <span class="text-lg sm:text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.8)] hidden min-[360px]:block">Dale Play</span>
+        <img src="../assets/logo.png" alt="KachaiLaSong" class="w-24 sm:w-32 object-contain">
     </div>
     
     <div id="top-pin-display" class="text-fuchsia-400 font-bold font-headline-md tracking-widest text-center text-sm sm:text-base whitespace-nowrap px-2 flex-1 flex justify-center">
@@ -145,7 +142,7 @@
     <!-- JOIN SCREEN -->
     <div id="join-screen" class="w-full max-w-sm flex flex-col gap-6 px-4">
         <div class="bg-surface-container border-2 border-outline px-6 py-8 rounded-2xl shadow-[0_0_20px_rgba(255,171,243,0.2)] flex flex-col gap-6">
-            <h2 class="font-headline-md text-primary text-center">¡Únete a Dale Play!</h2>
+            <img src="../assets/logo.png" alt="KachaiLaSong" class="w-48 sm:w-64 object-contain mx-auto mb-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
             <input type="text" id="pin-input" placeholder="PIN de la Sala" class="bg-surface-container-highest text-on-surface text-center font-headline-md py-4 rounded-xl border-2 border-outline focus:border-primary focus:ring-0 outline-none uppercase tracking-widest" autocomplete="off">
             <input type="text" id="nick-input" placeholder="Tu Apodo" class="bg-surface-container-highest text-on-surface text-center font-headline-md py-4 rounded-xl border-2 border-outline focus:border-primary focus:ring-0 outline-none uppercase" autocomplete="off" maxlength="15">
             <button id="join-btn" class="w-full py-4 bg-primary text-on-primary font-black uppercase text-xl rounded-xl border-b-8 border-[#ff00ff] active:translate-y-2 active:border-b-0 hover:brightness-110 transition-all focus:outline-none">

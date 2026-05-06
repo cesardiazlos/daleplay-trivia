@@ -23,5 +23,6 @@ class SongResponse(BaseModel):
     artist: ArtistResponse
     youtube_url_id: Optional[str] = None
     preview_start_time_sec: Optional[int] = 45
+    options: Optional[list[ArtistResponse]] = None
 
     model_config = ConfigDict(from_attributes=True)
