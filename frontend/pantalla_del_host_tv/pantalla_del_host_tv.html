@@ -399,6 +399,9 @@
     };
 
     // Variables de Red (WebSocket)
+    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : 'https://d2vrxgps490m00.cloudfront.net';
+    const WS_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'ws://127.0.0.1:8000' : 'wss://d2vrxgps490m00.cloudfront.net';
+
     let roomPIN = Math.floor(100000 + Math.random() * 900000).toString();
     let ws = null;
     let connectedPlayers = [];
@@ -663,8 +666,7 @@
         if (lobbyPinDisplay) lobbyPinDisplay.innerText = formattedPIN;
 
         // Conexión WebSocket Dinámica
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const wsUrl = wsProtocol + window.location.hostname + ':8000/ws/host/' + roomPIN;
+        const wsUrl = `${WS_BASE_URL}/ws/host/${roomPIN}`;
         ws = new WebSocket(wsUrl);
         ws.onopen = () => {
             console.log(`[WebSocket] Conectado como Host a la sala ${roomPIN}`);
@@ -854,7 +856,7 @@
                 .replace(/^-+|-+$/g, '');        // limpia extremos
         }
 
-        fetch('http://127.0.0.1:8000/api/categories')
+        fetch(`${API_BASE_URL}/api/categories`)
             .then(res => res.json())
             .then(categories => {
                 if (categoriesContainer) {
@@ -936,7 +938,7 @@
                     timePerQuestion: tiempoPorPregunta
                 }));
 
-                fetch(`http://127.0.0.1:8000/api/categories/${selectedCategoryId}/play`)
+                fetch(`${API_BASE_URL}/api/categories/${selectedCategoryId}/play`)
                     .then(res => {
                         if(!res.ok) throw new Error("No se pudieron cargar las canciones");
                         return res.json();

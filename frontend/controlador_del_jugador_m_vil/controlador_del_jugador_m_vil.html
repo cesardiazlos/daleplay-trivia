@@ -224,6 +224,8 @@
 </main>
 
 <script>
+    const WS_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'ws://127.0.0.1:8000' : 'wss://d2vrxgps490m00.cloudfront.net';
+
     let ws = null;
     let currentOptions = [];
     let hasAnswered = false;
@@ -267,8 +269,7 @@
             isReconnecting = true;
         }
 
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const wsUrl = wsProtocol + window.location.hostname + ':8000/ws/player/' + pin + '/' + nick;
+        const wsUrl = `${WS_BASE_URL}/ws/player/${pin}/${nick}`;
         ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {

@@ -180,6 +180,8 @@
 </main>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : 'https://d2vrxgps490m00.cloudfront.net';
+
         const categoriesContainer = document.getElementById('categories-container');
         const startBtn = document.getElementById('start-btn');
         let selectedCategoryId = null;
@@ -196,7 +198,7 @@
         }
 
         // Fetch de categorías
-        fetch('http://127.0.0.1:8000/api/categories')
+        fetch(`${API_BASE_URL}/api/categories`)
             .then(res => res.json())
             .then(categories => {
                 categoriesContainer.innerHTML = '';
@@ -279,7 +281,7 @@
                 timePerQuestion: tiempoPorPregunta
             }));
 
-            fetch(`http://127.0.0.1:8000/api/categories/${selectedCategoryId}/play`)
+            fetch(`${API_BASE_URL}/api/categories/${selectedCategoryId}/play`)
                 .then(res => {
                     if(!res.ok) throw new Error("No se pudieron cargar las canciones");
                     return res.json();
