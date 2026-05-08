@@ -152,7 +152,7 @@
     </div>
 
     <!-- WAITING SCREEN -->
-    <div id="waiting-screen" class="hidden absolute inset-0 flex-col items-center justify-center z-50 p-6 w-full bg-transparent">
+    <div id="waiting-screen" class="hidden absolute inset-0 flex-col items-center justify-center z-50 p-6 w-full bg-gray-900">
         <span class="material-symbols-outlined text-[120px] text-primary animate-bounce mb-8 drop-shadow-[0_0_25px_rgba(255,171,243,0.8)]">sports_esports</span>
         <div class="w-16 h-16 border-8 border-t-primary border-r-secondary border-b-error border-l-tertiary-container rounded-full animate-spin shadow-[0_0_20px_rgba(255,171,243,0.5)]"></div>
         <h2 id="waiting-text" class="font-headline-md text-white text-3xl text-center animate-pulse mt-8 drop-shadow-md px-4">Conectando...</h2>
@@ -279,6 +279,15 @@
                 reconnectingOverlay.classList.remove('flex');
                 reconnectingOverlay.classList.add('hidden');
                 joinScreen.classList.add('hidden');
+                
+                // Forzar ocultamiento de otras pantallas para evitar solapamiento visual
+                controllerScreen.classList.remove('flex');
+                controllerScreen.classList.add('hidden');
+                feedbackScreen.classList.remove('flex');
+                feedbackScreen.classList.add('hidden');
+                gameOverScreen.classList.remove('flex');
+                gameOverScreen.classList.add('hidden');
+
                 waitingScreen.classList.remove('hidden');
                 waitingScreen.classList.add('flex');
                 isReconnecting = false;
