@@ -152,9 +152,10 @@
     </div>
 
     <!-- WAITING SCREEN -->
-    <div id="waiting-screen" class="hidden w-full flex-col items-center gap-md">
+    <div id="waiting-screen" class="hidden absolute inset-0 flex-col items-center justify-center z-50 p-6 w-full bg-transparent">
+        <span class="material-symbols-outlined text-[120px] text-primary animate-bounce mb-8 drop-shadow-[0_0_25px_rgba(255,171,243,0.8)]">sports_esports</span>
         <div class="w-16 h-16 border-8 border-t-primary border-r-secondary border-b-error border-l-tertiary-container rounded-full animate-spin shadow-[0_0_20px_rgba(255,171,243,0.5)]"></div>
-        <h2 id="waiting-text" class="font-headline-md text-on-surface text-center animate-pulse mt-4">Conectando...</h2>
+        <h2 id="waiting-text" class="font-headline-md text-white text-3xl text-center animate-pulse mt-8 drop-shadow-md px-4">Conectando...</h2>
     </div>
 
     <!-- CONTROLLER SCREEN -->
@@ -257,12 +258,13 @@
     function connectPlayer(pin, nick, isSilent = false) {
         if (!pin || !nick) return;
 
+        if (pinDisplay) pinDisplay.innerText = `PIN: ${pin.substring(0,3)} ${pin.substring(3)}`;
+
         if (!isSilent) {
             joinScreen.classList.add('hidden');
             waitingScreen.classList.remove('hidden');
             waitingScreen.classList.add('flex');
-            waitingText.innerText = "Conectando al Host...";
-            if (pinDisplay) pinDisplay.innerText = `PIN: ${pin.substring(0,3)} ${pin.substring(3)}`;
+            waitingText.innerText = "Conectando a la sala...";
         } else {
             reconnectingOverlay.classList.remove('hidden');
             reconnectingOverlay.classList.add('flex');
@@ -277,9 +279,11 @@
                 reconnectingOverlay.classList.remove('flex');
                 reconnectingOverlay.classList.add('hidden');
                 joinScreen.classList.add('hidden');
+                waitingScreen.classList.remove('hidden');
+                waitingScreen.classList.add('flex');
                 isReconnecting = false;
             }
-            waitingText.innerText = "¡Estás dentro! Mirá la pantalla del TV...";
+            waitingText.innerText = "¡Estás dentro! Esperando a que el Host inicie la partida...";
         };
 
         ws.onmessage = (event) => {
@@ -429,7 +433,7 @@
                 
                 waitingScreen.classList.remove('hidden');
                 waitingScreen.classList.add('flex');
-                waitingText.innerText = "Esperando a que el Host seleccione una categoría...";
+                waitingText.innerText = "Esperando a que el Host seleccione una nueva categoría...";
             } else if (data.type === 'sala_cerrada') {
                 sessionStorage.clear();
                 window.location.reload();

@@ -171,7 +171,8 @@
 </header>
 
 <!-- Lobby Screen -->
-<div id="lobby-screen" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col items-center justify-center px-md w-full h-full">
+<div id="lobby-screen" class="absolute top-0 left-0 z-[100] bg-gray-900 flex flex-col items-center px-md w-full min-h-screen overflow-y-auto py-8">
+    <div class="flex-1 min-h-[20px]"></div>
     <img src="../assets/logo.png" alt="KachaiLaSong" class="w-64 md:w-80 lg:w-96 mx-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-8">
     <h2 class="text-gray-300 font-headline-md text-4xl mb-6 text-center w-full">Únete en tu celular y entra con este PIN:</h2>
     <div id="lobby-pin-display" class="text-display-xl text-[180px] font-black text-cyan-400 drop-shadow-[0_0_40px_rgba(0,227,253,0.8)] tracking-widest leading-none mb-12 text-center w-full">
@@ -191,6 +192,7 @@
     <button id="start-trivia-btn" class="mt-12 py-6 px-16 bg-fuchsia-600 text-white font-headline-md text-4xl uppercase tracking-wider rounded-2xl border-b-8 border-fuchsia-900 shadow-[0_0_30px_rgba(255,0,255,0.4)] hover:brightness-110 hover:-translate-y-1 hover:border-b-[12px] active:translate-y-3 active:border-b-2 transition-all z-10">
         COMENZAR TRIVIA
     </button>
+    <div class="flex-1 min-h-[20px]"></div>
 </div>
 
 <!-- Configuration Screen -->
