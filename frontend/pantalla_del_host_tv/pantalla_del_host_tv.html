@@ -353,6 +353,7 @@
         <!-- Rellenado por JS -->
     </div>
     <div id="post-round-status" class="mt-8 text-3xl font-bold text-cyan-400">Jugadores Listos: 0 / 0</div>
+    <button id="show-global-ranking-btn" class="mt-8 px-12 py-4 bg-sky-600 text-white rounded-full font-black text-2xl uppercase tracking-wider hover:bg-sky-500 transition-colors shadow-[0_0_25px_rgba(2,132,199,0.8)] border-b-4 border-sky-800 hover:translate-y-1 hover:border-b-0 active:translate-y-2">🏆 Ver Ranking Total</button>
     <div class="flex gap-4 mt-8">
         <button id="close-room-btn" class="px-8 py-4 bg-red-600 text-white rounded-full font-bold text-xl uppercase tracking-wider hover:bg-red-500 transition-colors shadow-[0_0_20px_rgba(220,38,38,0.8)]">Cerrar Sala</button>
         <button id="force-continue-btn" class="px-8 py-4 bg-yellow-600 text-white rounded-full font-bold text-xl uppercase tracking-wider hover:bg-yellow-500 transition-colors shadow-[0_0_20px_rgba(202,138,4,0.8)]">Avanzar sin esperar</button>
@@ -380,6 +381,27 @@
 </div>
 </nav>
 
+<!-- GLOBAL RANKING MODAL -->
+<div id="global-ranking-modal" class="hidden fixed inset-0 z-[200] bg-gray-900/95 backdrop-blur-md flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
+    <div class="relative w-full max-w-7xl bg-gray-800 border-2 border-fuchsia-500 rounded-3xl shadow-[0_0_50px_rgba(217,70,239,0.5)] flex flex-col max-h-[90vh]">
+        
+        <button id="close-global-ranking-btn" class="absolute top-6 right-6 text-gray-400 hover:text-white transition-all p-2 bg-gray-700/50 hover:bg-red-500 rounded-full z-30 shadow-md">
+            <span class="material-symbols-outlined text-4xl">close</span>
+        </button>
+        
+        <h2 class="text-5xl font-black italic text-fuchsia-400 text-center uppercase tracking-widest mt-10 mb-6 drop-shadow-[0_0_15px_rgba(217,70,239,0.5)]">Ranking Global</h2>
+        
+        <div class="overflow-x-auto overflow-y-auto w-full p-4 md:px-10 pb-10 flex-grow scrollbar-hide">
+            <table class="w-full text-left border-collapse min-w-max">
+                <thead id="global-ranking-head" class="text-gray-300 uppercase tracking-wider text-sm font-bold border-b-4 border-gray-600">
+                </thead>
+                <tbody id="global-ranking-body" class="text-white">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script>
     // Configuración dinámica guardada desde la pantalla de setup
     const daleplayConfig = JSON.parse(localStorage.getItem('daleplay_config') || '{}');
@@ -399,6 +421,10 @@
         fadeOutInterval: null,
         currentOptions: null
     };
+
+    let globalRankingHistory = {};
+    let playedCategories = [];
+    let selectedCategoryName = "Ronda";
 
     // Variables de Red (WebSocket)
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : 'https://d2vrxgps490m00.cloudfront.net';
@@ -892,6 +918,7 @@
                                 b.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-gray-200 uppercase tracking-wider text-center group-hover:text-white px-2 leading-tight";
                             });
                             selectedCategoryId = category.id;
+                            selectedCategoryName = category.name;
                             btn.className = "category-btn relative overflow-hidden rounded-xl border-2 border-fuchsia-500 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 -translate-y-1 shadow-[0_0_25px_rgba(217,70,239,0.5)]";
                             btn.querySelector('.check-icon').classList.remove('hidden');
                             const selImg = btn.querySelector('.bg-img');
@@ -1037,6 +1064,18 @@
             const sortedPlayers = Object.keys(playerScores).map(name => {
                 return { name: name, score: playerScores[name].score };
             }).sort((a, b) => b.score - a.score);
+
+            // === LÓGICA DE RANKING GLOBAL ===
+            if (!playedCategories.includes(selectedCategoryName)) {
+                playedCategories.push(selectedCategoryName);
+            }
+            // Acumular puntajes de esta ronda en el objeto maestro
+            for (const playerName in playerScores) {
+                if (!globalRankingHistory[playerName]) {
+                    globalRankingHistory[playerName] = {};
+                }
+                globalRankingHistory[playerName][selectedCategoryName] = playerScores[playerName].score;
+            }
 
             if (sortedPlayers.length === 0) {
                 podiumList.innerHTML = '<div class="text-center text-4xl text-gray-400 font-bold mt-12">Nadie jugó esta partida.</div>';
@@ -1323,6 +1362,102 @@
 
         }, 3000);
 
+    }
+
+    document.getElementById('show-global-ranking-btn').addEventListener('click', renderGlobalRanking);
+    
+    document.getElementById('close-global-ranking-btn').addEventListener('click', () => {
+        const modal = document.getElementById('global-ranking-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    });
+
+    function renderGlobalRanking() {
+        const thead = document.getElementById('global-ranking-head');
+        const tbody = document.getElementById('global-ranking-body');
+        
+        let headHtml = `<tr>
+            <th class="py-6 px-6 sticky left-0 bg-gray-800 z-20 border-b-2 border-r border-gray-600 shadow-[4px_0_10px_rgba(0,0,0,0.5)]">Jugador</th>`;
+        
+        playedCategories.forEach(cat => {
+            headHtml += `<th class="py-4 px-4 text-center align-bottom h-32"><div class="transform -rotate-45 origin-bottom-left text-xs mb-2 truncate w-24 text-fuchsia-300" title="${cat}">${cat}</div></th>`;
+        });
+        
+        headHtml += `<th class="py-6 px-6 sticky right-0 bg-gray-800 z-20 text-right border-b-2 border-l border-gray-600 shadow-[-4px_0_10px_rgba(0,0,0,0.5)]">Puntaje Total</th></tr>`;
+        thead.innerHTML = headHtml;
+
+        let globalScores = [];
+        Object.keys(globalRankingHistory).forEach(playerName => {
+            let total = 0;
+            playedCategories.forEach(cat => {
+                total += globalRankingHistory[playerName][cat] || 0;
+            });
+            globalScores.push({ name: playerName, total: total, categories: globalRankingHistory[playerName] });
+        });
+
+        globalScores.sort((a, b) => b.total - a.total);
+
+        let categoryTops = {};
+        playedCategories.forEach(cat => {
+            let scores = [];
+            globalScores.forEach(player => {
+                if (player.categories[cat] !== undefined) scores.push(player.categories[cat]);
+            });
+            scores = [...new Set(scores)].sort((a, b) => b - a);
+            categoryTops[cat] = {
+                gold: scores[0] || -1,
+                silver: scores[1] || -1,
+                bronze: scores[2] || -1
+            };
+        });
+
+        tbody.innerHTML = '';
+        globalScores.forEach((player, index) => {
+            let rowClass = "border-b border-gray-700 hover:bg-gray-700/50 transition-colors";
+            let rankBadge = `${index + 1}º`;
+            
+            if (index === 0) {
+                rowClass += " border-y-2 border-yellow-400 shadow-[inset_0_0_20px_rgba(250,204,21,0.2)] bg-yellow-900/20";
+                rankBadge = "🥇";
+            } else if (index === 1) {
+                rowClass += " border-y-2 border-gray-300 shadow-[inset_0_0_20px_rgba(209,213,219,0.2)] bg-gray-700/40";
+                rankBadge = "🥈";
+            } else if (index === 2) {
+                rowClass += " border-y-2 border-amber-600 shadow-[inset_0_0_20px_rgba(217,119,6,0.2)] bg-amber-900/30";
+                rankBadge = "🥉";
+            }
+
+            let html = `<tr class="${rowClass}">
+                <td class="py-5 px-6 sticky left-0 bg-gray-800/95 backdrop-blur-md z-10 border-r border-gray-600 shadow-[4px_0_10px_rgba(0,0,0,0.5)] font-bold text-xl flex items-center gap-4">
+                    <span class="text-3xl">${rankBadge}</span>
+                    <span class="uppercase tracking-widest">${player.name}</span>
+                </td>`;
+            
+            playedCategories.forEach(cat => {
+                let score = player.categories[cat];
+                let displayScore = "-"; 
+                let colorClass = "text-gray-500 font-medium";
+                
+                if (score !== undefined) {
+                    displayScore = score.toLocaleString('es-ES');
+                    if (score === categoryTops[cat].gold && score > 0) colorClass = "text-yellow-400 font-black drop-shadow-[0_0_5px_rgba(250,204,21,0.8)] text-xl";
+                    else if (score === categoryTops[cat].silver && score > 0) colorClass = "text-gray-300 font-bold text-lg";
+                    else if (score === categoryTops[cat].bronze && score > 0) colorClass = "text-orange-400 font-bold text-lg";
+                    else colorClass = "text-white";
+                    
+                    if (score === 0) colorClass = "text-red-500 font-bold opacity-80";
+                }
+                
+                html += `<td class="py-5 px-4 text-center ${colorClass}">${displayScore}</td>`;
+            });
+            
+            html += `<td class="py-5 px-6 sticky right-0 bg-gray-800/95 backdrop-blur-md z-10 text-right border-l border-gray-600 shadow-[-4px_0_10px_rgba(0,0,0,0.5)] font-black text-4xl text-cyan-400 tracking-wider">${player.total.toLocaleString('es-ES')}</td></tr>`;
+            tbody.innerHTML += html;
+        });
+
+        const modal = document.getElementById('global-ranking-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     }
 </script>
 <style>
