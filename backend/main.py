@@ -48,10 +48,16 @@ def get_distractors(correct_artist: Artist, db_artists: List[Artist], excluded_i
         match = [a for a in candidates if a.id not in [c.id for c in chosen] and condition(a)]
         chosen.extend(random.sample(match, min(needed, len(match))))
     
+    # 1. Frescos mismo género
     fill(fresh, lambda a: a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender and a.main_genre == correct_artist.main_genre)
+    # 2. Reciclados mismo género (¡CRÍTICO PARA EVITAR SALTO DE GÉNERO!)
+    fill(recycled, lambda a: a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender and a.main_genre == correct_artist.main_genre)
+    # 3. Frescos mismo tipo/sexo
     fill(fresh, lambda a: a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender)
-    fill(fresh, lambda a: a.gender == correct_artist.gender)
+    # 4. Reciclados mismo tipo/sexo
     fill(recycled, lambda a: a.entity_type == correct_artist.entity_type and a.gender == correct_artist.gender)
+    # 5. Relleno final por sexo
+    fill(fresh, lambda a: a.gender == correct_artist.gender)
     fill(recycled, lambda a: a.gender == correct_artist.gender)
     return chosen
 

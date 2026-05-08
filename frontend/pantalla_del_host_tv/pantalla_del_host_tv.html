@@ -1007,36 +1007,7 @@
         }
     });
 
-    function getRandomOptions(correctSong) {
-        const options = [correctSong];
-        // Filtrar por ID y por ARTISTA único respecto a las ya seleccionadas
-        const others = songs.filter(s => s.id !== correctSong.id && s.artist.name !== correctSong.artist.name);
-        others.sort(() => 0.5 - Math.random());
-        
-        // Coger hasta 3 canciones que no repitan artista entre ellas
-        let selectedOthers = [];
-        let seenArtists = new Set([correctSong.artist.name]);
-        
-        for (let s of others) {
-            if (!seenArtists.has(s.artist.name)) {
-                selectedOthers.push(s);
-                seenArtists.add(s.artist.name);
-            }
-            if (selectedOthers.length >= 3) break;
-        }
 
-        options.push(...selectedOthers);
-        
-        // Si no logramos llenar 4 opciones, metemos randoms de relleno (fallback)
-        if (options.length < 4) {
-            const fallback = songs.filter(s => !options.find(opt => opt.id === s.id));
-            fallback.sort(() => 0.5 - Math.random());
-            options.push(...fallback.slice(0, 4 - options.length));
-        }
-
-        options.sort(() => 0.5 - Math.random());
-        return options;
-    }
 
     // 4. Lógica de la Ronda
     function playRound(index) {
@@ -1103,7 +1074,7 @@
         }
 
         const currentSong = songs[index];
-        const options = getRandomOptions(currentSong);
+        const options = currentSong.options;
         gameState.currentOptions = options;
 
         // Sincronización WebSocket (Inicio de Ronda - Adivinanza)
@@ -1113,7 +1084,7 @@
                 status: 'guessing', 
                 songIndex: index,
                 timePerQuestion: timePerQuestion,
-                options: options.map(opt => ({ id: opt.id, title: opt.title, artist: opt.artist.name }))
+                options: options.map(opt => ({ id: opt.id, title: "", artist: opt.name }))
             }));
         }
 
@@ -1156,7 +1127,7 @@
                 // Las clases truncate block w-full px-2 se mantienen fijas
             }
             if (options[i]) {
-                textEl.innerText = `${options[i].artist.name}`;
+                textEl.innerText = `${options[i].name}`;
             } else {
                 textEl.innerText = "Opción de relleno"; 
             }
@@ -1244,7 +1215,7 @@
                 playerScores[playerName] = { score: 0 };
             }
 
-            if (ansId === currentSong.id) {
+            if (ansId === currentSong.artist.id) {
                 // Cálculo de puntos tipo Kahoot: base 1000 que decrece según los ms tardados sobre el total configurado
                 const maxTimeMs = timePerQuestion * 1000;
                 const points = Math.max(0, Math.round(1000 * (1 - (answer.timeElapsedMs / maxTimeMs))));
@@ -1266,7 +1237,7 @@
 
             if (answer) {
                 const ansId = answer.answerId;
-                if (ansId === currentSong.id) {
+                if (ansId === currentSong.artist.id) {
                     isCorrect = true;
                     pointsEarned = answer.pointsEarned || 0;
                 }
@@ -1308,7 +1279,7 @@
             // Forzar reflow y mostrar
             setTimeout(() => { badge.classList.remove('opacity-0'); badge.classList.add('opacity-100'); }, 50);
 
-            if (optId === currentSong.id) {
+            if (optId === currentSong.artist.id) {
                 // Correcta: resaltar brillantemente
                 cardEl.classList.add('border-8', 'border-green-400', 'shadow-[0_0_30px_#4ade80]', 'z-20');
             } else {
@@ -1416,19 +1387,30 @@
             let rowClass = "border-b border-gray-700 hover:bg-gray-700/50 transition-colors";
             let rankBadge = `${index + 1}º`;
             
+            // Configuración de estilos por puesto (Podio)
+            let tdBg = "bg-transparent"; 
+            let stickyTdBg = "bg-gray-800/95"; 
+            let borderPodium = "";
+
             if (index === 0) {
-                rowClass += " border-y-2 border-yellow-400 shadow-[inset_0_0_20px_rgba(250,204,21,0.2)] bg-yellow-900/20";
                 rankBadge = "🥇";
+                tdBg = "bg-yellow-900/40";
+                stickyTdBg = "bg-yellow-900"; 
+                borderPodium = "border-y-2 border-yellow-400 shadow-[inset_0_0_20px_rgba(250,204,21,0.2)]";
             } else if (index === 1) {
-                rowClass += " border-y-2 border-gray-300 shadow-[inset_0_0_20px_rgba(209,213,219,0.2)] bg-gray-700/40";
                 rankBadge = "🥈";
+                tdBg = "bg-gray-700/60";
+                stickyTdBg = "bg-gray-700";
+                borderPodium = "border-y-2 border-gray-300 shadow-[inset_0_0_20px_rgba(209,213,219,0.2)]";
             } else if (index === 2) {
-                rowClass += " border-y-2 border-amber-600 shadow-[inset_0_0_20px_rgba(217,119,6,0.2)] bg-amber-900/30";
                 rankBadge = "🥉";
+                tdBg = "bg-amber-900/40";
+                stickyTdBg = "bg-amber-900";
+                borderPodium = "border-y-2 border-amber-600 shadow-[inset_0_0_20px_rgba(217,119,6,0.2)]";
             }
 
             let html = `<tr class="${rowClass}">
-                <td class="py-5 px-6 sticky left-0 bg-gray-800/95 backdrop-blur-md z-10 border-r border-gray-600 shadow-[4px_0_10px_rgba(0,0,0,0.5)] font-bold text-xl flex items-center gap-4">
+                <td class="py-5 px-6 sticky left-0 ${stickyTdBg} ${borderPodium} backdrop-blur-md z-10 border-r border-gray-600 shadow-[4px_0_10px_rgba(0,0,0,0.5)] font-bold text-xl flex items-center gap-4">
                     <span class="text-3xl">${rankBadge}</span>
                     <span class="uppercase tracking-widest">${player.name}</span>
                 </td>`;
@@ -1448,10 +1430,10 @@
                     if (score === 0) colorClass = "text-red-500 font-bold opacity-80";
                 }
                 
-                html += `<td class="py-5 px-4 text-center ${colorClass}">${displayScore}</td>`;
+                html += `<td class="py-5 px-4 text-center ${tdBg} ${borderPodium} ${colorClass}">${displayScore}</td>`;
             });
             
-            html += `<td class="py-5 px-6 sticky right-0 bg-gray-800/95 backdrop-blur-md z-10 text-right border-l border-gray-600 shadow-[-4px_0_10px_rgba(0,0,0,0.5)] font-black text-4xl text-cyan-400 tracking-wider">${player.total.toLocaleString('es-ES')}</td></tr>`;
+            html += `<td class="py-5 px-6 sticky right-0 ${stickyTdBg} ${borderPodium} backdrop-blur-md z-10 text-right border-l border-gray-600 shadow-[-4px_0_10px_rgba(0,0,0,0.5)] font-black text-4xl text-cyan-400 tracking-wider">${player.total.toLocaleString('es-ES')}</td></tr>`;
             tbody.innerHTML += html;
         });
 
