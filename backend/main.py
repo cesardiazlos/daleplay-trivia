@@ -150,8 +150,8 @@ class ConnectionManager:
     async def connect_player(self, websocket: WebSocket, pin: str, player_name: str):
         if pin not in self.rooms:
             await websocket.accept()
-            await websocket.send_json({"type": "error", "message": "room_not_found"})
-            await websocket.close(code=1008, reason="Room does not exist")
+            await websocket.send_json({"type": "error", "message": "Sala no existente"})
+            await websocket.close(code=4000) # Código personalizado para sala no encontrada
             return False
 
         if player_name in self.rooms[pin]["players"]:
