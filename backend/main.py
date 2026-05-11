@@ -72,14 +72,26 @@ def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
     if not category:
         raise HTTPException(status_code=404, detail="Categoría no encontrada.")
 
-    # 2. Consultar las canciones unidas a esta categoría de forma aleatoria
-    songs = (
+    # 2. Consultar un pool grande de canciones para filtrar duplicados
+    raw_songs = (
         db.query(Song)
         .filter(Song.categories.any(Category.id == category_id))
         .order_by(func.random())
-        .limit(10)
+        .limit(60)
         .all()
     )
+    
+    unique_songs = []
+    seen_titles = set()
+    for song in raw_songs:
+        normalized_title = song.title.strip().lower()
+        if normalized_title not in seen_titles:
+            seen_titles.add(normalized_title)
+            unique_songs.append(song)
+            if len(unique_songs) == 10:
+                break
+                
+    songs = unique_songs
     
     # 3. Retornar si hay menos de 10 canciones, la API responderá con las que encuentre.
     if not songs:

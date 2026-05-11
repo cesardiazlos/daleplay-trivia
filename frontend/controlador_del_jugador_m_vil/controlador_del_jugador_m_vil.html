@@ -168,26 +168,28 @@
             </div>
         </div>
 
+        <!-- Status Text -->
+        <div id="status-text" class="text-sm text-gray-400 mb-2 h-5 font-bold tracking-widest uppercase transition-opacity duration-300 opacity-0 text-center w-full">Respuesta enviada, esperando al resto...</div>
+
         <!-- 2x2 Controller Grid -->
-        <div class="grid grid-cols-2 grid-rows-2 gap-md w-full h-full pb-xl">
-            <!-- Button 0: Triangle (Red) -->
-            <button onclick="sendAnswer(0)" class="option-btn w-full h-full bg-red-600 rounded-2xl shadow-[0_12px_0_0_#991b1b] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3 gap-1">
-                <span class="material-symbols-outlined text-white drop-shadow-md" data-icon="change_history" style="font-variation-settings: 'FILL' 1; font-size: 3.5rem;">change_history</span>
+        <div id="options-grid" class="relative grid grid-cols-2 grid-rows-2 gap-md w-full h-full pb-xl">
+            <!-- Overlay de Candado Anti-Copias -->
+            <div id="lock-overlay" class="absolute inset-0 m-auto w-20 h-20 flex items-center justify-center bg-gray-900/90 rounded-full shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-gray-600 scale-0 opacity-0 transition-all duration-500 ease-out z-50 pointer-events-none"><span class="text-4xl">🔒</span></div>
+            
+            <!-- Button 0: Red -->
+            <button onclick="sendAnswer(0)" class="option-btn w-full h-full bg-red-600 rounded-2xl shadow-[0_12px_0_0_#991b1b] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3">
                 <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
-            <!-- Button 1: Diamond (Blue) -->
-            <button onclick="sendAnswer(1)" class="option-btn w-full h-full bg-blue-600 rounded-2xl shadow-[0_12px_0_0_#1e40af] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3 gap-1">
-                <span class="material-symbols-outlined text-white drop-shadow-md" data-icon="diamond" style="font-variation-settings: 'FILL' 1; font-size: 3.5rem;">diamond</span>
+            <!-- Button 1: Blue -->
+            <button onclick="sendAnswer(1)" class="option-btn w-full h-full bg-blue-600 rounded-2xl shadow-[0_12px_0_0_#1e40af] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3">
                 <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
-            <!-- Button 2: Circle (Yellow) -->
-            <button onclick="sendAnswer(2)" class="option-btn w-full h-full bg-yellow-500 rounded-2xl shadow-[0_12px_0_0_#b45309] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3 gap-1">
-                <span class="material-symbols-outlined text-white drop-shadow-md" data-icon="circle" style="font-variation-settings: 'FILL' 1; font-size: 3.5rem;">circle</span>
+            <!-- Button 2: Yellow -->
+            <button onclick="sendAnswer(2)" class="option-btn w-full h-full bg-yellow-500 rounded-2xl shadow-[0_12px_0_0_#b45309] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3">
                 <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
-            <!-- Button 3: Square (Green) -->
-            <button onclick="sendAnswer(3)" class="option-btn w-full h-full bg-green-600 rounded-2xl shadow-[0_12px_0_0_#166534] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3 gap-1">
-                <span class="material-symbols-outlined text-white drop-shadow-md" data-icon="square" style="font-variation-settings: 'FILL' 1; font-size: 3.5rem;">square</span>
+            <!-- Button 3: Green -->
+            <button onclick="sendAnswer(3)" class="option-btn w-full h-full bg-green-600 rounded-2xl shadow-[0_12px_0_0_#166534] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3">
                 <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
         </div>
@@ -365,6 +367,21 @@
                     controllerScreen.classList.remove('hidden');
                     controllerScreen.classList.add('flex');
                     statusBadge.innerText = "¡Adivina rápido!";
+
+                    // Restaurar Anti-Copias
+                    const statusText = document.getElementById('status-text');
+                    if (statusText) {
+                        statusText.classList.remove('opacity-100');
+                        statusText.classList.add('opacity-0');
+                    }
+                    const lock = document.getElementById('lock-overlay');
+                    if (lock) {
+                        lock.classList.remove('scale-100', 'opacity-100');
+                        lock.classList.add('scale-0', 'opacity-0');
+                    }
+                    document.querySelectorAll('.option-btn').forEach(btn => {
+                        btn.classList.remove('grayscale', 'opacity-50', 'pointer-events-none', 'transition-all', 'duration-500');
+                    });
 
                     // Inyectar nombres de artistas en los botones con tamaño dinámico
                     const labels = document.querySelectorAll('.artist-label');
@@ -564,6 +581,23 @@
         
         // Feedback visual inmediato en el celular
         statusBadge.innerText = "¡Respuesta enviada!";
+        
+        // --- Animación Anti-Copias ---
+        const statusText = document.getElementById('status-text');
+        if (statusText) {
+            statusText.classList.remove('opacity-0');
+            statusText.classList.add('opacity-100');
+        }
+        
+        const lock = document.getElementById('lock-overlay');
+        if (lock) {
+            lock.classList.remove('scale-0', 'opacity-0');
+            lock.classList.add('scale-100', 'opacity-100');
+        }
+        
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.add('grayscale', 'opacity-50', 'pointer-events-none', 'transition-all', 'duration-500');
+        });
 
         // El backend inyectará el 'player_name' automáticamente
         ws.send(JSON.stringify({
