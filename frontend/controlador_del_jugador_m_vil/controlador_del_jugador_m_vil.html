@@ -298,17 +298,37 @@
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
 
-            if (data.type === 'error' && data.message === 'name_taken') {
-                if (isReconnecting || sessionStorage.getItem('daleplay_nick')) {
-                    // Conexión fantasma en el backend, cerrar y dejar que onclose reintente
-                    ws.close();
+            if (data.type === 'error') {
+                if (data.message === 'Sala no existente') {
+                    alert("El PIN ingresado es incorrecto o la sala no existe.");
+                    isReconnecting = false;
+                    if (ws) ws.close(); 
+                    sessionStorage.clear();
+                    
+                    // UI: Volver al inicio
+                    joinScreen.classList.remove('hidden');
+                    joinScreen.classList.add('flex');
+                    [waitingScreen, controllerScreen, feedbackScreen, gameOverScreen, reconnectingOverlay].forEach(s => {
+                        s.classList.remove('flex');
+                        s.classList.add('hidden');
+                    });
+                    document.getElementById('pin-input').value = "";
+                    document.getElementById('nick-input').value = "";
                     return;
                 }
-                alert("Nombre en uso, elige otro");
-                ws.close();
-                sessionStorage.clear();
-                window.location.reload();
-                return;
+
+                if (data.message === 'name_taken') {
+                    if (isReconnecting || sessionStorage.getItem('daleplay_nick')) {
+                        // Conexión fantasma en el backend, cerrar y dejar que onclose reintente
+                        ws.close();
+                        return;
+                    }
+                    alert("Nombre en uso, elige otro");
+                    ws.close();
+                    sessionStorage.clear();
+                    window.location.reload();
+                    return;
+                }
             }
 
             if (data.type === 'join_success' || data.type === 'reconnect_success') {
@@ -454,6 +474,7 @@
         ws.onclose = (e) => {
             console.warn("Desconectado", e);
             if (intentionToLeave) return; // Don't reconnect if user intentionally left
+            if (e.code === 4000 || !isReconnecting) return; // FIX: Detener bucle si la sala no existe
             
             const savedPin = sessionStorage.getItem('daleplay_pin');
             const savedNick = sessionStorage.getItem('daleplay_nick');
