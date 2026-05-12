@@ -22,3 +22,4 @@ frontend/configuraci_n_de_partida_host/assets/categorias/*.png
 # *.jpg
 # *.png
 # *.jpeg
+*.pem
