@@ -5,7 +5,7 @@ from typing import Optional
 class CategoryResponse(BaseModel):
     id: uuid.UUID
     name: str
-
+    description: Optional[str] = None
     # Pydantic v2: Configuración para leer atributos de SQLAlchemy
     model_config = ConfigDict(from_attributes=True)
 
