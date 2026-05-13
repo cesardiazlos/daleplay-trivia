@@ -127,6 +127,56 @@ def play_category(category_id: uuid.UUID, db: Session = Depends(get_db)):
         
     return songs
 
+@app.get("/api/categories/{category_id}/rewind", response_model=List[SongResponse])
+def play_rewind(category_id: uuid.UUID, db: Session = Depends(get_db)):
+    """
+    Retorna exactamente 4 canciones de una categoría, garantizando que cada una 
+    tenga un año de lanzamiento distinto para el modo Rewind Musical.
+    """
+    # 1. Validar categoría
+    category = db.query(Category).filter(Category.id == category_id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada.")
+
+    # 2. Consultar canciones de la categoría asegurando que tengan año definido
+    raw_songs = (
+        db.query(Song)
+        .filter(Song.categories.any(Category.id == category_id))
+        .filter(Song.release_year != None)
+        .all()
+    )
+
+    # 3. Agrupar por año para evitar empates temporales
+    songs_by_year = {}
+    for song in raw_songs:
+        year = getattr(song, 'release_year', None)
+        if year:
+            if year not in songs_by_year:
+                songs_by_year[year] = []
+            songs_by_year[year].append(song)
+    
+    unique_years = list(songs_by_year.keys())
+    
+    # 4. Validar que haya al menos 4 años distintos
+    if len(unique_years) < 4:
+        raise HTTPException(
+            status_code=400, 
+            detail="La categoría no tiene suficientes canciones con años distintos para jugar Rewind (mínimo 4)."
+        )
+        
+    # 5. Seleccionar 4 años distintos al azar y 1 canción por cada año
+    selected_years = random.sample(unique_years, 4)
+    rewind_tracks = [random.choice(songs_by_year[year]) for year in selected_years]
+    
+    # 6. Desordenar para que la TV las muestre mezcladas
+    random.shuffle(rewind_tracks)
+    
+    # 7. Mockear el atributo 'options' para cumplir con el esquema SongResponse (No se usan distractores aquí)
+    for song in rewind_tracks:
+        setattr(song, "options", [])
+        
+    return rewind_tracks
+
 @app.patch("/api/songs/{song_id}/invalidate")
 def invalidate_song(song_id: uuid.UUID, db: Session = Depends(get_db)):
     """

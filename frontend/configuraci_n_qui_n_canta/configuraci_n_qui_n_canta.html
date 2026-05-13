@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>¿Quién Canta? - Selección</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed-variant": "#004f58",
+                        "on-primary-fixed-variant": "#810081",
+                        "secondary": "#bdf4ff",
+                        "on-tertiary-fixed-variant": "#5700c9",
+                        "tertiary-fixed-dim": "#d1bcff",
+                        "surface-container-highest": "#402d50",
+                        "primary-fixed-dim": "#ffabf3",
+                        "primary-container": "#ff00ff",
+                        "on-error-container": "#ffdad6",
+                        "background": "#1c0a2c",
+                        "tertiary-fixed": "#e9ddff",
+                        "on-surface-variant": "#dcbed4",
+                        "error": "#ffb4ab",
+                        "on-error": "#690005",
+                        "surface-container-high": "#342244",
+                        "primary-fixed": "#ffd7f5",
+                        "outline-variant": "#564052",
+                        "inverse-surface": "#f1daff",
+                        "surface": "#1c0a2c",
+                        "primary": "#ffabf3",
+                        "on-primary-container": "#510051",
+                        "surface-variant": "#402d50",
+                        "tertiary": "#d1bcff",
+                        "on-primary-fixed": "#380038",
+                        "on-tertiary-fixed": "#23005b",
+                        "error-container": "#93000a",
+                        "surface-dim": "#1c0a2c",
+                        "inverse-primary": "#a900a9",
+                        "secondary-fixed": "#9cf0ff",
+                        "surface-tint": "#ffabf3",
+                        "tertiary-container": "#a179ff",
+                        "surface-container": "#291739",
+                        "inverse-on-surface": "#3b284b",
+                        "surface-bright": "#443155",
+                        "on-primary": "#5b005b",
+                        "secondary-fixed-dim": "#00daf3",
+                        "on-tertiary-container": "#350081",
+                        "on-background": "#f1daff",
+                        "on-secondary-fixed": "#001f24",
+                        "on-secondary-container": "#00616d",
+                        "outline": "#a4899d",
+                        "on-tertiary": "#3c0090",
+                        "on-secondary": "#00363d",
+                        "surface-container-lowest": "#170527",
+                        "on-surface": "#f1daff",
+                        "surface-container-low": "#251335",
+                        "secondary-container": "#00e3fd"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "lg": "40px",
+                        "xl": "64px",
+                        "sm": "12px",
+                        "xs": "4px",
+                        "md": "24px",
+                        "gutter": "20px",
+                        "margin": "24px",
+                        "base": "8px"
+                    },
+                    fontFamily: {
+                        "label-bold": ["Spline Sans"],
+                        "headline-md": ["Spline Sans"],
+                        "headline-lg": ["Spline Sans"],
+                        "body-md": ["Spline Sans"],
+                        "body-lg": ["Spline Sans"],
+                        "display-xl": ["Spline Sans"]
+                    },
+                    fontSize: {
+                        "label-bold": ["14px", { lineHeight: "1.0", fontWeight: "700" }],
+                        "headline-md": ["28px", { lineHeight: "1.3", fontWeight: "700" }],
+                        "headline-lg": ["40px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "1.5", fontWeight: "500" }],
+                        "display-xl": ["64px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-x-hidden font-body-md text-body-md pt-24 pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-slate-950/80 backdrop-blur-xl border-b-4 border-slate-900 shadow-[0_4px_0_0_rgba(0,0,0,0.5)]">
+<div class="text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.6)] font-['Spline_Sans'] uppercase tracking-widest">
+            Dale Play
+        </div>
+<div class="flex items-center gap-4">
+<button aria-label="Settings" class="text-slate-400 hover:text-fuchsia-400 hover:scale-105 transition-all active:translate-y-1 duration-75 p-2 rounded-full focus:outline-none">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">settings</span>
+</button>
+<button aria-label="Leaderboard" class="text-slate-400 hover:text-fuchsia-400 hover:scale-105 transition-all active:translate-y-1 duration-75 p-2 rounded-full focus:outline-none">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+</button>
+<button aria-label="Account" class="text-slate-400 hover:text-fuchsia-400 hover:scale-105 transition-all active:translate-y-1 duration-75 p-2 rounded-full focus:outline-none ml-2">
+<span class="material-symbols-outlined text-3xl text-fuchsia-500" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</div>
+</header>
+<main class="w-full max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-8 min-h-[calc(100vh-160px)]">
+<!-- Left Column: Categories (70%) -->
+<section class="w-full md:w-[70%] flex flex-col justify-center">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-8 drop-shadow-[0_0_15px_rgba(255,171,243,0.5)]">
+                ELIGE TU VIBRA
+            </h1>
+<div class="w-full overflow-x-auto no-scrollbar snap-x snap-mandatory py-8 -my-8 px-4 -mx-4">
+<div class="flex gap-6 w-max items-center">
+<!-- Selected Card -->
+<div class="snap-center shrink-0 w-80 h-48 rounded-xl relative overflow-hidden bg-gradient-to-br from-indigo-900 to-purple-900 border-4 border-primary-container shadow-[0_0_20px_rgba(255,0,255,0.6)] transform scale-105 transition-transform cursor-pointer">
+<img alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" data-alt="A dynamic, high-energy live music concert scene captured from the crowd. Bright neon purple and blue stage lights cut through heavy theatrical smoke, creating a cinematic, electric atmosphere. Silhouettes of cheering fans are visible in the foreground, hands raised. The aesthetic matches a vibrant, modern music game interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9dDNOZ8eeUtr20HjLzlJog4Oj9loXSLiOG-XA3x_0PeALXwMidDHOK2AYuHiLlKuWVLW6Vps_aActHtX5FSKjsJcybpn913uJWpZgdJCCtjvHMCdQOgSB1fCjZt1ygiyaguyqZuVPgEVYeLPSTFZ5IfcVLEU0OAISIElm2SZmU5KcjNygd6crnX2anEvIrAPKyIz9u3UbmcBhB0Mo3Eoxy4-4DlJ-NoRz9bcGbizbcGZ1EeNPaeqZBxPsdq5lhp0yimiAiKDjVvQ"/>
+<div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
+<h3 class="text-3xl font-black text-white uppercase drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] tracking-wide">Rock Nacional</h3>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="snap-center shrink-0 w-80 h-48 rounded-xl relative overflow-hidden bg-surface-container-high border-2 border-outline-variant shadow-[0_8px_0_0_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:shadow-[0_12px_0_0_rgba(0,0,0,0.4)] transition-all cursor-pointer opacity-80 hover:opacity-100">
+<img alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50 grayscale hover:grayscale-0 transition-all" data-alt="A stylized DJ setup or mixing console bathed in warm, pulsing neon pink and orange lights. The scene feels rhythmic and vibrant, typical of a lively Latin pop dance club. Deep shadows contrast with the bright, glowing buttons and sliders, fitting a dark-mode music app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYNW3XXJfQMiwoT_7f0UwvF35a9UzAbHo7DnctzrwOR25crwwtgk-l0_T0vfa-5zc0TDfLyA5kuEklC46YPmG6PbMxO_Gj16YRpAWH8Cg5HP5jK0KPbR2D4UOPguxNKnJZP3EdlRWrPc_kCBSdKUTMa6NCcAFMEgM5_Qi9Ma-cEmzrlz3u-DhRggrAyAj-OgK8hdB8VKAdPiIWwdAo6rk1iDJ-OtzG3yvsQeF6UlmgAI2ln2Dyw1hnKa7KU_nc_NeRWsQ_iKkJIaY"/>
+<div class="absolute inset-0 bg-black/50 flex items-center justify-center p-6 text-center">
+<h3 class="text-2xl font-black text-surface-tint uppercase drop-shadow-md">Pop Latino</h3>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="snap-center shrink-0 w-80 h-48 rounded-xl relative overflow-hidden bg-surface-container-high border-2 border-outline-variant shadow-[0_8px_0_0_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:shadow-[0_12px_0_0_rgba(0,0,0,0.4)] transition-all cursor-pointer opacity-80 hover:opacity-100">
+<img alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50 grayscale hover:grayscale-0 transition-all" data-alt="A retro cassette tape glowing with an intense neon synthwave grid reflection. The color palette is dominated by electric blues, cyan, and deep violet, evoking an 80s arcade or retro-futuristic club vibe. The lighting is dramatic and synthetic, perfect for a high-contrast dark UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBY1XnDhVEXKblnsDJya44YzrKZzCTLEFLVrHZkOx1jpfPw89JTxsdfqc1TO_2LErpv_spI-L6IGlxkQ_6nLv6cTIkxhDUvg8Q3c2yJcmmcIpUaELpTirOGA094qOroeMBaCwUYB9vZxhe3z1MoaZIb-7GypQX-XCd7CubdEA0wRZC18IKvGzD5a2iM05p_xjJOT5ZYfXv6M2GIg6jWFOSmPahZ3kP2ZvaRI5d4ePebPdqzpUpdYm5wR5uncnT0wvDnrAlCo2wb9G0"/>
+<div class="absolute inset-0 bg-black/50 flex items-center justify-center p-6 text-center">
+<h3 class="text-2xl font-black text-surface-tint uppercase drop-shadow-md">Clásicos 80s</h3>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="snap-center shrink-0 w-80 h-48 rounded-xl relative overflow-hidden bg-surface-container-high border-2 border-outline-variant shadow-[0_8px_0_0_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:shadow-[0_12px_0_0_rgba(0,0,0,0.4)] transition-all cursor-pointer opacity-80 hover:opacity-100">
+<img alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50 grayscale hover:grayscale-0 transition-all" data-alt="A low-angle shot of a gritty urban alleyway or warehouse party setting, lit by flashing strobe lights in magenta and cyan. The mood is intense, underground, and energetic, capturing the raw feel of early reggaeton culture. The deep black shadows enhance the neon highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkva3Vw4wQM98-LQUdSAfl0wq8KQ0HcoHBhROw12rbGKEqpC97N3hJTm0GJuXuSDyW-25wFuYs_Gp-lVWxOrUkoR3HbhBZFvq_QLB3o-hmx_oJatwO9jTZGZxXfqsD48GJhyyHsiQXozYckjCKVV0bOamuzO4ToU5Wj0iq6i_C1ONIDuiCbH50M3Mit2ezDRVMg5h8Z-Mqvna9T4rUmDjD0JjrbjPVobFLaQu1EA_PZQ4WKUuVAPRzH8Lnmkan08-nAjvBbsLtHEA"/>
+<div class="absolute inset-0 bg-black/50 flex items-center justify-center p-6 text-center">
+<h3 class="text-2xl font-black text-surface-tint uppercase drop-shadow-md">Reggaeton Old School</h3>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="snap-center shrink-0 w-80 h-48 rounded-xl relative overflow-hidden bg-surface-container-high border-2 border-outline-variant shadow-[0_8px_0_0_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:shadow-[0_12px_0_0_rgba(0,0,0,0.4)] transition-all cursor-pointer opacity-80 hover:opacity-100">
+<img alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50 grayscale hover:grayscale-0 transition-all" data-alt="A lone electric guitar resting against an amplifier on a dimly lit, smoky stage. The lighting is moody, with subtle washes of cool blue and violet light hitting the instrument's contours. The aesthetic is melancholic yet electric, fitting an alternative indie music vibe within a dark UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkP2zgfzeDDF_RkbuyNeEKerYwpKyneSD33ppN401UUI18Q1BeQ7JILRerjfhK3nCd3mQ0xTUwfbbHzbCEV5tLy5r3FxlBXsCY-zmA3YlVDo9Z5nplH_7ps9JkiJC2YgyJTyal214zIgQe0bgnEZNwuGCt58Wms8K9is1Q0MZoDDhl4yGArQghi80yjSVBWO5JGSMwIHadkNKbUfDlUzhfuWKQRE29RVkcZx_iTELPtIpkcHcw2SMU11gnsZiTrvVWt7VGPfQP6-s"/>
+<div class="absolute inset-0 bg-black/50 flex items-center justify-center p-6 text-center">
+<h3 class="text-2xl font-black text-surface-tint uppercase drop-shadow-md">Indie Alternativo</h3>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Settings (30%) -->
+<section class="w-full md:w-[30%] flex flex-col justify-center">
+<div class="bg-surface-container/80 backdrop-blur-md rounded-2xl p-6 border-2 border-surface-bright shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex flex-col gap-8">
+<h2 class="font-headline-md text-headline-md text-secondary-fixed">AJUSTES</h2>
+<!-- Slider 1 -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<label class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Cantidad de Canciones</label>
+<span class="font-body-lg text-body-lg text-primary font-bold">15</span>
+</div>
+<div class="relative w-full h-4 bg-surface-container-highest rounded-full shadow-inner overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-[60%] bg-gradient-to-r from-tertiary-container to-primary shadow-[0_0_10px_rgba(255,171,243,0.8)] rounded-full"></div>
+<!-- Mock thumb -->
+<div class="absolute top-1/2 left-[60%] -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.5)] border-2 border-primary cursor-pointer"></div>
+</div>
+</div>
+<!-- Slider 2 -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<label class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Tiempo por Pregunta</label>
+<span class="font-body-lg text-body-lg text-secondary-fixed-dim font-bold">20s</span>
+</div>
+<div class="relative w-full h-4 bg-surface-container-highest rounded-full shadow-inner overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-[40%] bg-gradient-to-r from-secondary-fixed-dim to-secondary shadow-[0_0_10px_rgba(0,218,243,0.8)] rounded-full"></div>
+<!-- Mock thumb -->
+<div class="absolute top-1/2 left-[40%] -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.5)] border-2 border-secondary-fixed-dim cursor-pointer"></div>
+</div>
+</div>
+<div class="mt-4">
+<button class="w-full py-4 px-6 bg-gradient-to-r from-primary-container to-tertiary-container text-white font-headline-md text-[20px] rounded-xl shadow-[0_8px_0_0_#5700c9] hover:shadow-[0_12px_0_0_#5700c9] hover:-translate-y-1 active:translate-y-2 active:shadow-[0_0px_0_0_#5700c9] transition-all duration-150 uppercase tracking-widest flex items-center justify-center gap-2 group focus:outline-none focus:ring-4 focus:ring-primary/50">
+<span class="material-symbols-outlined text-3xl group-hover:animate-pulse" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                        Empezar Juego
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-4 pb-safe bg-slate-950 rounded-t-2xl border-t-4 border-slate-900 shadow-[0_-4px_20px_rgba(0,0,0,0.8)]">
+<a class="flex flex-col items-center justify-center text-fuchsia-500 drop-shadow-[0_0_12px_rgba(255,0,255,0.8)] active:translate-y-1 transition-all duration-75 p-2 rounded-lg hover:bg-slate-900/50" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">sports_esports</span>
+<span class="font-['Spline_Sans'] text-[10px] font-black uppercase">Play</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-60 active:translate-y-1 transition-all duration-75 p-2 rounded-lg hover:bg-slate-900/50" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">group</span>
+<span class="font-['Spline_Sans'] text-[10px] font-black uppercase">Social</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-60 active:translate-y-1 transition-all duration-75 p-2 rounded-lg hover:bg-slate-900/50" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">shopping_bag</span>
+<span class="font-['Spline_Sans'] text-[10px] font-black uppercase">Store</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-60 active:translate-y-1 transition-all duration-75 p-2 rounded-lg hover:bg-slate-900/50" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">person</span>
+<span class="font-['Spline_Sans'] text-[10px] font-black uppercase">Profile</span>
+</a>
+</nav>
+</body></html>

@@ -4,12 +4,13 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>KachaiLaSong - Trivia Musical</title>
+<link rel="icon" type="image/png" href="../assets/favicon.png" />
 <!-- Google Fonts & Material Icons -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
 <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 1, 'wght' 700;
@@ -159,38 +160,42 @@
     </div>
 
     <!-- CONTROLLER SCREEN -->
-    <div id="controller-screen" class="hidden flex-col items-center w-full h-full">
-        <!-- Status / Identity Badge -->
-        <div class="w-full flex justify-center mb-md">
-            <div class="bg-surface-container-highest border-2 border-primary-container px-lg py-sm rounded-full shadow-[0_4px_0_0_rgba(255,0,255,0.4)] flex items-center gap-sm">
-                <div class="w-4 h-4 bg-secondary-container rounded-full animate-pulse shadow-[0_0_10px_rgba(0,227,253,0.8)]"></div>
-                <span id="player-status-badge" class="font-label-bold text-on-surface uppercase tracking-widest">¡Adivina!</span>
+<div id="controller-screen" class="hidden flex-col items-center justify-between w-full h-full pt-4 pb-8">
+    <div class="w-full flex flex-col items-center gap-8 px-4 shrink-0">
+        <div class="w-full flex justify-between items-center">
+            <div class="bg-surface-container-highest border border-outline px-4 py-2 rounded-full text-sm font-bold text-gray-300 flex items-center justify-center h-10 min-w-[120px]">
+                <span id="mobile-counter">Pregunta -/-</span>
+            </div>
+            <div class="bg-surface-container-highest border border-secondary-container px-4 py-2 rounded-full text-sm font-bold text-secondary-container flex items-center justify-center h-10 min-w-[120px] shadow-[0_0_10px_rgba(0,227,253,0.3)]">
+                <span class="material-symbols-outlined text-sm mr-1">timer</span>
+                <span id="mobile-timer-display">--</span>
             </div>
         </div>
+        <div class="bg-surface-container-highest border-2 border-primary-container px-lg py-sm rounded-full shadow-[0_4px_0_0_rgba(255,0,255,0.4)] flex items-center gap-sm mb-6">
+            <div class="w-4 h-4 bg-secondary-container rounded-full animate-pulse shadow-[0_0_10px_rgba(0,227,253,0.8)]"></div>
+            <span id="player-status-badge" class="font-label-bold text-on-surface uppercase tracking-widest">¡Adivina!</span>
+        </div>
+    </div>
 
-        <!-- Status Text -->
-        <div id="status-text" class="text-sm text-gray-400 mb-2 h-5 font-bold tracking-widest uppercase transition-opacity duration-300 opacity-0 text-center w-full">Respuesta enviada, esperando al resto...</div>
-
-        <!-- 2x2 Controller Grid -->
-        <div id="options-grid" class="relative grid grid-cols-2 grid-rows-2 gap-md w-full h-full pb-xl">
-            <!-- Overlay de Candado Anti-Copias -->
+    <div id="options-grid" class="relative grid grid-cols-2 grid-rows-2 gap-4 w-full max-w-[400px] aspect-square px-4 shrink-0">
+        <!-- Overlay de Candado Anti-Copias -->
             <div id="lock-overlay" class="absolute inset-0 m-auto w-20 h-20 flex items-center justify-center bg-gray-900/90 rounded-full shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-gray-600 scale-0 opacity-0 transition-all duration-500 ease-out z-50 pointer-events-none"><span class="text-4xl">🔒</span></div>
             
             <!-- Button 0: Red -->
             <button onclick="sendAnswer(0)" class="option-btn w-full h-full bg-red-600 rounded-2xl shadow-[0_12px_0_0_#991b1b] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3">
-                <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
+                <span class="artist-label text-white text-2xl md:text-3xl font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
             <!-- Button 1: Blue -->
             <button onclick="sendAnswer(1)" class="option-btn w-full h-full bg-blue-600 rounded-2xl shadow-[0_12px_0_0_#1e40af] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3">
-                <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
+                <span class="artist-label text-white text-2xl md:text-3xl font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
             <!-- Button 2: Yellow -->
             <button onclick="sendAnswer(2)" class="option-btn w-full h-full bg-yellow-500 rounded-2xl shadow-[0_12px_0_0_#b45309] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3">
-                <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
+                <span class="artist-label text-white text-2xl md:text-3xl font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
             <!-- Button 3: Green -->
             <button onclick="sendAnswer(3)" class="option-btn w-full h-full bg-green-600 rounded-2xl shadow-[0_12px_0_0_#166534] active:translate-y-[12px] active:shadow-none transition-all duration-75 flex flex-col items-center justify-center focus:outline-none overflow-hidden px-3">
-                <span class="artist-label text-white text-lg font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
+                <span class="artist-label text-white text-2xl md:text-3xl font-black uppercase text-center w-full leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]" style="overflow-wrap:break-word;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></span>
             </button>
         </div>
     </div>
@@ -353,6 +358,11 @@
                 }
             }
             
+            if (data.type === 'timer_tick') {
+                const timerDisplay = document.getElementById('mobile-timer-display');
+                if (timerDisplay) timerDisplay.innerText = data.timeLeft;
+            }
+
             if (data.type === 'state_change') {
                 if (data.status === 'guessing') {
                     // El Host arrancó la ronda
@@ -367,6 +377,10 @@
                     controllerScreen.classList.remove('hidden');
                     controllerScreen.classList.add('flex');
                     statusBadge.innerText = "¡Adivina rápido!";
+
+                    const currentQ = (data.songIndex !== undefined) ? data.songIndex + 1 : "-";
+                    const totalQ = data.totalSongs || "-";
+                    document.getElementById('mobile-counter').innerText = `Pregunta ${currentQ}/${totalQ}`;
 
                     // Restaurar Anti-Copias
                     const statusText = document.getElementById('status-text');

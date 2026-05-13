@@ -4,11 +4,12 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>KachaiLaSong - Trivia Musical</title>
+<link rel="icon" type="image/png" href="../assets/favicon.png" />
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
 <script id="tailwind-config">
   tailwind.config = {
     darkMode: "class",
@@ -153,6 +154,7 @@
   body {
     /* Fallback background */
   }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
 </style>
 </head>
 <body class="bg-gray-900 text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden w-full m-0 p-0">
@@ -174,9 +176,11 @@
 <div id="lobby-screen" class="absolute top-0 left-0 z-[100] bg-gray-900 flex flex-col items-center px-md w-full min-h-screen overflow-y-auto py-8">
     <div class="flex-1 min-h-[20px]"></div>
     <img src="../assets/logo.png" alt="KachaiLaSong" class="w-48 md:w-80 lg:w-96 mx-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-4 xl:mb-8">
-    <h2 class="text-gray-300 font-headline-md text-2xl md:text-4xl mb-4 xl:mb-6 text-center w-full">Únete en tu celular y entra con este PIN:</h2>
-    <div id="lobby-pin-display" class="text-display-xl text-[80px] md:text-[120px] xl:text-[180px] font-black text-cyan-400 drop-shadow-[0_0_40px_rgba(0,227,253,0.8)] tracking-widest leading-none mb-4 xl:mb-12 text-center w-full">
-        --- ---
+    <div class="flex flex-col items-center mb-8">
+        <span class="text-secondary-container font-black tracking-[0.2em] text-sm uppercase opacity-70 mb-2">Código de Sala</span>
+        <div id="lobby-pin-display" class="text-white font-black text-[100px] md:text-[140px] leading-none drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] tracking-tighter">
+            ----
+        </div>
     </div>
     <div class="bg-gray-800 border-2 border-gray-700 rounded-3xl p-8 w-full max-w-4xl shadow-[0_0_40px_rgba(0,0,0,0.8)] flex flex-col relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-b from-fuchsia-500/10 to-transparent pointer-events-none"></div>
@@ -196,70 +200,120 @@
 </div>
 
 <!-- Configuration Screen -->
-<main id="config-screen" class="hidden absolute inset-0 z-50 bg-gray-900 w-full min-h-screen overflow-y-auto">
-    <div class="pt-24 pb-32 px-6 md:px-12 max-w-7xl mx-auto space-y-12 w-full">
-        <!-- Header Section -->
-        <section class="text-center w-full space-y-4 flex flex-col items-center">
-            <img src="../assets/logo.png" alt="KachaiLaSong" class="w-48 md:w-64 mx-auto mb-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] object-contain">
-            <h1 class="font-headline-lg text-headline-lg text-primary drop-shadow-[0_0_15px_rgba(255,171,243,0.5)]">CONFIGURACIÓN DE PARTIDA</h1>
-            <p class="font-body-lg text-body-lg text-on-surface-variant">Selecciona la categoría y ajusta las reglas para la próxima ronda.</p>
-        </section>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Category Grid (Main Canvas) -->
-            <div class="lg:col-span-2 space-y-6">
-                <h2 class="font-headline-md text-headline-md text-secondary">Categorías (Elige 1)</h2>
-                <div id="categories-container" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <!-- JS inyectará tarjetas premium dinámicamente -->
+<main id="config-screen" class="hidden absolute inset-0 z-50 bg-background w-full min-h-screen overflow-y-auto px-6 py-12 pt-24 md:pt-32">
+    <div class="max-w-[1600px] mx-auto flex flex-col gap-12 w-full h-full">
+        <!-- Game Mode Selector View -->
+        <div id="game-mode-selector" class="w-full h-full flex flex-col justify-center items-center gap-12">
+            <!-- Header Section -->
+            <div class="text-center mb-xl w-full">
+                <h1 class="font-headline-lg text-headline-lg text-primary-fixed mb-xs drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase">Modo de Juego</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant">Selecciona tu desafío musical</p>
+            </div>
+            <!-- Game Modes Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg w-full">
+                <!-- Card 1: Active Mode - ¿QUIÉN CANTA? -->
+                <button id="quien-canta-btn" class="relative flex flex-col items-center justify-center p-xl rounded-[24px] bg-surface-container-highest border-[3px] border-primary-container shadow-[0_8px_0_0_#510051,0_0_30px_rgba(255,0,255,0.4)] hover:-translate-y-2 hover:shadow-[0_12px_0_0_#510051,0_0_40px_rgba(255,0,255,0.6)] active:translate-y-2 active:shadow-[0_2px_0_0_#510051,0_0_15px_rgba(255,0,255,0.3)] transition-all duration-200 group overflow-hidden">
+                    <!-- Background Glow -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-primary-container/20 to-transparent opacity-50"></div>
+                    <span class="material-symbols-outlined text-[80px] text-primary mb-md drop-shadow-[0_0_15px_rgba(255,171,243,0.8)] group-hover:scale-110 transition-transform duration-300" style="font-variation-settings: 'FILL' 1;">mic</span>
+                    <h2 class="font-headline-md text-headline-md text-primary-fixed-dim text-center uppercase tracking-wide leading-tight relative z-10">¿QUIÉN<br/>CANTA?</h2>
+                    <div class="mt-md bg-primary-container text-on-primary-container font-label-bold text-label-bold px-sm py-xs rounded-full uppercase tracking-wider">
+                        Jugar Ahora
+                    </div>
+                </button>
+                <!-- Card 2: Locked Mode - ADIVINA LA PELÍCULA -->
+                <div class="relative flex flex-col items-center justify-center p-xl rounded-[24px] bg-surface-container border-[3px] border-outline opacity-60 grayscale hover:grayscale-[50%] transition-all duration-300 cursor-not-allowed">
+                    <!-- PRÓXIMAMENTE Badge -->
+                    <div class="absolute -top-3 right-4 bg-error-container text-on-error-container font-label-bold text-[12px] px-sm py-[6px] rounded-full uppercase tracking-widest border border-error/30 shadow-[0_4px_10px_rgba(0,0,0,0.5)] z-20 flex items-center gap-xs">
+                        <span class="material-symbols-outlined text-[14px]">lock</span>
+                        PRÓXIMAMENTE
+                    </div>
+                    <span class="material-symbols-outlined text-[64px] text-outline mb-md">movie</span>
+                    <h2 class="font-headline-md text-[24px] leading-tight text-on-surface-variant text-center uppercase tracking-wide">ADIVINA LA<br/>PELÍCULA</h2>
+                </div>
+                <!-- Card 3: Locked Mode - ORDEN CRONOLÓGICO -->
+                <button id="rewind-musical-btn" class="relative flex flex-col items-center justify-center p-xl rounded-[24px] bg-surface-container-highest border-[3px] border-secondary-container shadow-[0_8px_0_0_#00616d,0_0_30px_rgba(0,227,253,0.3)] hover:-translate-y-2 hover:shadow-[0_12px_0_0_#00616d,0_0_40px_rgba(0,227,253,0.5)] active:translate-y-2 active:shadow-[0_2px_0_0_#00616d,0_0_15px_rgba(0,227,253,0.2)] transition-all duration-200 group overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-secondary-container/20 to-transparent opacity-50"></div>
+                    <span class="material-symbols-outlined text-[80px] text-secondary-container mb-md drop-shadow-[0_0_15px_rgba(0,227,253,0.8)] group-hover:scale-110 transition-transform duration-300">fast_rewind</span>
+                    <h2 class="font-headline-md text-headline-md text-secondary-fixed text-center uppercase tracking-wide leading-tight relative z-10">REWIND<br/>MUSICAL</h2>
+                </button>
+                <!-- Card 4: Locked Mode - INTRO EXPRESS -->
+                <div class="relative flex flex-col items-center justify-center p-xl rounded-[24px] bg-surface-container border-[3px] border-outline opacity-60 grayscale hover:grayscale-[50%] transition-all duration-300 cursor-not-allowed">
+                    <!-- PRÓXIMAMENTE Badge -->
+                    <div class="absolute -top-3 right-4 bg-error-container text-on-error-container font-label-bold text-[12px] px-sm py-[6px] rounded-full uppercase tracking-widest border border-error/30 shadow-[0_4px_10px_rgba(0,0,0,0.5)] z-20 flex items-center gap-xs">
+                        <span class="material-symbols-outlined text-[14px]">lock</span>
+                        PRÓXIMAMENTE
+                    </div>
+                    <span class="material-symbols-outlined text-[64px] text-outline mb-md">bolt</span>
+                    <h2 class="font-headline-md text-[24px] leading-tight text-on-surface-variant text-center uppercase tracking-wide">INTRO<br/>EXPRESS</h2>
                 </div>
             </div>
-            <!-- Game Filters Sidebar -->
-            <aside class="flex flex-col justify-between h-full bg-surface-container-low p-6 rounded-2xl border-2 border-surface-variant shadow-[0_8px_0_0_#170527]">
-                <!-- Sliders Section -->
-                <div class="space-y-6">
-                    <!-- Preguntas -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label class="font-label-bold text-label-bold text-on-surface">Número de Preguntas</label>
-                            <span id="preguntas-val" class="font-body-md text-body-md text-secondary">15</span>
-                        </div>
-                        <input id="preguntas-slider" class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="50" min="5" step="1" type="range" value="15"/>
-                        <div class="flex justify-between text-xs text-on-surface-variant font-label-bold">
-                            <span>5</span>
-                            <span>50</span>
+        </div>
+
+        <!-- Game Setup Hub View -->
+        <div id="game-setup-hub" class="hidden w-full h-full flex flex-col gap-8">
+            <div class="flex flex-col xl:flex-row gap-8 w-full flex-grow items-start">
+                <!-- Left Column: Categories and Info (75%) -->
+                <div class="w-full xl:w-[75%] flex flex-col items-center justify-center min-w-0">
+                    <div id="categories-carousel-container" class="w-full flex overflow-x-auto snap-x snap-mandatory gap-6 py-20 px-[35%] scrollbar-hide items-center min-h-[300px] xl:min-h-[450px] 2xl:min-h-[550px] cursor-grab">
+                        <div id="categories-container" class="flex gap-6 w-max items-center transition-all duration-300 px-[calc(50%-10rem)]">
+                            <!-- JS inyectará tarjetas premium dinámicamente -->
                         </div>
                     </div>
-                    <!-- Tiempo -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label class="font-label-bold text-label-bold text-on-surface">Tiempo por Pregunta</label>
-                            <span id="tiempo-val" class="font-body-md text-body-md text-secondary">15s</span>
+                    
+                    <div id="carousel-info" class="flex flex-col items-center justify-center min-h-[140px] mt-8 bg-surface-container-highest/60 backdrop-blur-md border border-outline-variant rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.5)] max-w-3xl w-full mx-4 transition-all">
+                        <span id="category-counter" class="text-secondary-container font-black text-xl tracking-widest mb-3 drop-shadow-[0_0_10px_rgba(0,227,253,0.5)]">[ -- / -- ]</span>
+                        <p id="category-description" class="text-gray-300 text-lg text-center leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <!-- Right Column: Settings (25%) -->
+                <div class="w-full xl:w-[25%] shrink-0">
+                    <div class="bg-surface-container/80 backdrop-blur-md rounded-2xl p-6 border-2 border-surface-bright shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex flex-col gap-8">
+                        <h2 class="font-headline-md text-headline-md text-secondary-fixed">AJUSTES</h2>
+                        
+                        <!-- Sliders Section -->
+                        <div class="space-y-6">
+                            <!-- Preguntas -->
+                            <div class="flex flex-col gap-4">
+                                <div class="flex justify-between items-center">
+                                    <label class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Cantidad de Canciones</label>
+                                    <span id="preguntas-val" class="font-body-lg text-body-lg text-primary font-bold">15</span>
+                                </div>
+                                <input id="preguntas-slider" class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-primary" max="50" min="5" step="1" type="range" value="15"/>
+                            </div>
+
+                            <!-- Tiempo -->
+                            <div class="flex flex-col gap-4">
+                                <div class="flex justify-between items-center">
+                                    <label class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Tiempo por Pregunta</label>
+                                    <span id="tiempo-val" class="font-body-lg text-body-lg text-secondary-fixed-dim font-bold">15s</span>
+                                </div>
+                                <input id="tiempo-slider" class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-fixed-dim" max="60" min="5" step="1" type="range" value="15"/>
+                            </div>
                         </div>
-                        <input id="tiempo-slider" class="w-full h-3 bg-surface-variant rounded-full appearance-none outline-none accent-secondary-container" max="60" min="5" step="1" type="range" value="15"/>
-                        <div class="flex justify-between text-xs text-on-surface-variant font-label-bold">
-                            <span>5s</span>
-                            <span>60s</span>
+
+                        <div class="mt-4">
+                            <button id="start-btn" class="w-full py-4 px-6 bg-gradient-to-r from-primary-container to-tertiary-container text-white font-headline-md text-[20px] rounded-xl shadow-[0_8px_0_0_#5700c9] hover:shadow-[0_12px_0_0_#5700c9] hover:-translate-y-1 active:translate-y-2 active:shadow-[0_0px_0_0_#5700c9] transition-all duration-150 uppercase tracking-widest flex items-center justify-center gap-2 group focus:outline-none">
+                                <span class="material-symbols-outlined text-3xl group-hover:animate-pulse relative z-10 font-black">play_arrow</span>
+                                <span class="relative z-10 font-black">EMPEZAR JUEGO</span>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <!-- CTA -->
-                <div class="pt-6 border-t border-surface-variant mt-8">
-                    <button id="start-btn" class="w-full py-5 bg-primary text-on-primary font-headline-md text-headline-md uppercase tracking-wider rounded-xl border-b-8 border-inverse-primary shadow-[0_0_20px_rgba(255,171,243,0.4)] hover:bg-primary-fixed hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(255,171,243,0.6)] hover:border-b-[10px] active:translate-y-2 active:border-b-2 active:shadow-none transition-all flex justify-center items-center gap-3 relative overflow-hidden group">
-                        <span class="relative z-10 font-black">EMPEZAR JUEGO</span>
-                        <span class="material-symbols-outlined relative z-10 text-3xl font-black">play_arrow</span>
-                        <!-- Pulsing background effect -->
-                        <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
-                    </button>
-                </div>
-            </aside>
+            </div>
         </div>
     </div>
 </main>
 
 <!-- Main Canvas -->
-<main id="game-screen" class="hidden flex-grow flex flex-col items-center pt-2 xl:pt-8 pb-4 px-md gap-3 xl:gap-6 w-full max-w-7xl mx-auto mt-[80px] h-[calc(100vh-80px)] overflow-hidden">
+<main id="game-screen" class="hidden w-full max-w-[1400px] mx-auto mt-[80px] min-h-[calc(100dvh-80px)] flex flex-col items-center justify-center p-6 md:p-12 overflow-y-auto scrollbar-hide overflow-x-hidden">
+    <div id="players-hud" class="absolute top-28 right-8 xl:right-12 flex flex-col flex-wrap gap-2 md:gap-3 max-h-[60vh] justify-start items-end z-40 pointer-events-none transition-opacity duration-500 opacity-0 hidden"></div>
+    <div class="w-full flex flex-col items-center gap-4 xl:gap-6 max-w-5xl">
 <!-- Timer & Visualizer Section -->
-<section class="flex flex-col items-center gap-2 xl:gap-4 relative w-full">
+<section id="timer-section" class="flex flex-col items-center gap-2 xl:gap-4 relative w-full shrink-0">
 <!-- Circular Countdown Timer -->
+<div id="question-counter" class="text-secondary font-bold text-lg xl:text-2xl tracking-widest uppercase mb-2 drop-shadow-md">PREGUNTA -- / --</div>
 <div class="relative flex items-center justify-center w-24 h-24 md:w-32 md:h-32 xl:w-48 xl:h-48 rounded-full bg-surface-container-low shadow-[0_8px_0_0_rgba(0,0,0,0.8)] border-4 border-secondary-container shrink-0">
 <!-- Glow effect -->
 <div class="absolute inset-0 rounded-full shadow-[0_0_30px_rgba(0,227,253,0.5)]"></div>
@@ -280,31 +334,32 @@
 </div>
 </section>
 <!-- Options Grid -->
-<section class="grid grid-cols-2 gap-4 w-full mt-2 flex-grow min-h-0 mb-4">
+<section id="options-grid" class="grid grid-cols-2 gap-4 md:gap-6 xl:gap-8 w-full">
 <!-- Card 1: Red Triangle -->
-<div id="card-0" class="flex flex-col items-center justify-center p-4 md:p-6 xl:p-8 rounded-xl bg-red-600 shadow-[0_8px_0_0_#991b1b] active:translate-y-2 active:shadow-[0_0px_0_0_#991b1b] transition-all duration-75 cursor-pointer relative overflow-hidden h-20 md:h-28 xl:h-40">
+<div id="card-0" class="flex flex-col items-center justify-center p-4 md:p-6 xl:p-8 rounded-xl bg-red-600 shadow-[0_8px_0_0_#991b1b] active:translate-y-2 active:shadow-[0_0px_0_0_#991b1b] transition-all duration-75 cursor-pointer relative overflow-hidden h-16 md:h-24 xl:h-32">
 <div class="content-wrapper transition-all duration-300 transform flex flex-col justify-center items-center w-full text-center h-full">
-<span id="text-0" class="text-white font-black text-3xl md:text-5xl xl:text-7xl z-10 w-full px-4 leading-tight drop-shadow-lg line-clamp-2 block"></span>
+<span id="text-0" class="text-white font-black text-xl md:text-3xl xl:text-[40px] z-10 w-full px-4 md:px-8 leading-tight drop-shadow-lg line-clamp-2 block text-center"></span>
 </div>
 </div>
 <!-- Card 2: Blue Diamond -->
-<div id="card-1" class="flex flex-col items-center justify-center p-4 md:p-6 xl:p-8 rounded-xl bg-blue-600 shadow-[0_8px_0_0_#1e40af] active:translate-y-2 active:shadow-[0_0px_0_0_#1e40af] transition-all duration-75 cursor-pointer relative overflow-hidden h-20 md:h-28 xl:h-40">
+<div id="card-1" class="flex flex-col items-center justify-center p-4 md:p-6 xl:p-8 rounded-xl bg-blue-600 shadow-[0_8px_0_0_#1e40af] active:translate-y-2 active:shadow-[0_0px_0_0_#1e40af] transition-all duration-75 cursor-pointer relative overflow-hidden h-16 md:h-24 xl:h-32">
 <div class="content-wrapper transition-all duration-300 transform flex flex-col justify-center items-center w-full text-center h-full">
-<span id="text-1" class="text-white font-black text-3xl md:text-5xl xl:text-7xl z-10 w-full px-4 leading-tight drop-shadow-lg line-clamp-2 block"></span>
+<span id="text-1" class="text-white font-black text-xl md:text-3xl xl:text-[40px] z-10 w-full px-4 md:px-8 leading-tight drop-shadow-lg line-clamp-2 block text-center"></span>
 </div>
 </div>
 <!-- Card 3: Yellow Circle -->
-<div id="card-2" class="flex flex-col items-center justify-center p-4 md:p-6 xl:p-8 rounded-xl bg-yellow-500 shadow-[0_8px_0_0_#b45309] active:translate-y-2 active:shadow-[0_0px_0_0_#b45309] transition-all duration-75 cursor-pointer relative overflow-hidden h-20 md:h-28 xl:h-40">
+<div id="card-2" class="flex flex-col items-center justify-center p-4 md:p-6 xl:p-8 rounded-xl bg-yellow-500 shadow-[0_8px_0_0_#b45309] active:translate-y-2 active:shadow-[0_0px_0_0_#b45309] transition-all duration-75 cursor-pointer relative overflow-hidden h-16 md:h-24 xl:h-32">
 <div class="content-wrapper transition-all duration-300 transform flex flex-col justify-center items-center w-full text-center h-full">
-<span id="text-2" class="text-white font-black text-3xl md:text-5xl xl:text-7xl z-10 w-full px-4 leading-tight drop-shadow-lg line-clamp-2 block"></span>
+<span id="text-2" class="text-white font-black text-xl md:text-3xl xl:text-[40px] z-10 w-full px-4 md:px-8 leading-tight drop-shadow-lg line-clamp-2 block text-center"></span>
 </div>
 </div>
-<div id="card-3" class="flex flex-col items-center justify-center p-4 md:p-6 xl:p-8 rounded-xl bg-green-600 shadow-[0_8px_0_0_#166534] active:translate-y-2 active:shadow-[0_0px_0_0_#166534] transition-all duration-75 cursor-pointer relative overflow-hidden h-20 md:h-28 xl:h-40">
+<div id="card-3" class="flex flex-col items-center justify-center p-4 md:p-6 xl:p-8 rounded-xl bg-green-600 shadow-[0_8px_0_0_#166534] active:translate-y-2 active:shadow-[0_0px_0_0_#166534] transition-all duration-75 cursor-pointer relative overflow-hidden h-16 md:h-24 xl:h-32">
 <div class="content-wrapper transition-all duration-300 transform flex flex-col justify-center items-center w-full text-center h-full">
-<span id="text-3" class="text-white font-black text-3xl md:text-5xl xl:text-7xl z-10 w-full px-4 leading-tight drop-shadow-lg line-clamp-2 block"></span>
+<span id="text-3" class="text-white font-black text-xl md:text-3xl xl:text-[40px] z-10 w-full px-4 md:px-8 leading-tight drop-shadow-lg line-clamp-2 block text-center"></span>
 </div>
 </div>
 </section>
+    </div>
 
 <!-- Panel de Revelación (Fase Kahoot) -->
 <div id="song-info" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl opacity-0 pointer-events-none transition-opacity duration-500">
@@ -390,7 +445,7 @@
         
         <h2 class="text-5xl font-black italic text-fuchsia-400 text-center uppercase tracking-widest mt-10 mb-6 drop-shadow-[0_0_15px_rgba(217,70,239,0.5)]">Ranking Global</h2>
         
-        <div class="overflow-x-auto overflow-y-auto w-full p-4 md:px-10 pb-10 flex-grow scrollbar-hide">
+        <div class="overflow-x-auto overflow-y-auto max-h-[65vh] w-full p-4 md:px-10 pb-10 flex-grow scrollbar-hide">
             <table class="w-full text-left border-collapse min-w-max">
                 <thead id="global-ranking-head" class="text-gray-300 uppercase tracking-wider text-sm font-bold border-b-4 border-gray-600">
                 </thead>
@@ -415,9 +470,48 @@
 </div>
 
 <script>
+    const AudioManager = {
+        bgm: new Audio('../assets/sounds/bgm-lobby.mp3'),
+        sfx: {
+            hover: new Audio('../assets/sounds/sfx-hover.ogg'),
+            click: new Audio('../assets/sounds/sfx-click.ogg'),
+            swipe: new Audio('../assets/sounds/sfx-swipe.ogg'),
+            tick: new Audio('../assets/sounds/sfx-tick.ogg')
+        },
+        init() {
+            this.bgm.loop = true;
+            this.bgm.volume = 0.3;
+            // Precargar SFX bajando volumen
+            Object.values(this.sfx).forEach(sound => sound.volume = 0.5);
+        },
+        playBGM() { this.bgm.play().catch(e => console.log('Autoplay bloqueado esperando interacción')); },
+        fadeOutBGM() {
+            let vol = this.bgm.volume;
+            const fade = setInterval(() => {
+                if (vol > 0.05) { vol -= 0.05; this.bgm.volume = vol; } 
+                else { clearInterval(fade); this.bgm.pause(); this.bgm.volume = 0.3; }
+            }, 100);
+        },
+        playSFX(type) {
+            if(this.sfx[type]) {
+                let sound = this.sfx[type].cloneNode();
+                sound.volume = this.sfx[type].volume;
+                sound.play().catch(e=>console.log('SFX bloqueado'));
+            }
+        }
+    };
+    AudioManager.init();
+
+    // Intentar iniciar BGM al primer clic en la pantalla (para saltar política de Autoplay)
+    document.body.addEventListener('click', () => {
+        if(AudioManager.bgm.paused && !document.getElementById('game-screen').classList.contains('flex')) {
+            AudioManager.playBGM();
+        }
+    }, { once: true });
+
     // Configuración dinámica guardada desde la pantalla de setup
-    const daleplayConfig = JSON.parse(localStorage.getItem('daleplay_config') || '{}');
-    const timePerQuestion = daleplayConfig.timePerQuestion || 15;
+    let daleplayConfig = JSON.parse(localStorage.getItem('daleplay_config') || '{}');
+    let timePerQuestion = daleplayConfig.timePerQuestion || 15;
 
     // Variables globales — Doble Reproductor Alternante
     let reproductorActivo = 1; // 1 o 2
@@ -571,11 +665,17 @@
                     
                     gameState.timer = timePerQuestion;
                     timerDisplay.innerText = gameState.timer;
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'timer_tick', timeLeft: gameState.timer }));
+                    }
                     
                     clearInterval(gameState.intervalId);
                     gameState.intervalId = setInterval(() => {
                         gameState.timer--;
                         timerDisplay.innerText = gameState.timer;
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({ type: 'timer_tick', timeLeft: gameState.timer }));
+                        }
 
                         if (gameState.timer <= 0) {
                             clearInterval(gameState.intervalId);
@@ -778,6 +878,16 @@
                         let answerTime = Date.now();
                         let timeElapsedMs = answerTime - (window.roundStartTime || answerTime);
                         
+                        // Encender la píldora en el HUD (Respuesta Fijada)
+                        const pill = document.querySelector(`[data-player="${data.player_name}"]`);
+                        if (pill) {
+                            pill.className = "flex items-center gap-2 bg-fuchsia-900/60 border-2 border-fuchsia-500 text-white rounded-full px-4 py-2 transition-all duration-300 scale-105 shadow-[0_0_15px_rgba(217,70,239,0.6)] backdrop-blur-sm";
+                            pill.innerHTML = `
+                                <span class="material-symbols-outlined text-[18px] text-fuchsia-400">radio_button_checked</span>
+                                <span class="font-bold text-sm xl:text-base uppercase tracking-wider text-fuchsia-50 truncate max-w-[120px] xl:max-w-[180px]">${data.player_name}</span>
+                            `;
+                        }
+
                         // FIX: Traducir option_index al nombre del artista para evitar fallos de ID numérico
                         let mappedAnswer = "unknown";
                         if (data.option_index !== undefined && gameState.currentOptions[data.option_index]) {
@@ -876,9 +986,12 @@
         });
 
         startTriviaBtn.addEventListener('click', () => {
+            AudioManager.playBGM();
+            AudioManager.playSFX('click');
             lobbyScreen.classList.add('hidden');
             document.getElementById('config-screen').classList.remove('hidden');
         });
+        startTriviaBtn.addEventListener('mouseenter', () => AudioManager.playSFX('hover'));
 
         nextSongBtn.addEventListener('click', () => {
             // Evitar doble-click durante fade out
@@ -890,6 +1003,32 @@
         });
 
         // Configuración de Partida Logic
+        const quienCantaBtn = document.getElementById('quien-canta-btn');
+        const rewindMusicalBtn = document.getElementById('rewind-musical-btn');
+        if (rewindMusicalBtn) {
+            rewindMusicalBtn.addEventListener('mouseenter', () => AudioManager.playSFX('hover'));
+            rewindMusicalBtn.addEventListener('click', () => {
+                AudioManager.playSFX('click');
+                // Redirigir enviando el PIN por URL
+                window.location.href = '../rewind_musical_tv_host_view/rewind_musical_tv_host_view.html?pin=' + roomPIN;
+            });
+        }
+        const gameModeSelector = document.getElementById('game-mode-selector');
+        const gameSetupHub = document.getElementById('game-setup-hub');
+
+        if (quienCantaBtn) {
+            quienCantaBtn.addEventListener('mouseenter', () => AudioManager.playSFX('hover'));
+            quienCantaBtn.addEventListener('click', () => {
+                AudioManager.playSFX('click');
+                if (gameModeSelector) gameModeSelector.classList.add('hidden');
+                if (gameSetupHub) {
+                    gameSetupHub.classList.remove('hidden');
+                    gameSetupHub.classList.add('flex');
+                }
+                setTimeout(updateCarouselFocus, 100);
+            });
+        }
+
         const categoriesContainer = document.getElementById('categories-container');
         const startBtn = document.getElementById('start-btn');
         let selectedCategoryId = null;
@@ -905,50 +1044,93 @@
                 .replace(/^-+|-+$/g, '');        // limpia extremos
         }
 
+        let lastClosestCard = null;
+
+        function updateCarouselFocus() {
+            const container = document.getElementById('categories-carousel-container');
+            const cards = document.querySelectorAll('.category-card');
+            if (!container || cards.length === 0) return;
+
+            const containerCenter = container.getBoundingClientRect().left + container.offsetWidth / 2;
+            let closestCard = null;
+            let minDistance = Infinity;
+
+            cards.forEach(card => {
+                const cardCenter = card.getBoundingClientRect().left + card.offsetWidth / 2;
+                const distance = Math.abs(containerCenter - cardCenter);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestCard = card;
+                }
+            });
+
+            if (lastClosestCard !== closestCard) {
+                if (lastClosestCard !== null) {
+                    AudioManager.playSFX('swipe');
+                }
+                lastClosestCard = closestCard;
+            }
+
+            cards.forEach((card, index) => {
+                if (card === closestCard) {
+                    card.className = "category-card snap-center shrink-0 w-[360px] h-[200px] xl:w-[540px] xl:h-[300px] 2xl:w-[700px] 2xl:h-[390px] rounded-3xl relative overflow-hidden transition-all duration-500 ease-out cursor-pointer opacity-100 grayscale-0 border-4 border-fuchsia-500 shadow-[0_0_50px_rgba(217,70,239,0.8)] z-10 scale-110 select-none";
+                    card.querySelector('h3').className = "text-4xl font-black text-white uppercase drop-shadow-[0_0_15px_rgba(0,0,0,1)] text-center px-4";
+                    
+                    selectedCategoryId = card.dataset.id;
+                    selectedCategoryName = card.dataset.category;
+                    
+                    document.getElementById('category-counter').innerText = `[ ${String(index + 1).padStart(2, '0')} / ${cards.length} ]`;
+                    document.getElementById('category-description').innerText = card.dataset.description;
+                } else {
+                    card.className = "category-card snap-center shrink-0 w-[360px] h-[200px] xl:w-[540px] xl:h-[300px] 2xl:w-[700px] 2xl:h-[390px] rounded-3xl relative overflow-hidden transition-all duration-500 ease-out cursor-pointer opacity-40 grayscale scale-75 border-2 border-outline-variant shadow-lg z-0 select-none";
+                    card.querySelector('h3').className = "text-4xl font-black text-white uppercase drop-shadow-[0_0_15px_rgba(0,0,0,1)] text-center px-4";
+                }
+            });
+        }
+
+        const carouselContainer = document.getElementById('categories-carousel-container');
+        if (carouselContainer) {
+            carouselContainer.addEventListener('scroll', updateCarouselFocus);
+        }
+
         fetch(`${API_BASE_URL}/api/categories`)
             .then(res => res.json())
             .then(categories => {
                 if (categoriesContainer) {
                     categoriesContainer.innerHTML = '';
                     categories.forEach(category => {
-                        const slug = slugify(category.name);
-                        const expectedFile = `${slug}.jpg`;
-                        const imgSrc = `../assets/categorias/${expectedFile}`;
-
-                        const btn = document.createElement('button');
-                        btn.className = "category-btn relative overflow-hidden rounded-xl border-2 border-gray-700 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 hover:-translate-y-1 hover:border-gray-500 hover:shadow-[0_6px_20px_rgba(0,0,0,0.5)]";
+                        const imageName = category.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9\s]/g, "").trim().replace(/\s+/g, '-');
+                        
+                        const btn = document.createElement('div');
+                        btn.className = "category-card snap-center shrink-0 w-[360px] h-[200px] xl:w-[540px] xl:h-[300px] 2xl:w-[700px] 2xl:h-[390px] rounded-3xl relative overflow-hidden transition-all duration-500 ease-out cursor-pointer opacity-40 grayscale scale-75 border-2 border-outline-variant shadow-lg z-0 select-none";
+                        btn.dataset.category = category.name;
                         btn.dataset.id = category.id;
+                        btn.dataset.description = category.description || "Atrévete con este desafío musical.";
+                        
                         btn.innerHTML = `
-                            <img src="${imgSrc}" onerror="this.onerror=null; this.src='../assets/categorias/default-category.jpg'; console.warn('Falta imagen para la categoría: \\'${category.name}\\'. Archivo esperado: ${expectedFile}');" class="bg-img absolute inset-0 w-full h-full object-cover opacity-40 blur-[2px] transition-all duration-500 group-hover:scale-110 group-hover:opacity-50" alt="${category.name}">
-                            <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"></div>
-                            <div class="relative z-10 flex flex-col items-center pointer-events-none drop-shadow-md">
-                                <span class="icon-layer material-symbols-outlined text-gray-300 text-4xl mb-1 group-hover:text-fuchsia-400 transition-colors drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">queue_music</span>
-                                <span class="text-layer font-label-bold text-label-bold text-gray-200 uppercase tracking-wider text-center group-hover:text-white px-2 leading-tight">${category.name}</span>
-                            </div>
-                            <div class="check-icon absolute top-2 right-2 z-20 hidden">
-                                <span class="material-symbols-outlined text-fuchsia-400 drop-shadow-[0_0_8px_rgba(217,70,239,1)]" style="font-variation-settings: 'FILL' 1">check_circle</span>
+                            <div class="absolute inset-0 w-full h-full bg-cover bg-center mix-blend-overlay opacity-60" style="background-image: url('../assets/categorias/${encodeURIComponent(imageName)}.jpg');"></div>
+                            <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
+                                <h3 class="text-4xl font-black text-white uppercase drop-shadow-[0_0_15px_rgba(0,0,0,1)] text-center px-4">${category.name}</h3>
                             </div>
                         `;
-                        btn.addEventListener('click', () => {
-                            document.querySelectorAll('.category-btn').forEach(b => {
-                                b.className = "category-btn relative overflow-hidden rounded-xl border-2 border-gray-700 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 hover:-translate-y-1 hover:border-gray-500 hover:shadow-[0_6px_20px_rgba(0,0,0,0.5)]";
-                                b.querySelector('.check-icon').classList.add('hidden');
-                                const bImg = b.querySelector('.bg-img');
-                                if (bImg) { bImg.classList.remove('opacity-60'); bImg.classList.add('opacity-40'); }
-                                b.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-gray-300 text-4xl mb-1 group-hover:text-fuchsia-400 transition-colors drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]";
-                                b.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-gray-200 uppercase tracking-wider text-center group-hover:text-white px-2 leading-tight";
-                            });
-                            selectedCategoryId = category.id;
-                            selectedCategoryName = category.name;
-                            btn.className = "category-btn relative overflow-hidden rounded-xl border-2 border-fuchsia-500 flex flex-col justify-center items-center group cursor-pointer transition-all h-40 -translate-y-1 shadow-[0_0_25px_rgba(217,70,239,0.5)]";
-                            btn.querySelector('.check-icon').classList.remove('hidden');
-                            const selImg = btn.querySelector('.bg-img');
-                            if (selImg) { selImg.classList.remove('opacity-40'); selImg.classList.add('opacity-60'); }
-                            btn.querySelector('.icon-layer').className = "icon-layer material-symbols-outlined text-fuchsia-400 text-4xl mb-1 drop-shadow-[0_0_12px_rgba(217,70,239,0.8)]";
-                            btn.querySelector('.text-layer').className = "text-layer font-label-bold text-label-bold text-white uppercase tracking-wider text-center px-2 leading-tight";
+                        
+                        btn.addEventListener('click', (e) => {
+                            if (window.hasDragged) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return;
+                            }
+                            AudioManager.playSFX('click');
+                            btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
                         });
+                        btn.addEventListener('mouseenter', () => {
+                            if (!window.isDragging) AudioManager.playSFX('hover');
+                        });
+                        
                         categoriesContainer.appendChild(btn);
                     });
+                    
+                    setTimeout(updateCarouselFocus, 100);
                 }
             })
             .catch(err => console.error("Error cargando categorías:", err));
@@ -960,27 +1142,33 @@
 
         if (preguntasSlider) {
             preguntasSlider.addEventListener('input', (e) => {
+                AudioManager.playSFX('tick');
                 preguntasVal.innerText = e.target.value;
             });
         }
         if (tiempoSlider) {
             tiempoSlider.addEventListener('input', (e) => {
+                AudioManager.playSFX('tick');
                 tiempoVal.innerText = e.target.value + 's';
             });
         }
 
         if (startBtn) {
+            startBtn.addEventListener('mouseenter', () => AudioManager.playSFX('hover'));
             startBtn.addEventListener('click', () => {
+                AudioManager.playSFX('click');
                 if (!selectedCategoryId) {
                     alert("Por favor selecciona una categoría primero.");
                     return;
                 }
 
+                AudioManager.fadeOutBGM();
                 const originalContent = startBtn.innerHTML;
                 startBtn.innerHTML = '<span class="relative z-10 font-black">CARGANDO...</span>';
 
                 const numPreguntas = parseInt(preguntasSlider.value, 10);
                 const tiempoPorPregunta = parseInt(tiempoSlider.value, 10);
+                timePerQuestion = tiempoPorPregunta;
 
                 localStorage.setItem('daleplay_config', JSON.stringify({
                     categoryId: selectedCategoryId,
@@ -1143,8 +1331,29 @@
                 status: 'guessing', 
                 songIndex: index,
                 timePerQuestion: timePerQuestion,
+                totalSongs: songs.length,
                 options: options.map(opt => ({ id: opt.id, title: "", artist: opt.name }))
             }));
+        }
+
+        document.getElementById('question-counter').innerText = `PREGUNTA ${index + 1} / ${songs.length}`;
+
+        const hud = document.getElementById('players-hud');
+        if (hud) {
+            hud.innerHTML = '';
+            connectedPlayers.forEach(player => {
+                const pill = document.createElement('div');
+                pill.dataset.player = player;
+                // Estado APAGADO (Esperando) - Diseño Píldora
+                pill.className = "flex items-center gap-2 bg-surface-container-high/80 border-2 border-outline/30 text-white/40 rounded-full px-4 py-2 transition-all duration-300 scale-95 backdrop-blur-sm";
+                pill.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] animate-pulse">more_horiz</span>
+                    <span class="font-bold text-sm xl:text-base uppercase tracking-wider truncate max-w-[120px] xl:max-w-[180px]">${player}</span>
+                `;
+                hud.appendChild(pill);
+            });
+            hud.classList.remove('hidden');
+            setTimeout(() => hud.classList.remove('opacity-0'), 50);
         }
 
         // Ocultar el panel de revelación (Fase de Adivinanza)
@@ -1248,6 +1457,12 @@
         songTitle.innerText = currentSong.title;
         songArtist.innerText = currentSong.artist.name;
         timerDisplay.innerText = "0";
+
+        const hud = document.getElementById('players-hud');
+        if (hud) {
+            hud.classList.add('opacity-0');
+            setTimeout(() => hud.classList.add('hidden'), 500);
+        }
 
         // Sincronización WebSocket (Fase de Revelación)
         if (ws && ws.readyState === WebSocket.OPEN) {
@@ -1499,6 +1714,47 @@
         const modal = document.getElementById('global-ranking-modal');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+    }
+
+    const slider = document.getElementById('categories-carousel-container');
+    window.isDragging = false; 
+    window.hasDragged = false;
+    let isDown = false; let startX; let scrollLeft;
+    if (slider) {
+        slider.addEventListener('mousedown', (e) => {
+            isDown = true; 
+            window.isDragging = true;
+            window.hasDragged = false;
+            slider.classList.add('cursor-grabbing'); 
+            slider.classList.remove('cursor-grab');
+            slider.style.scrollSnapType = 'none'; // Desactiva el imán al arrastrar
+            startX = e.pageX - slider.offsetLeft; 
+            scrollLeft = slider.scrollLeft;
+        });
+        slider.addEventListener('mouseleave', () => { 
+            isDown = false; 
+            window.isDragging = false;
+            slider.classList.remove('cursor-grabbing'); 
+            slider.classList.add('cursor-grab'); 
+            slider.style.scrollSnapType = ''; // Reactiva el imán
+        });
+        slider.addEventListener('mouseup', () => { 
+            isDown = false; 
+            setTimeout(() => { window.isDragging = false; }, 0);
+            slider.classList.remove('cursor-grabbing'); 
+            slider.classList.add('cursor-grab'); 
+            slider.style.scrollSnapType = ''; // Reactiva el imán
+        });
+        slider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 1.5; // Suaviza la velocidad
+            if (Math.abs(walk) > 5) {
+                window.hasDragged = true;
+            }
+            slider.scrollLeft = scrollLeft - walk;
+        });
     }
 </script>
 <style>
