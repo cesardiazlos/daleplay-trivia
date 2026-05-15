@@ -172,7 +172,7 @@
 <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-neutral-950/90 backdrop-blur-xl docked full-width top-0 border-b-4 border-neutral-900 border-black shadow-[0_4px_0_0_rgba(0,0,0,0.6)]">
 <div class="flex items-center gap-md">
 <span class="material-symbols-outlined text-fuchsia-500 text-3xl" style="font-variation-settings: 'FILL' 1;">equalizer</span>
-<span class="text-2xl font-black italic text-fuchsia-500 drop-shadow-[0_0_10px_rgba(255,0,255,0.8)]">Dale Play</span>
+<img src="../assets/logo.png" alt="KachaiLaSong" class="w-32 object-contain">
 </div>
 <div class="absolute left-1/2 -translate-x-1/2">
 <h1 id="room-pin-display" class="font-spline-sans font-black uppercase tracking-tighter text-fuchsia-500 text-headline-md font-headline-md">PIN: 882 192</h1>
@@ -189,7 +189,7 @@
 <!-- Main Content Area -->
 <main class="pt-[100px] pb-[120px] px-margin max-w-[1400px] mx-auto min-h-screen flex flex-col gap-xl">
 <!-- 1. Settings Panel (Glassmorphism) -->
-<section class="glass-panel rounded-xl p-lg shadow-[0_8px_0_0_rgba(0,0,0,0.8)] flex flex-col gap-lg border-t-2 border-l-2 border-white/5">
+<section id="settings-panel" class="glass-panel rounded-xl p-lg shadow-[0_8px_0_0_rgba(0,0,0,0.8)] flex flex-col gap-lg border-t-2 border-l-2 border-white/5">
 <div class="flex justify-between items-center">
 <h2 class="font-headline-lg text-headline-lg text-primary uppercase tracking-tight drop-shadow-[0_0_8px_rgba(255,171,243,0.5)]">Configuración Rewind</h2>
 <div class="bg-surface-container px-md py-base rounded-full shadow-inner border border-surface-bright">
@@ -207,9 +207,9 @@
 <div class="flex flex-col gap-md bg-surface-container-low p-md rounded-lg shadow-[0_4px_0_0_rgba(0,0,0,0.5)] border border-surface-bright">
 <div class="flex justify-between items-end">
 <label class="font-headline-md text-headline-md text-on-surface">Cantidad de Rondas</label>
-<span class="font-display-xl text-display-xl text-primary">5</span>
+<span id="rounds-display" class="font-display-xl text-display-xl text-primary">5</span>
 </div>
-<input class="w-full h-4 bg-surface-variant rounded-full appearance-none cursor-pointer accent-primary" max="10" min="1" type="range" value="5"/>
+<input id="rounds-slider" class="w-full h-4 bg-surface-variant rounded-full appearance-none cursor-pointer accent-primary" max="10" min="1" type="range" value="5"/>
 <div class="flex justify-between text-on-surface-variant font-label-bold text-label-bold">
 <span>1</span>
 <span>10</span>
@@ -219,9 +219,9 @@
 <div class="flex flex-col gap-md bg-surface-container-low p-md rounded-lg shadow-[0_4px_0_0_rgba(0,0,0,0.5)] border border-surface-bright">
 <div class="flex justify-between items-end">
 <label class="font-headline-md text-headline-md text-on-surface">Tiempo para ordenar</label>
-<span class="font-display-xl text-display-xl text-secondary-container">30s</span>
+<span id="time-display" class="font-display-xl text-display-xl text-secondary-container">30s</span>
 </div>
-<input class="w-full h-4 bg-surface-variant rounded-full appearance-none cursor-pointer accent-secondary-container" max="60" min="15" step="5" type="range" value="30"/>
+<input id="time-slider" class="w-full h-4 bg-surface-variant rounded-full appearance-none cursor-pointer accent-secondary-container" max="60" min="15" step="5" type="range" value="30"/>
 <div class="flex justify-between text-on-surface-variant font-label-bold text-label-bold">
 <span>15s</span>
 <span>60s</span>
@@ -229,29 +229,29 @@
 </div>
 </div>
 <div class="flex justify-center mt-md">
-<button class="bg-primary-container text-on-primary-container font-display-xl text-[48px] leading-none uppercase px-xl py-lg rounded-xl shadow-[0_12px_0_0_#810081] btn-press transition-all hover:bg-primary neon-glow-pink flex items-center gap-md">
-<span class="material-symbols-outlined text-[64px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-                    EMPEZAR REWIND
-                </button>
+<button id="start-rewind-btn" class="bg-primary-container text-on-primary-container font-display-xl text-[48px] leading-none uppercase px-xl py-lg rounded-xl shadow-[0_12px_0_0_#810081] btn-press transition-all hover:bg-primary neon-glow-pink flex items-center gap-md opacity-50 pointer-events-none">
+    <span class="material-symbols-outlined text-[64px] animate-spin" style="font-variation-settings: 'FILL' 1;">sync</span>
+    CARGANDO AUDIO...
+</button>
 </div>
 </section>
 <div class="w-full h-1 bg-surface-bright rounded-full opacity-50 my-md"></div>
 <!-- 2. Active Round View -->
-<section class="flex flex-col gap-xl items-center relative">
+<section id="active-round-view" class="hidden flex-col gap-xl items-center relative">
 <div class="text-center flex flex-col gap-sm">
 <div class="bg-surface-container px-lg py-sm rounded-full shadow-[0_4px_0_0_rgba(0,0,0,0.6)] inline-block mx-auto border border-surface-bright">
 <span class="font-headline-md text-headline-md text-secondary tracking-widest uppercase">Ronda 1 / 5</span>
 </div>
-<h3 class="font-display-xl text-display-xl text-on-background uppercase tracking-tighter drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">Ordena cronológicamente</h3>
+<h3 id="question-counter" class="font-display-xl text-display-xl text-on-background uppercase tracking-tighter drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">Ordena cronológicamente</h3>
 </div>
 <!-- Timer -->
-<div class="relative w-[240px] h-[240px] flex items-center justify-center rounded-full bg-surface-container-lowest border-8 border-surface-container shadow-[0_0_40px_rgba(0,227,253,0.3)]">
-<svg class="absolute inset-0 w-full h-full transform -rotate-90" viewbox="0 0 100 100">
-<circle cx="50" cy="50" fill="none" r="45" stroke="#251335" stroke-width="8"></circle>
-<circle class="drop-shadow-[0_0_8px_rgba(0,218,243,0.8)]" cx="50" cy="50" fill="none" r="45" stroke="#00daf3" stroke-dasharray="283" stroke-dashoffset="60" stroke-width="8"></circle>
+<div id="giant-timer-wrapper" class="relative w-[240px] h-[240px] flex items-center justify-center rounded-full bg-surface-container-lowest border-8 border-surface-container shadow-[0_0_40px_rgba(0,227,253,0.3)]">
+<svg class="absolute inset-0 w-full h-full transform -rotate-90 overflow-visible" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" fill="none" r="45" stroke="#251335" stroke-width="8"></circle>
+    <circle id="timer-progress-circle" class="transition-all duration-1000 ease-linear" cx="50" cy="50" fill="none" r="45" stroke="#00daf3" stroke-dasharray="283" stroke-dashoffset="0" stroke-width="8"></circle>
 </svg>
 <div class="flex flex-col items-center justify-center z-10">
-<span class="font-display-xl text-[80px] leading-none text-secondary-fixed font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,218,243,0.5)]">24</span>
+<span id="timer-display" class="font-display-xl text-[80px] leading-none text-secondary-fixed font-black tracking-tighter drop-shadow-[0_0_10px_rgba(0,218,243,0.5)]">24</span>
 <span class="font-label-bold text-label-bold text-secondary-fixed-dim uppercase tracking-widest">Segundos</span>
 </div>
 </div>
@@ -260,7 +260,7 @@
     <div id="player-container-1"><div id="player-1"></div></div>
     <div id="player-container-2" style="display:none"><div id="player-2"></div></div>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-4 gap-md w-full mt-lg">
+<div id="rewind-cards-container" class="grid grid-cols-1 md:grid-cols-4 gap-md w-full mt-lg">
 <!-- Red Block -->
 <div id="card-0" class="rewind-card bg-[#ff3366] rounded-xl p-md flex flex-col justify-center items-center h-[200px] shadow-[0_10px_0_0_#99002b] transition-all duration-300 relative overflow-hidden">
     <span class="material-symbols-outlined text-white/30 text-[100px] absolute -right-4 -bottom-4 rotate-12 pointer-events-none">music_note</span>
@@ -315,15 +315,55 @@ if (!roomPIN) { alert("Error de PIN"); window.location.href = '../index.html'; }
 document.getElementById('room-pin-display').innerText = `PIN: ${roomPIN.substring(0,3)} ${roomPIN.substring(3)}`;
 
 const ws = new WebSocket(`${WS_BASE_URL}/ws/host/${roomPIN}`);
-ws.onopen = () => console.log(`[Rewind WS] Conectado sala ${roomPIN}`);
+ws.onopen = () => {
+    console.log(`[Rewind WS] Conectado sala ${roomPIN}`);
+    // Rescatar a jugadores que quedaron en el lobby antiguo
+    ws.send(JSON.stringify({ type: 'change_mode', mode: 'rewind_musical' }));
+};
+
+let playerAnswers = {};
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'player_joined') {
+        // Rescatar a cualquier jugador nuevo que entre tarde
+        ws.send(JSON.stringify({ type: 'change_mode', mode: 'rewind_musical' }));
+    }
+    if (data.type === 'player_answered') {
+        playerAnswers[data.player_name] = data.answer_order;
+        console.log(`[Rewind] Respuesta de ${data.player_name}`);
+    }
+};
 
 let currentTracks = [];
+let sessionScores = {};
+let currentRound = 1;
+let totalRounds = 5;
 let ytPlayers = { 1: null, 2: null };
 let timePerRound = 30;
 let timerInterval = null;
 
+let ytPlayersReady = 0;
 window.onYouTubeIframeAPIReady = function() {
-    const config = { height: '100%', width: '100%', playerVars: { autoplay: 0, controls: 0, rel: 0, modestbranding: 1 } };
+    const onReadyCheck = (event) => {
+        ytPlayersReady++;
+        // Desbloquear botón solo cuando AMBOS reproductores estén listos
+        if (ytPlayersReady === 2) {
+            const btn = document.getElementById('start-rewind-btn');
+            if (btn) {
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+                btn.innerHTML = `<span class="material-symbols-outlined text-[64px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span> EMPEZAR REWIND`;
+            }
+            console.log("[Rewind] Motores de audio listos.");
+        }
+    };
+    
+    const config = { 
+        height: '100%', 
+        width: '100%', 
+        playerVars: { autoplay: 1, controls: 0, rel: 0, modestbranding: 1, origin: window.location.origin },
+        events: { 'onReady': onReadyCheck, 'onError': () => { window.trackError = true; } }
+    };
+    
     ytPlayers[1] = new YT.Player('player-1', config);
     ytPlayers[2] = new YT.Player('player-2', config);
 };
@@ -342,62 +382,179 @@ fetch(`${API_BASE_URL}/api/categories`)
     });
 
 // Botón Empezar
-document.querySelector('button:has(span.material-symbols-outlined)').addEventListener('click', () => {
+document.getElementById('rounds-slider').addEventListener('input', (e) => {
+    document.getElementById('rounds-display').innerText = e.target.value;
+});
+document.getElementById('time-slider').addEventListener('input', (e) => {
+    document.getElementById('time-display').innerText = e.target.value + 's';
+});
+
+document.getElementById('start-rewind-btn').addEventListener('click', () => {
     const catId = document.getElementById('category-selector').value;
     if (!catId) return alert("Selecciona una categoría");
     
     AudioManager.playSFX('click');
-    timePerRound = parseInt(document.querySelector('input[max="60"]').value); // Slider de tiempo
+    timePerRound = parseInt(document.getElementById('time-slider').value);
+    totalRounds = parseInt(document.getElementById('rounds-slider').value);
+    currentRound = 1;
+    sessionScores = {};
     
-    fetch(`${API_BASE_URL}/api/categories/${catId}/rewind`)
-        .then(res => res.json())
-        .then(data => {
+    const btn = document.getElementById('start-rewind-btn');
+    if (btn) {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[64px] animate-spin" style="font-variation-settings: \'FILL\' 1;">sync</span> CARGANDO AUDIO...';
+        btn.classList.add('opacity-50', 'pointer-events-none');
+    }
+    
+    fetch(API_BASE_URL + '/api/categories/' + catId + '/rewind')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
             currentTracks = data;
-            startGameUI();
-            runAudioBurst();
+            for(var i=0; i<4; i++) {
+                currentTracks[i].originalColorIndex = i;
+                var titleEl = document.getElementById('title-' + i);
+                var artistEl = document.getElementById('artist-' + i);
+                if (titleEl) titleEl.innerText = currentTracks[i].title;
+                if (artistEl) artistEl.innerText = currentTracks[i].artist.name;
+            }
+            runAudioBurst(false);
         })
-        .catch(err => alert("Error cargando canciones. Verifica la consola."));
+        .catch(function(err) { alert("Error cargando canciones. Verifica la consola."); });
 });
 
-function startGameUI() {
-    document.querySelector('main > section.glass-panel').parentElement.classList.add('hidden'); // Oculta ajustes
-    document.getElementById('timer-display').innerText = '--';
-    document.getElementById('question-counter').innerText = 'ESCUCHA LA RÁFAGA...';
-    
-    // Renderizar datos en las tarjetas desordenadas
-    for(let i=0; i<4; i++) {
-        document.getElementById(`title-${i}`).innerText = currentTracks[i].title;
-        document.getElementById(`artist-${i}`).innerText = currentTracks[i].artist.name;
+function startGameUI(isNextRound) {
+    if (isNextRound) {
+        var rankView = document.getElementById('ranking-view');
+        if (rankView) {
+            rankView.classList.add('hidden');
+            rankView.classList.remove('flex');
+        }
+    } else {
+        var settingsEl = document.getElementById('settings-panel');
+        if (settingsEl) {
+            settingsEl.classList.add('hidden');
+            settingsEl.classList.remove('flex');
+        }
     }
+    var activeView = document.getElementById('active-round-view');
+    if (activeView) {
+        activeView.classList.remove('hidden');
+        activeView.classList.add('flex');
+    }
+    
+    var timerDisp = document.getElementById('timer-display');
+    if (timerDisp) timerDisp.innerText = '--';
+    
+    var questionCtr = document.getElementById('question-counter');
+    if (questionCtr) questionCtr.innerText = 'ESCUCHA LA RÁFAGA...';
+    
+    var roundBadge = document.querySelector('#active-round-view .bg-surface-container .font-headline-md');
+    if (roundBadge) roundBadge.innerText = 'Ronda ' + currentRound + ' / ' + totalRounds;
+    
+    var timelineEl = document.getElementById('timeline-container');
+    if (timelineEl) timelineEl.style.display = 'none';
+    
+    var cardsEl = document.getElementById('rewind-cards-container');
+    if (cardsEl) cardsEl.style.display = 'grid';
+    
+    var timerWrap = document.getElementById('giant-timer-wrapper');
+    if (timerWrap) timerWrap.style.display = 'flex';
 }
 
-async function runAudioBurst() {
-    let active = 1;
-    for(let i = 0; i < 4; i++) {
-        const p = ytPlayers[active];
-        
-        // Resaltar tarjeta visualmente
-        document.querySelectorAll('.rewind-card').forEach((c, idx) => {
-            c.style.opacity = (idx === i) ? '1' : '0.4';
-            c.style.transform = (idx === i) ? 'scale(1.05)' : 'scale(0.95)';
-        });
+async function runAudioBurst(isNextRound) {
+    var active = 1;
+    for(var i = 0; i < 4; i++) {
+        var trackReady = false;
+        while(!trackReady) {
+            window.trackError = false;
+            var p = ytPlayers[active];
+            
+            p.loadVideoById({videoId: currentTracks[i].youtube_url_id, startSeconds: currentTracks[i].preview_start_time_sec || 45});
+            p.setVolume(0);
+            
+            // Fase de Buffering: esperar hasta que YT reporte PLAYING
+            var loadAttempts = 0;
+            while(p.getPlayerState() !== 1 && !window.trackError && loadAttempts < 60) {
+                await new Promise(function(r) { setTimeout(r, 100); });
+                loadAttempts++;
+            }
 
-        p.loadVideoById({videoId: currentTracks[i].youtube_url_id, startSeconds: currentTracks[i].preview_start_time_sec || 45});
-        p.setVolume(100);
-        
-        await new Promise(r => setTimeout(r, 7000)); // Suena por 7 segundos
-        
-        p.pauseVideo();
-        if(i < 3) AudioManager.playSFX('swipe');
-        active = active === 1 ? 2 : 1; // Alternar reproductor (doble buffering)
+            if (!window.trackError && p.getPlayerState() === 1) {
+                // Disparo de Salida: solo en la primera pista
+                if (i === 0) {
+                    p.pauseVideo();
+                    p.setVolume(100);
+                    startGameUI(isNextRound);
+                    if(ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'audio_burst_start', round: currentRound, total: totalRounds }));
+                    }
+                    
+                    // Ocultar tarjetas durante cuenta regresiva
+                    var cardsContainer = document.getElementById('rewind-cards-container');
+                    if (cardsContainer) {
+                        cardsContainer.style.transition = 'opacity 0.3s';
+                        cardsContainer.style.opacity = '0';
+                    }
+                    
+                    var qCounter = document.getElementById('question-counter');
+                    for (var countdown = 3; countdown >= 1; countdown--) {
+                        if (qCounter) qCounter.innerText = '¡ATENTOS! ' + countdown;
+                        AudioManager.playSFX('click');
+                        await new Promise(function(r) { setTimeout(r, 1000); });
+                    }
+                    if (qCounter) qCounter.innerText = 'ESCUCHA LA RÁFAGA...';
+                    
+                    // Mostrar tarjetas
+                    if (cardsContainer) cardsContainer.style.opacity = '1';
+                    
+                    // Reanudar audio
+                    p.playVideo();
+                    while (p.getPlayerState() !== 1) {
+                        await new Promise(function(r) { setTimeout(r, 50); });
+                    }
+                } else {
+                    p.setVolume(100);
+                }
+                
+                // UI: Resaltar solo la tarjeta actual
+                document.querySelectorAll('.rewind-card').forEach(function(c, idx) {
+                    c.style.opacity = (idx === i) ? '1' : '0.4';
+                    c.style.transform = (idx === i) ? 'scale(1.1)' : 'scale(0.9)';
+                    c.style.zIndex = (idx === i) ? '20' : '10';
+                });
+
+                trackReady = true;
+                
+                // Temporizador Exacto: 90 ticks x 100ms = 9 segundos reales de audio
+                var elapsed = 0;
+                while(elapsed < 90 && !window.trackError) {
+                    await new Promise(function(r) { setTimeout(r, 100); });
+                    if (p.getPlayerState() === 1) {
+                        elapsed++;
+                    }
+                }
+                
+                p.pauseVideo();
+                if(i < 3) AudioManager.playSFX('swipe');
+                active = active === 1 ? 2 : 1;
+            } else {
+                console.warn('[Auto-Heal] Bloque ' + i + ' falló. Buscando reemplazo...');
+                if(ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({type: 'youtube_error', track_id: currentTracks[i].id}));
+                
+                var catSelector = document.getElementById('category-selector');
+                var res = await fetch(API_BASE_URL + '/api/categories/' + catSelector.value + '/rewind');
+                var data = await res.json();
+                var usedYears = currentTracks.map(function(t, idx) { return idx !== i ? t.release_year : null; });
+                currentTracks[i] = data.find(function(t) { return !usedYears.includes(t.release_year); }) || data[0];
+                currentTracks[i].originalColorIndex = i;
+                var tEl = document.getElementById('title-' + i);
+                var aEl = document.getElementById('artist-' + i);
+                if (tEl) tEl.innerText = currentTracks[i].title;
+                if (aEl) aEl.innerText = currentTracks[i].artist.name;
+            }
+        }
     }
-    
-    // Limpiar UI
-    document.querySelectorAll('.rewind-card').forEach(c => {
-        c.style.opacity = '1';
-        c.style.transform = 'scale(1)';
-    });
-    
+    // Reset visual al terminar ráfaga
+    document.querySelectorAll('.rewind-card').forEach(c => { c.style.opacity = '1'; c.style.transform = 'scale(1)'; });
     startSortingPhase();
 }
 
@@ -405,25 +562,257 @@ function startSortingPhase() {
     document.getElementById('question-counter').innerText = '¡ORDENA EN TU CELULAR!';
     let timeLeft = timePerRound;
     document.getElementById('timer-display').innerText = timeLeft;
+    const circle = document.getElementById('timer-progress-circle');
+    if(circle) circle.style.strokeDashoffset = '0';
     
-    // Informar a los móviles que empezó el tiempo (Para el próximo paso)
     if(ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ 
-            type: 'rewind_start', 
-            time: timeLeft, 
-            tracks: currentTracks.map(t => ({ id: t.id, title: t.title, artist: t.artist.name })) 
-        }));
+        ws.send(JSON.stringify({ type: 'rewind_start', time: timeLeft, tracks: currentTracks.map(t => ({ id: t.id, title: t.title, artist: t.artist.name })) }));
     }
-    
+    playerAnswers = {}; 
     timerInterval = setInterval(() => {
         timeLeft--;
         document.getElementById('timer-display').innerText = timeLeft;
+        if(circle) circle.style.strokeDashoffset = 283 - (283 * (timeLeft / timePerRound));
+        
         if(timeLeft <= 0) {
             clearInterval(timerInterval);
-            // Fase de Revelación (Próximo paso)
-            document.getElementById('question-counter').innerText = 'TIEMPO AGOTADO';
+            revealRewindAnswer();
         }
     }, 1000);
+}
+
+function revealRewindAnswer() {
+    const correctOrder = [...currentTracks].sort((a, b) => (a.release_year || 0) - (b.release_year || 0));
+    const correctIds = correctOrder.map(t => t.id);
+    let roundUpdateData = {};
+    
+    for (const [playerName, answerOrder] of Object.entries(playerAnswers)) {
+        let roundScore = 0; let correctCount = 0;
+        answerOrder.forEach((id, index) => {
+            if (id === correctIds[index]) {
+                roundScore += 250;
+                correctCount++;
+            }
+        });
+        if (correctCount === 4) roundScore += 500;
+        
+        if (!sessionScores[playerName]) sessionScores[playerName] = 0;
+        sessionScores[playerName] += roundScore;
+        
+        roundUpdateData[playerName] = { roundScore, correctCount, totalScore: sessionScores[playerName] };
+    }
+    
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'score_update', scores: roundUpdateData }));
+    }
+
+    document.getElementById('giant-timer-wrapper').style.display = 'none';
+    document.getElementById('question-counter').innerText = 'TIMELINE CORRECTO';
+    document.getElementById('rewind-cards-container').style.display = 'none';
+    
+    let timeline = document.getElementById('timeline-container');
+    if (!timeline) {
+        timeline = document.createElement('div');
+        timeline.id = 'timeline-container';
+        document.getElementById('active-round-view').appendChild(timeline);
+    }
+    timeline.className = "relative flex flex-col gap-6 w-full max-w-2xl mx-auto mt-4 pb-12";
+    timeline.innerHTML = '';
+    
+    const timelineLine = document.createElement('div');
+    timelineLine.className = "absolute left-[40px] top-8 bottom-8 w-2 bg-white/20 rounded-full z-0";
+    timeline.appendChild(timelineLine);
+    
+    const colorStyles = [
+        { bg: 'bg-[#ff3366]', border: 'border-[#99002b]', text: 'text-white' }, // Rojo
+        { bg: 'bg-[#00ccff]', border: 'border-[#007a99]', text: 'text-white' }, // Azul
+        { bg: 'bg-[#ffcc00]', border: 'border-[#997a00]', text: 'text-black' }, // Amarillo
+        { bg: 'bg-[#00ff66]', border: 'border-[#00993d]', text: 'text-black' }  // Verde
+    ];
+
+    correctOrder.forEach((track, idx) => {
+        const style = colorStyles[track.originalColorIndex || 0];
+        const card = document.createElement('div');
+        card.className = `relative z-10 flex items-center justify-between ${style.bg} rounded-xl p-4 md:p-6 border-b-8 ${style.border} shadow-[0_10px_20px_rgba(0,0,0,0.5)] transform scale-100 transition-all ml-16 animate-[pulse_1s_ease-in-out]`;
+        
+        const dot = document.createElement('div');
+        dot.className = `absolute -left-[56px] top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border-4 border-white shadow-[0_0_15px_rgba(255,255,255,0.8)] ${style.bg} z-20 flex items-center justify-center font-black text-lg ${style.text}`;
+        dot.innerText = idx + 1;
+        card.appendChild(dot);
+
+        card.innerHTML += `
+            <div class="flex flex-col text-left flex-1 px-4 border-r-2 border-black/10">
+                <span class="text-2xl md:text-3xl font-black uppercase leading-tight ${style.text} drop-shadow-md">${track.title}</span>
+                <span class="text-lg md:text-xl font-bold ${style.text} opacity-90">${track.artist.name}</span>
+            </div>
+            <div class="px-6 flex flex-col items-center justify-center shrink-0">
+                <span class="text-sm font-bold uppercase tracking-widest ${style.text} opacity-70 mb-1">Lanzamiento</span>
+                <span class="font-black text-4xl md:text-5xl ${style.text} drop-shadow-lg">${track.release_year || '???'}</span>
+            </div>
+        `;
+        timeline.appendChild(card);
+    });
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = "relative z-10 mt-8 bg-secondary text-on-secondary font-headline-md px-12 py-5 rounded-xl border-b-8 border-[#009fb0] active:translate-y-2 active:border-b-0 transition-all mx-auto block uppercase tracking-widest shadow-[0_10px_20px_rgba(0,227,253,0.3)] hover:brightness-110";
+    nextBtn.innerText = "CONTINUAR AL RANKING";
+    nextBtn.onclick = showRankingView;
+    timeline.appendChild(nextBtn);
+    timeline.style.display = 'flex';
+}
+
+function showRankingView() {
+    var activeRound = document.getElementById('active-round-view');
+    if (activeRound) {
+        activeRound.classList.add('hidden');
+        activeRound.classList.remove('flex');
+    }
+    
+    var rankingView = document.getElementById('ranking-view');
+    if (!rankingView) {
+        rankingView = document.createElement('section');
+        rankingView.id = 'ranking-view';
+        rankingView.className = "flex-col gap-8 items-center w-full max-w-4xl mx-auto mt-12";
+        document.querySelector('main').appendChild(rankingView);
+    }
+    
+    rankingView.classList.remove('hidden');
+    rankingView.classList.add('flex');
+    
+    var sortedPlayers = Object.keys(sessionScores).map(function(name) {
+        return { name: name, score: sessionScores[name] };
+    }).sort(function(a, b) { return b.score - a.score; });
+    
+    var html = '<h2 class="text-5xl font-black italic text-fuchsia-400 uppercase tracking-widest drop-shadow-[0_0_15px_rgba(217,70,239,0.5)]">Ranking Actual</h2>';
+    html += '<div class="bg-gray-800 rounded-3xl p-8 w-full border-2 border-gray-700 shadow-2xl flex flex-col gap-4">';
+    
+    if (sortedPlayers.length === 0) {
+        html += '<p class="text-white text-center text-2xl font-bold">Nadie ha puntuado aún.</p>';
+    } else {
+        for (var idx = 0; idx < sortedPlayers.length; idx++) {
+            var p = sortedPlayers[idx];
+            var borderClass = idx === 0 ? 'border-yellow-400' : 'border-gray-700';
+            var numClass = idx === 0 ? 'text-yellow-400' : 'text-gray-500';
+            html += '<div class="flex justify-between items-center bg-gray-900 border ' + borderClass + ' p-6 rounded-2xl">';
+            html += '<div class="flex items-center gap-6">';
+            html += '<span class="text-4xl font-black ' + numClass + '">#' + (idx + 1) + '</span>';
+            html += '<span class="text-3xl font-bold text-white uppercase">' + p.name + '</span>';
+            html += '</div>';
+            html += '<span class="text-4xl font-black text-fuchsia-400">' + p.score + ' <span class="text-xl text-fuchsia-300">pts</span></span>';
+            html += '</div>';
+        }
+    }
+    
+    html += '</div>';
+    
+    // 4 botones de acción
+    html += '<div class="flex flex-wrap gap-4 mt-8 justify-center w-full">';
+    
+    // 1. SIGUIENTE RONDA (solo si quedan rondas)
+    if (currentRound < totalRounds) {
+        html += '<button onclick="startNextRound(this)" class="px-10 py-5 bg-primary text-on-primary font-black text-xl uppercase rounded-xl border-b-8 border-[#810081] active:translate-y-2 active:border-b-0 hover:brightness-110 transition-all neon-glow-pink flex items-center gap-3">';
+        html += '<span class="material-symbols-outlined text-3xl" style="font-variation-settings: \'FILL\' 1;">skip_next</span>';
+        html += 'SIGUIENTE RONDA</button>';
+    }
+    
+    // 2. ELEGIR OTRA CATEGORÍA
+    html += '<button onclick="goToCategory()" class="px-10 py-5 bg-secondary text-on-secondary font-black text-xl uppercase rounded-xl border-b-8 border-[#004f58] active:translate-y-2 active:border-b-0 hover:brightness-110 transition-all neon-glow-blue flex items-center gap-3">';
+    html += '<span class="material-symbols-outlined text-3xl">library_music</span>';
+    html += 'ELEGIR OTRA CATEGORÍA</button>';
+    
+    // 3. VOLVER AL LOBBY
+    html += '<button onclick="goToLobby()" class="px-10 py-5 bg-surface-container-highest text-on-surface font-black text-xl uppercase rounded-xl border-b-8 border-[#291739] active:translate-y-2 active:border-b-0 hover:brightness-110 transition-all border-2 border-outline-variant flex items-center gap-3">';
+    html += '<span class="material-symbols-outlined text-3xl">group</span>';
+    html += 'VOLVER AL LOBBY</button>';
+    
+    // 4. CERRAR SALA
+    html += '<button onclick="closeSala()" class="px-10 py-5 bg-red-700 text-white font-black text-xl uppercase rounded-xl border-b-8 border-red-950 active:translate-y-2 active:border-b-0 hover:brightness-110 transition-all flex items-center gap-3">';
+    html += '<span class="material-symbols-outlined text-3xl">door_open</span>';
+    html += 'CERRAR SALA</button>';
+    
+    html += '</div>';
+    
+    rankingView.innerHTML = html;
+    
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'reset_to_lobby' }));
+    }
+}
+
+function startNextRound(btn) {
+    currentRound++;
+    btn.innerHTML = '<span class="material-symbols-outlined text-3xl animate-spin">sync</span> CARGANDO...';
+    btn.classList.add('opacity-50', 'pointer-events-none');
+    
+    var catId = document.getElementById('category-selector').value;
+    fetch(API_BASE_URL + '/api/categories/' + catId + '/rewind')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            currentTracks = data;
+            for (var i = 0; i < 4; i++) {
+                currentTracks[i].originalColorIndex = i;
+                var tEl = document.getElementById('title-' + i);
+                var aEl = document.getElementById('artist-' + i);
+                if (tEl) tEl.innerText = currentTracks[i].title;
+                if (aEl) aEl.innerText = currentTracks[i].artist.name;
+            }
+            runAudioBurst(true);
+        })
+        .catch(function(err) { alert("Error cargando canciones."); });
+}
+
+function goToCategory() {
+    // Resetear estado de la partida
+    currentRound = 1;
+    sessionScores = {};
+    
+    // Ocultar ranking y ronda activa
+    var rankView = document.getElementById('ranking-view');
+    if (rankView) {
+        rankView.classList.add('hidden');
+        rankView.classList.remove('flex');
+    }
+    var activeView = document.getElementById('active-round-view');
+    if (activeView) {
+        activeView.classList.add('hidden');
+        activeView.classList.remove('flex');
+    }
+    
+    // Limpiar residuos visuales de la ronda anterior
+    var timelineEl = document.getElementById('timeline-container');
+    if (timelineEl) timelineEl.remove();
+    
+    // Reactivar botón EMPEZAR REWIND
+    var startBtn = document.getElementById('start-rewind-btn');
+    if (startBtn) {
+        startBtn.classList.remove('opacity-50', 'pointer-events-none');
+        startBtn.innerHTML = '<span class="material-symbols-outlined text-[64px]" style="font-variation-settings: \'FILL\' 1;">play_arrow</span> EMPEZAR REWIND';
+    }
+    
+    // Mostrar panel de configuración
+    var settingsPanel = document.getElementById('settings-panel');
+    if (settingsPanel) {
+        settingsPanel.classList.remove('hidden');
+        settingsPanel.classList.add('flex');
+    }
+}
+
+function goToLobby() {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'change_mode', mode: 'main_menu' }));
+    }
+    setTimeout(function() {
+        window.location.href = '../pantalla_del_host_tv/pantalla_del_host_tv.html?pin=' + roomPIN + '&view=game_selection';
+    }, 400);
+}
+
+function closeSala() {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'change_mode', mode: 'closed' }));
+    }
+    setTimeout(function() {
+        window.location.href = '../index.html';
+    }, 300);
 }
 </script>
 </body></html>

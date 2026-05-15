@@ -305,6 +305,16 @@
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
 
+            if (data.type === 'change_mode' && data.mode === 'rewind_musical') {
+                const savedPin = sessionStorage.getItem('daleplay_pin');
+                if (ws) {
+                    ws.onclose = null; // Evitar que dispare alertas visuales en esta vista
+                    ws.close();
+                }
+                window.location.href = '../rewind_musical_mobile_player/rewind_musical_mobile_player.html?pin=' + savedPin;
+                return;
+            }
+
             if (data.type === 'error') {
                 if (data.message === 'Sala no existente') {
                     alert("El PIN ingresado es incorrecto o la sala no existe.");

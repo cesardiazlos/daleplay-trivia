@@ -248,6 +248,10 @@
                     <h2 class="font-headline-md text-[24px] leading-tight text-on-surface-variant text-center uppercase tracking-wide">INTRO<br/>EXPRESS</h2>
                 </div>
             </div>
+            <button id="back-to-lobby-btn" class="mt-8 py-4 px-12 bg-surface-container-high text-on-surface-variant font-headline-md text-xl uppercase tracking-wider rounded-xl border-2 border-outline-variant hover:bg-surface-variant hover:text-on-surface transition-all duration-200 flex items-center gap-2 mx-auto">
+                <span class="material-symbols-outlined">arrow_back</span>
+                VOLVER AL LOBBY
+            </button>
         </div>
 
         <!-- Game Setup Hub View -->
@@ -480,16 +484,16 @@
         },
         init() {
             this.bgm.loop = true;
-            this.bgm.volume = 0.3;
+            this.bgm.volume = 0.2;
             // Precargar SFX bajando volumen
-            Object.values(this.sfx).forEach(sound => sound.volume = 0.5);
+            Object.values(this.sfx).forEach(sound => sound.volume = 0.4);
         },
         playBGM() { this.bgm.play().catch(e => console.log('Autoplay bloqueado esperando interacción')); },
         fadeOutBGM() {
             let vol = this.bgm.volume;
             const fade = setInterval(() => {
                 if (vol > 0.05) { vol -= 0.05; this.bgm.volume = vol; } 
-                else { clearInterval(fade); this.bgm.pause(); this.bgm.volume = 0.3; }
+                else { clearInterval(fade); this.bgm.pause(); this.bgm.volume = 0.2; }
             }, 100);
         },
         playSFX(type) {
@@ -536,7 +540,8 @@
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : 'https://d2vrxgps490m00.cloudfront.net';
     const WS_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'ws://127.0.0.1:8000' : 'wss://d2vrxgps490m00.cloudfront.net';
 
-    let roomPIN = Math.floor(100000 + Math.random() * 900000).toString();
+    let roomPIN = new URLSearchParams(window.location.search).get('pin') || Math.floor(100000 + Math.random() * 900000).toString();
+    window.history.replaceState({}, '', '?pin=' + roomPIN);
     let ws = null;
     let connectedPlayers = [];
     let isReplacing = false; // Candado anti-spam para errores de YouTube
@@ -993,6 +998,26 @@
         });
         startTriviaBtn.addEventListener('mouseenter', () => AudioManager.playSFX('hover'));
 
+        // Inteligencia de Entrada: leer parámetro 'view' de la URL
+        var urlView = new URLSearchParams(window.location.search).get('view');
+        if (urlView === 'game_selection' && lobbyScreen) {
+            lobbyScreen.classList.add('hidden');
+            var configScreen = document.getElementById('config-screen');
+            if (configScreen) configScreen.classList.remove('hidden');
+            // Limpiar el parámetro view para evitar re-skips accidentales
+            window.history.replaceState({}, '', '?pin=' + roomPIN);
+        }
+
+        // Botón VOLVER AL LOBBY dentro del selector de modos
+        var backToLobbyBtn = document.getElementById('back-to-lobby-btn');
+        if (backToLobbyBtn) {
+            backToLobbyBtn.addEventListener('click', function() {
+                var configScreen = document.getElementById('config-screen');
+                if (configScreen) configScreen.classList.add('hidden');
+                if (lobbyScreen) lobbyScreen.classList.remove('hidden');
+            });
+        }
+
         nextSongBtn.addEventListener('click', () => {
             // Evitar doble-click durante fade out
             if (gameState.fadeOutInterval) return;
@@ -1009,8 +1034,12 @@
             rewindMusicalBtn.addEventListener('mouseenter', () => AudioManager.playSFX('hover'));
             rewindMusicalBtn.addEventListener('click', () => {
                 AudioManager.playSFX('click');
-                // Redirigir enviando el PIN por URL
-                window.location.href = '../rewind_musical_tv_host_view/rewind_musical_tv_host_view.html?pin=' + roomPIN;
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'change_mode', mode: 'rewind_musical' }));
+                }
+                setTimeout(() => {
+                    window.location.href = '../rewind_musical_tv_host_view/rewind_musical_tv_host_view.html?pin=' + roomPIN;
+                }, 400); // Dar tiempo a que salga el WebSocket
             });
         }
         const gameModeSelector = document.getElementById('game-mode-selector');

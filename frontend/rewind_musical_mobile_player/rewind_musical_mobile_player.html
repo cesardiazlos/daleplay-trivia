@@ -5,6 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
 <title>Rewind Musical - Active Game</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -130,75 +131,256 @@
 <div class="flex justify-between items-end">
 <div class="flex flex-col">
 <span class="font-label-bold text-label-bold text-tertiary uppercase tracking-widest mb-xs">Rewind Musical</span>
-<h1 class="font-headline-lg text-headline-lg text-primary drop-shadow-[0_0_12px_rgba(255,171,243,0.6)] leading-none">Ronda 3</h1>
+<h1 id="mobile-round-label" class="font-headline-lg text-headline-lg text-primary drop-shadow-[0_0_12px_rgba(255,171,243,0.6)] leading-none">--</h1>
 </div>
 <div class="flex flex-col items-end">
 <div class="flex items-center gap-xs text-secondary-fixed bg-surface-container-high px-sm py-xs rounded-lg border-2 border-surface-bright shadow-[0_4px_0_0_rgba(0,0,0,0.5)]">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timer</span>
-<span class="font-headline-md text-headline-md tracking-wider">00:14</span>
+<span id="mobile-timer-display" class="font-headline-md text-headline-md tracking-wider">--</span>
 </div>
 </div>
 </div>
 <div class="h-6 mt-xs bg-surface-container-lowest rounded-full p-1 border-2 border-surface-bright shadow-[inset_0_4px_4px_rgba(0,0,0,0.8)] relative overflow-hidden">
-<div class="h-full bg-secondary-fixed w-[75%] rounded-full shadow-[0_0_15px_#9cf0ff] relative">
+<div id="mobile-timer-bar" class="h-full bg-secondary-fixed w-full rounded-full shadow-[0_0_15px_#9cf0ff] relative transition-all duration-1000 ease-linear">
 <div class="absolute inset-0 bg-gradient-to-r from-transparent to-white/30 rounded-full"></div>
 </div>
 </div>
 </header>
 <main class="flex-1 overflow-y-auto px-gutter pt-md pb-[140px] relative z-0 hide-scrollbar">
 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-background to-background pointer-events-none -z-10"></div>
-<div class="flex flex-col gap-md" id="sortable-list">
-<div class="group relative flex items-center bg-surface-container p-sm rounded-xl border-4 border-error shadow-[0_8px_0_0_#93000a] active:translate-y-2 active:shadow-[0_0px_0_0_#93000a] transition-all duration-100 overflow-hidden cursor-grab touch-none">
-<div class="absolute left-0 top-0 bottom-0 w-2 bg-error"></div>
-<div class="w-12 flex justify-center text-error opacity-80 group-active:opacity-100 group-active:scale-110 transition-transform">
-<span class="material-symbols-outlined text-[32px]">drag_indicator</span>
-</div>
-<div class="flex flex-col flex-1 border-l-2 border-surface-bright pl-sm py-xs">
-<span class="font-label-bold text-label-bold text-error uppercase tracking-wider mb-1">Song 1</span>
-<span class="font-headline-md text-headline-md text-on-surface leading-tight drop-shadow-md">Smells Like Teen Spirit</span>
-<span class="font-body-md text-body-md text-on-surface-variant mt-xs">Nirvana</span>
-</div>
-</div>
-<div class="group relative flex items-center bg-surface-container p-sm rounded-xl border-4 border-secondary shadow-[0_8px_0_0_#00616d] active:translate-y-2 active:shadow-[0_0px_0_0_#00616d] transition-all duration-100 overflow-hidden cursor-grab touch-none">
-<div class="absolute left-0 top-0 bottom-0 w-2 bg-secondary"></div>
-<div class="w-12 flex justify-center text-secondary opacity-80 group-active:opacity-100 group-active:scale-110 transition-transform">
-<span class="material-symbols-outlined text-[32px]">drag_indicator</span>
-</div>
-<div class="flex flex-col flex-1 border-l-2 border-surface-bright pl-sm py-xs">
-<span class="font-label-bold text-label-bold text-secondary uppercase tracking-wider mb-1">Song 2</span>
-<span class="font-headline-md text-headline-md text-on-surface leading-tight drop-shadow-md">Wonderwall</span>
-<span class="font-body-md text-body-md text-on-surface-variant mt-xs">Oasis</span>
-</div>
-</div>
-<div class="group relative flex items-center bg-surface-container p-sm rounded-xl border-4 border-primary shadow-[0_8px_0_0_#810081] active:translate-y-2 active:shadow-[0_0px_0_0_#810081] transition-all duration-100 overflow-hidden cursor-grab touch-none">
-<div class="absolute left-0 top-0 bottom-0 w-2 bg-primary"></div>
-<div class="w-12 flex justify-center text-primary opacity-80 group-active:opacity-100 group-active:scale-110 transition-transform">
-<span class="material-symbols-outlined text-[32px]">drag_indicator</span>
-</div>
-<div class="flex flex-col flex-1 border-l-2 border-surface-bright pl-sm py-xs">
-<span class="font-label-bold text-label-bold text-primary uppercase tracking-wider mb-1">Song 3</span>
-<span class="font-headline-md text-headline-md text-on-surface leading-tight drop-shadow-md">Bohemian Rhapsody</span>
-<span class="font-body-md text-body-md text-on-surface-variant mt-xs">Queen</span>
-</div>
-</div>
-<div class="group relative flex items-center bg-surface-container p-sm rounded-xl border-4 border-tertiary shadow-[0_8px_0_0_#350081] active:translate-y-2 active:shadow-[0_0px_0_0_#350081] transition-all duration-100 overflow-hidden cursor-grab touch-none">
-<div class="absolute left-0 top-0 bottom-0 w-2 bg-tertiary"></div>
-<div class="w-12 flex justify-center text-tertiary opacity-80 group-active:opacity-100 group-active:scale-110 transition-transform">
-<span class="material-symbols-outlined text-[32px]">drag_indicator</span>
-</div>
-<div class="flex flex-col flex-1 border-l-2 border-surface-bright pl-sm py-xs">
-<span class="font-label-bold text-label-bold text-tertiary uppercase tracking-wider mb-1">Song 4</span>
-<span class="font-headline-md text-headline-md text-on-surface leading-tight drop-shadow-md">Billie Jean</span>
-<span class="font-body-md text-body-md text-on-surface-variant mt-xs">Michael Jackson</span>
-</div>
-</div>
+<div class="flex flex-col gap-md min-h-[400px]" id="sortable-list">
+    <div class="flex flex-col items-center justify-center mt-20 text-center gap-6 animate-pulse px-4">
+        <span class="material-symbols-outlined text-secondary-container text-[80px] drop-shadow-[0_0_15px_rgba(0,227,253,0.8)]">fast_rewind</span>
+        <h2 class="font-headline-md text-white text-3xl uppercase tracking-widest leading-tight">REWIND MUSICAL</h2>
+        <p class="font-body-md text-gray-400 text-lg">El Host está configurando la ronda...<br>¡Prepara tus oídos!</p>
+    </div>
 </div>
 </main>
 <div class="fixed bottom-0 left-0 w-full p-gutter pt-xl bg-gradient-to-t from-background via-background/90 to-transparent pb-safe z-50">
-<button class="w-full py-md bg-primary rounded-xl text-on-primary font-headline-md text-headline-md uppercase tracking-widest border-4 border-on-primary-fixed shadow-[0_12px_0_0_#5b005b] active:translate-y-3 active:shadow-[0_0px_0_0_#5b005b] transition-all duration-75 flex justify-center items-center gap-sm relative overflow-hidden group">
+<button id="send-order-btn" class="hidden w-full py-md bg-primary rounded-xl text-on-primary font-headline-md text-headline-md uppercase tracking-widest border-4 border-on-primary-fixed shadow-[0_12px_0_0_#5b005b] active:translate-y-3 active:shadow-[0_0px_0_0_#5b005b] transition-all duration-75 flex justify-center items-center gap-sm relative overflow-hidden group">
 <div class="absolute inset-0 bg-white/20 w-full h-full -translate-x-full group-active:translate-x-full transition-transform duration-300 ease-out"></div>
             ENVIAR MI ORDEN
             <span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">done_all</span>
 </button>
 </div>
+<script>
+const WS_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'ws://127.0.0.1:8000' : 'wss://d2vrxgps490m00.cloudfront.net';
+
+// 1. Recuperar PIN y Nombre de la URL
+const urlParams = new URLSearchParams(window.location.search);
+const roomPIN = urlParams.get('pin');
+const playerName = sessionStorage.getItem('daleplay_nick') || "Jugador"; 
+
+if (!roomPIN) {
+    alert("PIN no encontrado");
+    window.location.href = '../index.html';
+}
+
+// 2. Conexión WebSocket Robusta
+let currentRoundTracksData = [];
+let mySubmittedTitles = [];
+let ws = null;
+let sortableInstance = null;
+const listEl = document.getElementById('sortable-list');
+
+function connectWebSocket() {
+    ws = new WebSocket(`${WS_BASE_URL}/ws/player/${roomPIN}/${playerName}`);
+    
+    ws.onopen = () => console.log("[WS] Conectado a Rewind Musical");
+    
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        // Si el servidor nos rechaza por Race Condition (el fantasma no ha muerto), reintentamos en 1s
+        if (data.type === 'error' && data.message === 'name_taken') {
+            console.warn("[WS] El servidor sigue procesando tu salida anterior. Reintentando...");
+            setTimeout(connectWebSocket, 1000);
+            return;
+        }
+        
+        if (data.type === 'audio_burst_start') {
+            var roundLabel = document.getElementById('mobile-round-label');
+            if (roundLabel && data.round && data.total) {
+                roundLabel.innerText = 'Ronda ' + data.round + ' / ' + data.total;
+            }
+            var timerDisp = document.getElementById('mobile-timer-display');
+            if (timerDisp) timerDisp.innerText = '--';
+            var timerBar = document.getElementById('mobile-timer-bar');
+            if (timerBar) timerBar.style.width = '100%';
+            const listEl = document.getElementById('sortable-list');
+            listEl.innerHTML = `
+                <div class="flex flex-col items-center justify-center mt-20 text-center gap-6 animate-pulse px-4">
+                    <span class="material-symbols-outlined text-primary text-[100px] drop-shadow-[0_0_15px_rgba(255,171,243,0.8)]" style="font-variation-settings: 'FILL' 1;">hearing</span>
+                    <h2 class="font-headline-md text-white text-3xl uppercase tracking-widest leading-tight">ESCUCHA ATENTO</h2>
+                    <p class="font-body-md text-gray-400 text-lg">Memoriza el orden de las canciones...<br>¡Prepárate para ordenar!</p>
+                </div>
+            `;
+            document.getElementById('send-order-btn').classList.add('hidden');
+        }
+
+        if (data.type === 'rewind_start') {
+            currentRoundTracksData = data.tracks;
+            const btn = document.getElementById('send-order-btn');
+            btn.classList.remove('hidden', 'opacity-50', 'pointer-events-none');
+            btn.innerText = "ENVIAR MI ORDEN";
+            renderSortableList(data.tracks);
+            startTimer(data.time);
+        }
+
+  		if (data.type === 'score_update') {
+			const myData = data.scores[playerName] || { roundScore: 0, correctCount: 0 };
+			const isPerfect = myData.correctCount === 4;
+			
+            let orderHtml = `<div class="bg-black/40 rounded-xl p-4 mt-4 text-left w-full border border-white/10">
+                <p class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2 text-center">Tu orden enviado:</p>
+                <div class="flex flex-col gap-1">`;
+            mySubmittedTitles.forEach((title, idx) => {
+                orderHtml += `<div class="flex gap-3 text-white"><span class="text-primary font-black opacity-70">${idx + 1}.</span> <span class="font-bold line-clamp-1">${title}</span></div>`;
+            });
+            orderHtml += `</div></div>`;
+
+			listEl.innerHTML = `
+				<div class="flex flex-col items-center justify-center mt-12 gap-6 text-center">
+					<span class="material-symbols-outlined text-[100px] animate-pulse ${myData.roundScore > 0 ? 'text-green-500' : 'text-red-500'}">
+						${isPerfect ? 'stars' : (myData.roundScore > 0 ? 'check_circle' : 'cancel')}
+					</span>
+					<h2 class="text-4xl font-black text-white">${isPerfect ? '¡PERFECTO!' : (myData.roundScore > 0 ? '¡BUEN INTENTO!' : 'TIEMPO AGOTADO')}</h2>
+					<div class="bg-surface-container-highest px-6 py-2 rounded-full border border-surface-bright mb-2 shadow-inner">
+						<span class="text-xl text-white font-bold">${myData.correctCount} de 4 correctas</span>
+					</div>
+					<p class="text-2xl text-gray-300">Has ganado <span class="text-primary font-bold">+${myData.roundScore} pts</span></p>
+                    ${mySubmittedTitles.length > 0 ? orderHtml : ''}
+                    <p class="text-sm text-gray-500 mt-4 animate-pulse uppercase tracking-widest">Esperando al Host...</p>
+				</div>
+			`;
+			const btn = document.getElementById('send-order-btn');
+			if(btn) btn.classList.add('hidden');
+		}
+
+		if (data.type === 'reset_to_lobby') {
+			listEl.innerHTML = `
+				<div class="flex flex-col items-center justify-center mt-20 text-center gap-6 px-4">
+					<span class="material-symbols-outlined text-secondary text-[80px] animate-spin-slow">hourglass_empty</span>
+					<h2 class="font-headline-md text-white text-3xl uppercase tracking-widest leading-tight">PREPÁRATE</h2>
+					<p class="font-body-md text-gray-400 text-lg">Revisa el ranking en la TV.<br>La siguiente ronda está por comenzar...</p>
+				</div>
+			`;
+		}
+
+		if (data.type === 'change_mode') {
+			var savedPin = sessionStorage.getItem('daleplay_pin') || roomPIN;
+			if (data.mode === 'lobby') {
+				window.location.href = '../controlador_del_jugador_m_vil/controlador_del_jugador_m_vil.html?pin=' + savedPin;
+			} else if (data.mode === 'main_menu') {
+				window.location.href = '../controlador_del_jugador_m_vil/controlador_del_jugador_m_vil.html?pin=' + savedPin;
+			} else if (data.mode === 'closed') {
+				alert('El Host ha cerrado la sala.');
+				window.location.href = '../index.html';
+			}
+		}
+    };
+    
+    ws.onclose = () => {
+        console.warn("[WS] Desconectado inesperadamente. Reconectando en 2s...");
+        setTimeout(connectWebSocket, 2000);
+    };
+}
+
+connectWebSocket();
+
+function renderSortableList(tracks) {
+    if (sortableInstance) {
+        sortableInstance.destroy();
+        sortableInstance = null;
+    }
+    listEl.innerHTML = ''; 
+    
+    // Paleta exacta de la TV
+    const colorStyles = [
+        { bg: '#ff3366', shadow: '#99002b', text: 'text-white', artist: 'text-white/80', icon: 'text-white/50' }, // Rojo
+        { bg: '#00ccff', shadow: '#007a99', text: 'text-white', artist: 'text-white/80', icon: 'text-white/50' }, // Azul
+        { bg: '#ffcc00', shadow: '#997a00', text: 'text-black', artist: 'text-black/80', icon: 'text-black/50' }, // Amarillo
+        { bg: '#00ff66', shadow: '#00993d', text: 'text-black', artist: 'text-black/80', icon: 'text-black/50' }  // Verde
+    ];
+
+    tracks.forEach((track, index) => {
+        const style = colorStyles[index];
+        const item = document.createElement('div');
+        item.dataset.id = track.id;
+        // Diseño idéntico a la TV con feedback táctil
+        item.className = `group relative flex items-center p-sm rounded-xl border-2 border-white/20 shadow-[0_8px_0_0_${style.shadow}] active:translate-y-2 transition-transform cursor-grab touch-none mb-3`;
+        item.style.backgroundColor = style.bg;
+        
+        item.innerHTML = `
+            <div class="w-12 flex justify-center drag-handle ${style.icon}"><span class="material-symbols-outlined text-[32px]">drag_indicator</span></div>
+            <div class="flex flex-col flex-1 border-l-2 border-black/10 pl-sm py-xs">
+                <span class="font-headline-md text-xl ${style.text} font-black uppercase leading-tight drop-shadow-sm">${track.title}</span>
+                <span class="font-body-md text-sm ${style.artist} font-bold">${track.artist}</span>
+            </div>
+        `;
+        listEl.appendChild(item);
+    });
+
+    // SortableJS optimizado para sensación nativa
+    sortableInstance = new Sortable(listEl, {
+        animation: 400,
+        easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", // Efecto elástico pro
+        handle: ".drag-handle", // Área específica para arrastrar
+        ghostClass: "opacity-10", // El hueco que queda es casi invisible
+        dragClass: "scale-105", // El bloque crece mientras flota
+        chosenClass: "shadow-[0_20px_50px_rgba(0,0,0,0.5)]", // Sombra masiva al levantar
+        forceFallback: true, // Mejor control de animaciones en móviles
+        onStart: () => { if(window.navigator.vibrate) window.navigator.vibrate(10); } // Feedback háptico suave
+    });
+}
+
+let timerInterval;
+function startTimer(seconds) {
+    if(timerInterval) clearInterval(timerInterval);
+    const timerEl = document.getElementById('mobile-timer-display');
+    const timerBar = document.getElementById('mobile-timer-bar');
+    const totalSeconds = seconds;
+    let timeLeft = seconds;
+    
+    if (timerEl) timerEl.innerText = `00:${timeLeft.toString().padStart(2, '0')}`;
+    if (timerBar) timerBar.style.width = '100%';
+    
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        if (timerEl) timerEl.innerText = `00:${timeLeft.toString().padStart(2, '0')}`;
+        
+        if (timerBar) {
+            const percentage = (timeLeft / totalSeconds) * 100;
+            timerBar.style.width = `${percentage}%`;
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('send-order-btn').click(); 
+        }
+    }, 1000);
+}
+
+// 3. Enviar Orden
+document.getElementById('send-order-btn').addEventListener('click', () => {
+    if (!sortableInstance) return;
+    
+    const order = sortableInstance.toArray(); // Devuelve array de IDs en orden actual
+    
+    mySubmittedTitles = order.map(id => {
+        const t = currentRoundTracksData.find(track => track.id === id);
+        return t ? t.title : "???";
+    });
+
+    ws.send(JSON.stringify({
+        type: 'player_answered',
+        player_name: playerName,
+        answer_order: order // Enviamos el orden elegido
+    }));
+    
+    // Feedback visual de envío
+    document.getElementById('send-order-btn').innerText = "ORDEN ENVIADA ✔";
+    document.getElementById('send-order-btn').classList.add('opacity-50', 'pointer-events-none');
+});
+</script>
 </body></html>
