@@ -1,5 +1,6 @@
 import uuid
 import random
+import asyncio
 from typing import List
 
 from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
@@ -200,13 +201,26 @@ class ConnectionManager:
 
     async def connect_host(self, websocket: WebSocket, pin: str):
         await websocket.accept()
-        if pin not in self.rooms:
+        is_reconnect = pin in self.rooms
+        if not is_reconnect:
             self.rooms[pin] = {"host": None, "players": {}, "state": {"current_song_index": 0, "round_answers": set(), "estado_juego": "lobby", "last_guessing_event": None}}
         self.rooms[pin]["host"] = websocket
+        # Si es reconexión, enviar la lista de jugadores actuales al Host
+        if is_reconnect:
+            active_players = [name for name, p in self.rooms[pin]["players"].items() if p.get("status") == "active"]
+            if active_players:
+                await websocket.send_json({"type": "player_joined", "player_name": active_players[-1], "players_list": active_players})
 
     def disconnect_host(self, pin: str):
         if pin in self.rooms:
-            # Si el host se desconecta, destruimos la sala
+            # No destruir la sala inmediatamente: dar 15s de gracia para reconexión
+            self.rooms[pin]["host"] = None
+            asyncio.create_task(self._host_grace_period(pin))
+
+    async def _host_grace_period(self, pin: str):
+        await asyncio.sleep(15)
+        if pin in self.rooms and self.rooms[pin]["host"] is None:
+            # El host no se reconectó en 15 segundos, destruir la sala
             del self.rooms[pin]
 
     async def connect_player(self, websocket: WebSocket, pin: str, player_name: str):

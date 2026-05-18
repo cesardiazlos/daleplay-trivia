@@ -167,12 +167,16 @@
 </div>
 </div>
 <!-- CTA -->
-<div class="pt-6 border-t border-surface-variant">
+<div class="pt-6 border-t border-surface-variant flex flex-col gap-4">
 <button id="start-btn" class="w-full py-5 bg-primary text-on-primary font-headline-md text-headline-md uppercase tracking-wider rounded-xl border-b-8 border-inverse-primary shadow-[0_0_20px_rgba(255,171,243,0.4)] hover:bg-primary-fixed hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(255,171,243,0.6)] hover:border-b-[10px] active:translate-y-2 active:border-b-2 active:shadow-none transition-all flex justify-center items-center gap-3 relative overflow-hidden group">
 <span class="relative z-10 font-black">EMPEZAR JUEGO</span>
 <span class="material-symbols-outlined relative z-10 text-3xl font-black">play_arrow</span>
 <!-- Pulsing background effect -->
 <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+</button>
+<button id="back-to-modes-btn" class="w-full py-3 px-6 bg-transparent text-on-surface-variant font-bold text-lg rounded-xl border-2 border-outline-variant hover:border-primary hover:text-primary hover:-translate-y-1 active:translate-y-1 transition-all duration-150 uppercase tracking-widest flex items-center justify-center gap-2 focus:outline-none">
+    <span class="material-symbols-outlined text-xl">arrow_back</span>
+    VOLVER A ELEGIR JUEGO
 </button>
 </div>
 </aside>
@@ -298,6 +302,39 @@
                     startBtn.innerHTML = originalContent;
                 });
         });
+
+        // Lógica para el botón VOLVER A ELEGIR JUEGO
+        const backToModesBtn = document.getElementById('back-to-modes-btn');
+        if (backToModesBtn) {
+            backToModesBtn.addEventListener('click', () => {
+                // Obtener el PIN (desde la URL o intentar recuperarlo de la sesión anterior)
+                const urlParams = new URLSearchParams(window.location.search);
+                let roomPIN = urlParams.get('pin');
+                
+                // Si no hay PIN, no podemos volver de forma segura, pero intentaremos redirigir
+                if (!roomPIN) {
+                    window.location.href = '../pantalla_del_host_tv/pantalla_del_host_tv.html';
+                    return;
+                }
+
+                // Intentar abrir un WebSocket temporal solo para mandar el mensaje de reset a los móviles
+                const WS_BASE_URL = window.location.protocol === 'https:' ? 'wss://d2vrxgps490m00.cloudfront.net' : 'ws://127.0.0.1:8000';
+                const tempWs = new WebSocket(`${WS_BASE_URL}/ws/host/${roomPIN}`);
+                
+                tempWs.onopen = () => {
+                    tempWs.send(JSON.stringify({ type: 'change_mode', mode: 'main_menu' }));
+                    setTimeout(() => {
+                        tempWs.close();
+                        window.location.href = `../pantalla_del_host_tv/pantalla_del_host_tv.html?pin=${roomPIN}&view=game_selection`;
+                    }, 300);
+                };
+
+                tempWs.onerror = () => {
+                    // Si falla el WS, redirigimos igual para no bloquear al usuario
+                    window.location.href = `../pantalla_del_host_tv/pantalla_del_host_tv.html?pin=${roomPIN}&view=game_selection`;
+                };
+            });
+        }
     });
 </script>
 </body></html>

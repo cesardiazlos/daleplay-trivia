@@ -51,19 +51,34 @@ def get_existing_songs(category_name: str) -> list:
     return excludes
 
 def generate_songs_with_gemini(concept: str, qty: int, existing_excludes: list = None):
-    print(f"[*] Solicitando a Gemini la generación de {qty} canciones...")
+    print(f"[*] Solicitando a Gemini la generación de {qty} canciones NUEVAS...")
     
     all_songs = []
     batch_size = 50
     remaining = qty
     
-    # Mantenemos una lista dinámica de exclusiones (Base de datos + Bloques anteriores)
+    # Lista normal para el prompt (texto completo)
     current_excludes = list(existing_excludes) if existing_excludes else []
     
+    # --- NUEVA LÓGICA DE LIMPIEZA ANTI-DUPLICADOS ---
+    def simplify(text):
+        # Pasa a minúsculas y corta en el primer '(', '[' o '-' para eliminar el texto extra de Spotify
+        import re
+        return re.split(r'\(|\[|\-', str(text).lower())[0].strip()
+
+    # Pre-procesamos la lista de la BD para tener llaves base y limpias
+    current_excludes_clean = set()
+    for ex in current_excludes:
+        parts = ex.replace("- ", "", 1).split(":", 1)
+        if len(parts) == 2:
+            a_clean = simplify(parts[0])
+            s_clean = simplify(parts[1])
+            current_excludes_clean.add(f"{a_clean}|{s_clean}")
+            
+    consecutive_zeros = 0
+    
     while remaining > 0:
-        current_qty = min(remaining, batch_size)
-        
-        # Formatear la lista de exclusiones para inyectarla en el prompt
+        current_qty = min(remaining + 10, batch_size) 
         forbidden_list_text = "\n".join(current_excludes) if current_excludes else "Ninguna por ahora."
         
         PROMPT_TEMPLATE = f"""
@@ -72,16 +87,17 @@ Eres un curador musical implacable y de alto rigor. Debes generar una lista de {
 
 REGLAS DE ORO:
 - CERO TOLERANCIA A LAS ALUCINACIONES: Si el concepto exige un tipo de grupo (ej. hermanos), está ESTRICTAMENTE PROHIBIDO incluir solistas o bandas genéricas solo para rellenar.
-- Si no conoces suficientes canciones que cumplan al 100% el criterio, es preferible que devuelvas una lista más corta (ej. 15 en vez de 50) antes que incluir artistas que no corresponden.
+- AÑO ORIGINAL OBLIGATORIO: Debes incluir el año ORIGINAL de lanzamiento de la canción. No uses el año de reediciones, remasterizaciones ni álbumes de grandes éxitos. Solo el año en que la canción vio la luz por primera vez.
 - Debes devolver ÚNICAMENTE un arreglo JSON puro, sin markdown, sin texto antes ni después.
 
-CANCIONES PROHIBIDAS (Ya existen en la base de datos o se generaron en el lote anterior. BAJO NINGUNA CIRCUNSTANCIA repitas estas canciones o artistas si ya agotaste sus hits):
+CANCIONES PROHIBIDAS (Ya existen en tu base de datos. IGNORA ESTAS CANCIONES POR COMPLETO Y BUSCA OTRAS):
 {forbidden_list_text}
 
-NUEVA ESTRUCTURA DEL JSON (Añade el campo 'justification'):
+NUEVA ESTRUCTURA DEL JSON:
 [{{
   "song": "Nombre", 
   "artist": "Nombre", 
+  "release_year": YYYY,
   "justification": "Explica en 1 oración corta por qué este artista cumple EXACTAMENTE con el concepto exigido", 
   "entity_type": "Individual" o "Grupo", 
   "gender": "Masculino" o "Femenino" o "Mixto" o "Desconocido", 
@@ -89,40 +105,81 @@ NUEVA ESTRUCTURA DEL JSON (Añade el campo 'justification'):
 }}]
 
 Reglas para los campos:
+- 'release_year' debe ser el año numérico (ej: 1985).
 - 'entity_type' debe ser exactamente "Individual" o "Grupo".
-- 'gender' debe ser exactamente "Masculino", "Femenino", "Mixto" o "Desconocido". (Nota: "Mixto" solo es válido si entity_type es "Grupo").
+- 'gender' debe ser exactamente "Masculino", "Femenino", "Mixto" o "Desconocido".
 """
         
         try:
-            # Llamada con el nuevo SDK de Gemini
             response = client.models.generate_content(
                 model='gemini-3.1-flash-lite-preview',
                 contents=PROMPT_TEMPLATE,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
-                    temperature=0.4 # Subimos un toque la temperatura para forzar mayor variedad
+                    temperature=0.6 # Aumentado ligeramente para forzar más exploración
                 )
             )
             
-            data = json.loads(response.text.strip())
+            raw_text = response.text.strip()
+            if raw_text.startswith("```json"):
+                raw_text = raw_text[7:]
+            if raw_text.endswith("```"):
+                raw_text = raw_text[:-3]
+                
+            data = json.loads(raw_text.strip())
+            
             if isinstance(data, list):
-                all_songs.extend(data)
-                # Añadir las nuevas canciones a la lista de prohibidas para el siguiente ciclo
+                novel_count = 0
                 for item in data:
                     song_name = item.get('song', '')
                     artist_name = item.get('artist', '')
-                    current_excludes.append(f"- {artist_name}: {song_name}")
+                    
+                    # Limpiamos los datos que devuelve la IA
+                    gemini_a_clean = simplify(artist_name)
+                    gemini_s_clean = simplify(song_name)
+                    
+                    # Búsqueda Flexible
+                    is_duplicate = False
+                    for ex_clean in current_excludes_clean:
+                        ex_a, ex_s = ex_clean.split("|")
+                        # Verifica si la canción limpia o el artista limpio están contenidos uno dentro del otro
+                        if (gemini_s_clean in ex_s or ex_s in gemini_s_clean) and \
+                           (gemini_a_clean in ex_a or ex_a in gemini_a_clean):
+                            is_duplicate = True
+                            break
+                            
+                    if not is_duplicate:
+                        all_songs.append(item)
+                        current_excludes.append(f"- {artist_name}: {song_name}")
+                        current_excludes_clean.add(f"{gemini_a_clean}|{gemini_s_clean}")
+                        novel_count += 1
+                        
+                        if novel_count >= remaining:
+                            break
+                            
+                print(f"[*] La IA devolvió {len(data)} canciones. Python filtró los repetidos y rescató {novel_count} totalmente NUEVAS.")
+                remaining -= novel_count
+                
+                if novel_count == 0:
+                    consecutive_zeros += 1
+                    if consecutive_zeros >= 2:
+                        print("\n[!] ALERTA: La IA ha agotado su conocimiento sobre esta categoría.")
+                        print(f"[*] Forzando la salida. Avanzando con las {len(all_songs)} canciones recolectadas.\n")
+                        break
+                else:
+                    consecutive_zeros = 0 
+                
             else:
                 print("[-] Gemini no devolvió una lista JSON válida en este lote.")
+                
         except Exception as e:
             print(f"[-] Error al consultar a Gemini: {e}")
             
-        remaining -= current_qty
-        if remaining > 0:
-            print(f"[*] Pausando para no saturar la API (quedan {remaining} canciones por generar)...")
-            time.sleep(5)
+        if remaining > 0 and consecutive_zeros < 2:
+            print(f"[*] Aún faltan {remaining} canciones nuevas. Reintentando en 10 segundos...")
+            time.sleep(10)
             
-    print(f"[+] Total de canciones generadas por Gemini: {len(all_songs)}")
+    print(f"[+] Total de canciones NUEVAS generadas exitosamente: {len(all_songs)}")
     return all_songs
 
 def filter_and_ingest(songs_data: list, category_name: str):
@@ -142,20 +199,23 @@ def filter_and_ingest(songs_data: list, category_name: str):
         total_songs = len(songs_data)
         
         # Palabras excluidas en el título
-        excluded_words = ["live", "en vivo", "remix", "acoustic", "karaoke"]
+        excluded_words = ["live", "en vivo", "remix", "acoustic", "karaoke", "remaster", "remasterizado","cover"]
         
         print("\n[*] Iniciando Fase 2 y 3: Búsqueda en Spotify e Ingesta en Base de Datos...")
         for idx, item in enumerate(songs_data, 1):
             song_name = item.get("song", "")
             artist_name = item.get("artist", "")
+            release_year_ia = int(item.get("release_year", 0)) # <--- Agregar esta línea
             
             if not song_name or not artist_name:
                 continue
                 
-            query = f"track:{song_name} artist:{artist_name}"
+            # --- NUEVO CÓDIGO (MÁS INTELIGENTE Y FLEXIBLE) ---
+            # Búsqueda de texto libre: mucho más efectiva para evadir problemas de tildes o colaboraciones
+            query = f"{song_name} {artist_name}"
             
             try:
-                results = sp.search(q=query, type='track', limit=5)
+                results = sp.search(q=query, type='track', limit=10)
                 tracks = results.get('tracks', {}).get('items', [])
                 
                 valid_track = None
@@ -174,23 +234,10 @@ def filter_and_ingest(songs_data: list, category_name: str):
                     continue
                 
                 spotify_id = valid_track.get('id')
-                release_date = valid_track.get('album', {}).get('release_date', '')
-                release_year = int(release_date.split('-')[0]) if release_date else 0
+                track_name = valid_track.get('name')
                 
-                # Prevenir duplicados de canción globalmente
-                existing_song = db.query(Song).filter(Song.spotify_id == spotify_id).first()
-                if existing_song:
-                    # AQUÍ OCURRE EL ENRIQUECIMIENTO: Si existe pero no en esta categoría, la vincula
-                    if category not in existing_song.categories:
-                        existing_song.categories.append(category)
-                        db.commit()
-                        loaded_count += 1
-                        print(f"[+] {idx}/{total_songs} Vinculada: '{valid_track.get('name')}' a la categoría actual.")
-                    else:
-                        print(f"[*] {idx}/{total_songs} Ya existe: '{valid_track.get('name')}' en esta categoría.")
-                    continue
-                
-                # Upsert de Artista extrayendo datos generados por Gemini
+                # --- 1. UPSERT DEL ARTISTA (Lo movemos ARRIBA) ---
+                # Necesitamos el ID del artista primero para poder verificar si la canción ya existe
                 artist = db.query(Artist).filter(Artist.name == artist_name).first()
                 if not artist:
                     e_type_str = item.get("entity_type", "Individual")
@@ -205,12 +252,34 @@ def filter_and_ingest(songs_data: list, category_name: str):
                     db.add(artist)
                     db.commit()
                     db.refresh(artist)
+
+                # --- 2. DOBLE CAPA DE SEGURIDAD ANTI-DUPLICADOS ---
+                # A) Verificamos si existe por el ID exacto de Spotify...
+                existing_song = db.query(Song).filter(Song.spotify_id == spotify_id).first()
                 
-                # Crear Canción en BD
+                # B) ...Y si no, verificamos si este Artista ya tiene una canción con este mismo Nombre
+                if not existing_song:
+                    existing_song = db.query(Song).filter(
+                        Song.title == track_name,
+                        Song.artist_id == artist.id
+                    ).first()
+
+                if existing_song:
+                    # AQUÍ OCURRE EL ENRIQUECIMIENTO: Si ya existe, solo la vinculamos a la categoría
+                    if category not in existing_song.categories:
+                        existing_song.categories.append(category)
+                        db.commit()
+                        loaded_count += 1
+                        print(f"[+] {idx}/{total_songs} Vinculada: '{track_name}' a la categoría actual.")
+                    else:
+                        print(f"[*] {idx}/{total_songs} Ya existe: '{track_name}' en esta categoría.")
+                    continue
+                
+                # --- 3. CREAR CANCIÓN NUEVA EN BD ---
                 new_song = Song(
-                    title=valid_track.get('name'),
+                    title=track_name,
                     artist_id=artist.id,
-                    release_year=release_year,
+                    release_year=release_year_ia,
                     spotify_id=spotify_id
                 )
                 new_song.categories.append(category)
@@ -218,7 +287,7 @@ def filter_and_ingest(songs_data: list, category_name: str):
                 db.commit()
                 
                 loaded_count += 1
-                print(f"[+] {idx}/{total_songs} Cargado: '{valid_track.get('name')} - {artist_name}'")
+                print(f"[+] {idx}/{total_songs} Cargado: '{track_name} - {artist_name}' (Año: {release_year_ia})")
                 
             except Exception as loop_e:
                 db.rollback()

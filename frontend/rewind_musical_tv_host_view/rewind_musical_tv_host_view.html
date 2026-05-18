@@ -228,10 +228,14 @@
 </div>
 </div>
 </div>
-<div class="flex justify-center mt-md">
+<div class="flex flex-col items-center gap-4 mt-md">
 <button id="start-rewind-btn" class="bg-primary-container text-on-primary-container font-display-xl text-[48px] leading-none uppercase px-xl py-lg rounded-xl shadow-[0_12px_0_0_#810081] btn-press transition-all hover:bg-primary neon-glow-pink flex items-center gap-md opacity-50 pointer-events-none">
     <span class="material-symbols-outlined text-[64px] animate-spin" style="font-variation-settings: 'FILL' 1;">sync</span>
     CARGANDO AUDIO...
+</button>
+<button id="back-to-game-select-btn" class="py-3 px-8 bg-transparent text-on-surface-variant font-bold text-lg rounded-xl border-2 border-outline-variant hover:border-primary hover:text-primary hover:-translate-y-1 active:translate-y-1 transition-all duration-150 uppercase tracking-widest flex items-center justify-center gap-2">
+    <span class="material-symbols-outlined text-xl">arrow_back</span>
+    VOLVER A ELEGIR JUEGO
 </button>
 </div>
 </section>
@@ -389,6 +393,16 @@ document.getElementById('time-slider').addEventListener('input', (e) => {
     document.getElementById('time-display').innerText = e.target.value + 's';
 });
 
+// Boton VOLVER A ELEGIR JUEGO
+document.getElementById('back-to-game-select-btn').addEventListener('click', function() {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'change_mode', mode: 'main_menu' }));
+    }
+    setTimeout(function() {
+        window.location.href = '../pantalla_del_host_tv/pantalla_del_host_tv.html?pin=' + roomPIN + '&view=game_selection';
+    }, 350);
+});
+
 document.getElementById('start-rewind-btn').addEventListener('click', () => {
     const catId = document.getElementById('category-selector').value;
     if (!catId) return alert("Selecciona una categoría");
@@ -445,7 +459,7 @@ function startGameUI(isNextRound) {
     if (timerDisp) timerDisp.innerText = '--';
     
     var questionCtr = document.getElementById('question-counter');
-    if (questionCtr) questionCtr.innerText = 'ESCUCHA LA RÁFAGA...';
+    if (questionCtr) questionCtr.innerText = 'ATENTOS A LAS CANCIONES...';
     
     var roundBadge = document.querySelector('#active-round-view .bg-surface-container .font-headline-md');
     if (roundBadge) roundBadge.innerText = 'Ronda ' + currentRound + ' / ' + totalRounds;
@@ -482,7 +496,7 @@ async function runAudioBurst(isNextRound) {
                 // Disparo de Salida: solo en la primera pista
                 if (i === 0) {
                     p.pauseVideo();
-                    p.setVolume(100);
+                    p.setVolume(0);
                     startGameUI(isNextRound);
                     if(ws.readyState === WebSocket.OPEN) {
                         ws.send(JSON.stringify({ type: 'audio_burst_start', round: currentRound, total: totalRounds }));
@@ -497,23 +511,24 @@ async function runAudioBurst(isNextRound) {
                     
                     var qCounter = document.getElementById('question-counter');
                     for (var countdown = 3; countdown >= 1; countdown--) {
-                        if (qCounter) qCounter.innerText = '¡ATENTOS! ' + countdown;
+                        if (qCounter) qCounter.innerText = '\u00a1ATENTOS! ' + countdown;
                         AudioManager.playSFX('click');
                         await new Promise(function(r) { setTimeout(r, 1000); });
                     }
-                    if (qCounter) qCounter.innerText = 'ESCUCHA LA RÁFAGA...';
+                    if (qCounter) qCounter.innerText = 'ATENTOS A LAS CANCIONES...';
                     
                     // Mostrar tarjetas
                     if (cardsContainer) cardsContainer.style.opacity = '1';
                     
-                    // Reanudar audio
+                    // Reanudar audio (volumen 0, el Fade-In lo sube)
                     p.playVideo();
                     while (p.getPlayerState() !== 1) {
                         await new Promise(function(r) { setTimeout(r, 50); });
                     }
-                } else {
-                    p.setVolume(100);
                 }
+                
+                // SFX de transición antes del cambio visual (desde la 2da pista)
+                if (i > 0) AudioManager.playSFX('swipe');
                 
                 // UI: Resaltar solo la tarjeta actual
                 document.querySelectorAll('.rewind-card').forEach(function(c, idx) {
@@ -524,17 +539,30 @@ async function runAudioBurst(isNextRound) {
 
                 trackReady = true;
                 
-                // Temporizador Exacto: 90 ticks x 100ms = 9 segundos reales de audio
-                var elapsed = 0;
-                while(elapsed < 90 && !window.trackError) {
+                // === FASE 1: Fade-In (1 segundo = 10 ticks x 100ms) ===
+                for (var fi = 1; fi <= 10; fi++) {
+                    p.setVolume(fi * 10);
+                    await new Promise(function(r) { setTimeout(r, 100); });
+                    if (window.trackError) break;
+                }
+                
+                // === FASE 2: Sustain (8 segundos = 80 ticks x 100ms) ===
+                var sustainElapsed = 0;
+                while (sustainElapsed < 80 && !window.trackError) {
                     await new Promise(function(r) { setTimeout(r, 100); });
                     if (p.getPlayerState() === 1) {
-                        elapsed++;
+                        sustainElapsed++;
                     }
                 }
                 
+                // === FASE 3: Fade-Out (1 segundo = 10 ticks x 100ms) ===
+                for (var fo = 9; fo >= 0; fo--) {
+                    p.setVolume(fo * 10);
+                    await new Promise(function(r) { setTimeout(r, 100); });
+                    if (window.trackError) break;
+                }
+                
                 p.pauseVideo();
-                if(i < 3) AudioManager.playSFX('swipe');
                 active = active === 1 ? 2 : 1;
             } else {
                 console.warn('[Auto-Heal] Bloque ' + i + ' falló. Buscando reemplazo...');
